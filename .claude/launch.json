@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Sanity Studio",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["sanity", "dev", "--port", "3333"],
+      "port": 3333,
+      "cwd": "${workspaceFolder}/sanity"
+    }
+  ]
+}

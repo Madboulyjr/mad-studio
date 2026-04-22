@@ -1,0 +1,24 @@
+{
+  "name": "mad-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "studio": "cd sanity && npm run dev",
+    "studio:build": "cd sanity && npm run build",
+    "studio:deploy": "cd sanity && npm run deploy",
+    "seed": "node sanity/scripts/seed.mjs"
+  },
+  "dependencies": {
+    "@sanity/client": "^6.22.5",
+    "@sanity/image-url": "^1.1.0",
+    "@mux/mux-player": "^3.2.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.11",
+    "dotenv": "^16.4.5"
+  }
+}
