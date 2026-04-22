@@ -9,6 +9,13 @@ export default defineConfig(({mode}) => {
     build: {
       outDir: resolve(__dirname, 'dist'),
       emptyOutDir: true,
+      target: 'esnext',
+    },
+    esbuild: {
+      supported: {'top-level-await': true},
+    },
+    optimizeDeps: {
+      esbuildOptions: {target: 'esnext'},
     },
     define: {
       // expose safe env vars to the client
