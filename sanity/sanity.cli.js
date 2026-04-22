@@ -5,4 +5,5 @@ export default defineCliConfig({
     projectId: 'f4pxr4lu',
     dataset: 'production',
   },
+  studioHost: 'madboulyjr-studio',
 })
