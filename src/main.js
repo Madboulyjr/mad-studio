@@ -91,9 +91,41 @@ function buildNav() {
       </div>
       <div class="c-icon">${ICONS[s.id] || ''}</div>
     `
-    d.addEventListener('click', () => switchTo(i))
+    d.addEventListener('click', () => {
+      switchTo(i)
+      // on mobile, snap-scroll the carousel to center this card
+      if (window.matchMedia('(max-width: 768px)').matches) {
+        d.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'})
+      }
+    })
     nav.appendChild(d)
   })
+  setupCarouselScrollSync(nav)
+}
+
+/* On mobile the nav-cards container is a horizontal snap carousel.
+   Detect which card is centered after a swipe and call switchTo. */
+function setupCarouselScrollSync(nav) {
+  let scrollTimer = null
+  nav.addEventListener('scroll', () => {
+    if (window.matchMedia('(min-width: 769px)').matches) return
+    clearTimeout(scrollTimer)
+    scrollTimer = setTimeout(() => {
+      const cards = Array.from(nav.querySelectorAll('.nav-card'))
+      const center = nav.scrollLeft + nav.clientWidth / 2
+      let bestIdx = 0
+      let bestDist = Infinity
+      cards.forEach((c, i) => {
+        const mid = c.offsetLeft + c.clientWidth / 2
+        const d = Math.abs(mid - center)
+        if (d < bestDist) {
+          bestDist = d
+          bestIdx = i
+        }
+      })
+      if (bestIdx !== current) switchTo(bestIdx)
+    }, 120)
+  }, {passive: true})
 }
 
 function renderCounter(s) {
