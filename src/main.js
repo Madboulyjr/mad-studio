@@ -79,6 +79,21 @@ let current = 0
 function buildNav() {
   const nav = document.getElementById('nav-cards')
   nav.innerHTML = ''
+  // dots for mobile carousel
+  const dotsEl = document.getElementById('carousel-dots')
+  if (dotsEl) {
+    dotsEl.innerHTML = SECTIONS.map((_, i) => `<span class="dot${i === 0 ? ' active' : ''}" data-idx="${i}"></span>`).join('')
+    dotsEl.querySelectorAll('.dot').forEach((d) => {
+      d.addEventListener('click', () => {
+        const idx = parseInt(d.dataset.idx, 10)
+        switchTo(idx)
+        const card = nav.querySelectorAll('.nav-card')[idx]
+        if (card && window.matchMedia('(max-width: 768px)').matches) {
+          card.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'})
+        }
+      })
+    })
+  }
   SECTIONS.forEach((s, i) => {
     const d = document.createElement('div')
     d.className = 'nav-card' + (i === 0 ? ' active' : '')
@@ -134,6 +149,9 @@ function renderCounter(s) {
 
 function applyCardStyles(activeIdx) {
   const s = SECTIONS[activeIdx]
+  document.querySelectorAll('.carousel-dots .dot').forEach((d, j) => {
+    d.classList.toggle('active', j === activeIdx)
+  })
   document.querySelectorAll('.nav-card').forEach((c, j) => {
     const isActive = j === activeIdx
     if (isActive) {

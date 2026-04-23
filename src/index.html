@@ -693,23 +693,27 @@ body.switching{animation:invertFlash 0.5s ease-out}
   .header-right{text-align:right}
   .header-right .website{font-size:1.1rem}
 
-  /* HERO — illustration overlaps behind text */
+  /* HERO — bold poster, illustration as backdrop */
   .hero{
     display:block;position:relative;
-    padding:2rem 1.5rem 3rem;min-height:42rem;
+    padding:2.5rem 1.5rem 2rem;
+    min-height:48rem;overflow:hidden;
   }
-  .text-area{
-    position:relative;z-index:2;max-width:100%;
+  .text-area{position:relative;z-index:3;max-width:100%}
+  .headline{
+    font-size:6.2rem;line-height:0.9;margin:0 0 2rem;
+    letter-spacing:-0.025em;text-shadow:0 0.2rem 1rem rgba(0,0,0,0.35);
   }
-  .headline{font-size:5.5rem;line-height:0.92;margin:1rem 0;letter-spacing:-0.02em}
-  .subtitle{font-size:1.3rem;line-height:1.5;max-width:100%;margin:0}
-  .subtitle em{font-size:1.9rem;line-height:1}
+  .subtitle{
+    font-size:1.35rem;line-height:1.5;max-width:100%;margin:0;
+  }
+  .subtitle em{font-size:1.85rem;line-height:1}
   .illustration{
     position:absolute !important;
-    top:10rem;right:-4rem;
-    width:72%;height:70%;
-    display:flex;align-items:center;justify-content:center;
-    z-index:1;pointer-events:auto;opacity:0.16;
+    top:8rem;right:-22%;bottom:auto;left:auto;
+    width:110%;height:36rem;
+    display:flex;align-items:center;justify-content:flex-end;
+    z-index:1;pointer-events:auto;opacity:0.22;
     transform:none;
   }
   .illustration svg{
@@ -718,38 +722,71 @@ body.switching{animation:invertFlash 0.5s ease-out}
   }
   .illustration[data-id="vision"] svg,
   .illustration[data-id="originals"] svg{translate:0 0 !important}
+  /* subtle fade at top/bottom of illustration */
+  .hero::after{
+    content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:linear-gradient(to bottom, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
+  }
 
-  /* FOOTER INFO */
+  /* FOOTER INFO — compact divider strip */
   .footer-info{
     display:flex;flex-direction:row;justify-content:space-between;
     align-items:center;gap:1rem;
-    padding:1rem 1.5rem;width:100%;
+    padding:1.5rem 1.5rem 1rem;width:100%;
     transform:none;
+    border-top:0.08rem solid rgba(255,49,59,0.2);
   }
   .footer-info > div{flex:0 1 auto;min-width:0}
-  .pick-label{font-size:1.05rem}
-  .counter-num{font-size:1.7rem;white-space:nowrap}
+  .pick-label{font-size:1rem;letter-spacing:0.25em}
+  .counter-num{font-size:1.8rem;white-space:nowrap}
   .click-hint{display:none}
 
-  /* NAV CARDS — horizontal carousel */
+  /* NAV CARDS — portrait carousel with dots */
+  .nav-cards-wrap{position:relative}
   .nav-cards{
     flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
     scroll-snap-type:x mandatory;
     -webkit-overflow-scrolling:touch;
-    padding:1rem 1.5rem 3rem;gap:1rem;
+    padding:3rem 1.5rem 2rem;gap:1rem;
     transform:none;height:auto;
     scrollbar-width:none;
   }
   .nav-cards::-webkit-scrollbar{display:none}
   .nav-card{
-    flex:0 0 85vw;scroll-snap-align:center;
-    min-height:14rem;max-height:14rem;
-    padding:0 1.5rem;
+    flex:0 0 78vw;scroll-snap-align:center;
+    min-height:26rem;max-height:26rem;
+    padding:2rem;
+    display:flex;flex-direction:column;justify-content:space-between;
+    align-items:stretch;gap:0;
+    position:relative;overflow:hidden;
+    border-width:0.15rem;
   }
   .nav-card:hover{transform:none}
-  .nav-card .c-num{font-size:1rem}
-  .nav-card .c-title{font-size:2.2rem}
-  .nav-card .c-sub{font-size:1rem}
+  .nav-card .c-info{
+    display:flex;flex-direction:column;gap:0.4rem;
+    position:relative;z-index:2;
+  }
+  .nav-card .c-num{font-size:1rem;letter-spacing:0.22em}
+  .nav-card .c-title{font-size:3rem;line-height:1;letter-spacing:-0.02em}
+  .nav-card .c-sub{font-size:1.15rem}
+  .nav-card .c-icon{
+    position:absolute;right:-4rem;bottom:-4rem;
+    width:24rem;height:24rem;z-index:1;
+    opacity:0.9;pointer-events:none;
+  }
+  .nav-card .c-icon svg{width:100%;height:100%}
+
+  /* dots indicator */
+  .carousel-dots{
+    display:flex;justify-content:center;gap:0.6rem;
+    padding:0 0 3rem;margin-top:-0.5rem;
+  }
+  .carousel-dots .dot{
+    width:0.6rem;height:0.6rem;border-radius:50%;
+    background:var(--accent);opacity:0.3;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+  }
+  .carousel-dots .dot.active{opacity:1;transform:scale(1.4)}
 
   /* CUSTOM CURSOR — hide on touch (already via hover:none, belt+braces) */
   .cursor{display:none !important}
@@ -877,6 +914,7 @@ body.switching{animation:invertFlash 0.5s ease-out}
 
 <!-- NAV CARDS -->
 <nav class="nav-cards" id="nav-cards"></nav>
+<div class="carousel-dots" id="carousel-dots" aria-hidden="true"></div>
 
 <!-- DETAIL PAGE OVERLAY -->
 <section class="detail-page" id="detail-page" aria-hidden="true">
