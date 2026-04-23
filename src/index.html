@@ -686,109 +686,56 @@ body.switching{animation:invertFlash 0.5s ease-out}
   }
 
   /* HEADER */
-  .header{padding:1.5rem 1.5rem 0;flex:0 0 auto}
-  .logo-svg{height:3.2rem}
-  .logo-studio{font-size:1.3rem}
+  .header{padding:1.5rem 1.5rem 0.5rem;flex:0 0 auto}
+  .logo-svg{height:3rem}
+  .logo-studio{font-size:1.2rem}
   .header-right .tagline{display:none}
   .header-right{text-align:right}
-  .header-right .website{font-size:1rem}
+  .header-right .website{font-size:0.95rem}
 
-  /* HERO — takes remaining space above the cards */
-  .hero{
-    display:block;position:relative;
-    padding:2rem 1.5rem 1rem;
-    flex:1 1 auto;min-height:0;overflow:hidden;
-  }
-  .text-area{position:relative;z-index:3;max-width:100%}
-  .headline{
-    font-size:5.6rem;line-height:0.9;margin:0 0 1.5rem;
-    letter-spacing:-0.025em;text-shadow:0 0.2rem 1rem rgba(0,0,0,0.35);
-  }
-  .subtitle{
-    font-size:1.25rem;line-height:1.45;max-width:100%;margin:0;
-  }
-  .subtitle em{font-size:1.7rem;line-height:1}
-  .illustration{
-    position:absolute !important;
-    top:2rem;right:-20%;bottom:0;left:auto;
-    width:100%;height:auto;
-    display:flex;align-items:center;justify-content:flex-end;
-    z-index:1;pointer-events:auto;opacity:0.2;
-    transform:none;
-  }
-  .illustration svg{
-    height:100% !important;max-height:none;width:auto;
-    translate:0 0 !important;
-  }
-  .illustration[data-id="vision"] svg,
-  .illustration[data-id="originals"] svg{translate:0 0 !important}
-  /* subtle fade at top/bottom of illustration */
-  .hero::after{
-    content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:linear-gradient(to bottom, var(--bg) 0%, transparent 20%, transparent 80%, var(--bg) 100%);
-  }
+  /* HIDE the hero/counter/dots on mobile — just cards */
+  .hero, .footer-info, .carousel-dots{display:none !important}
 
-  /* FOOTER INFO — compact strip above cards */
-  .footer-info{
-    flex:0 0 auto;
-    display:flex;flex-direction:row;justify-content:space-between;
-    align-items:center;gap:1rem;
-    padding:0.9rem 1.5rem;width:100%;
-    transform:none;
-    border-top:0.08rem solid rgba(255,49,59,0.2);
-  }
-  .footer-info > div{flex:0 1 auto;min-width:0}
-  .pick-label{font-size:0.9rem;letter-spacing:0.25em}
-  .counter-num{font-size:1.6rem;white-space:nowrap}
-  .click-hint{display:none}
-
-  /* NAV CARDS — portrait carousel */
+  /* NAV CARDS — 2x2 grid filling the screen */
   .nav-cards{
-    flex:0 0 auto;
-    flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
-    scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling:touch;
-    padding:1.5rem 1.5rem 1rem;gap:1rem;
-    transform:none;height:auto;
-    scrollbar-width:none;
+    flex:1 1 auto;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:0.8rem;
+    padding:1rem 1.2rem 1.5rem;
+    transform:none;overflow:hidden;
+    height:auto;
   }
-  .nav-cards::-webkit-scrollbar{display:none}
   .nav-card{
-    flex:0 0 78vw;scroll-snap-align:center;
-    min-height:22rem;max-height:22rem;
-    padding:1.6rem;
+    padding:1.3rem;
     display:flex;flex-direction:column;justify-content:space-between;
     align-items:stretch;gap:0;
     position:relative;overflow:hidden;
     border-width:0.15rem;
+    min-height:0;max-height:none;
+    /* kill carousel behavior */
+    flex:0 1 auto;scroll-snap-align:none;
   }
   .nav-card:hover{transform:none}
   .nav-card .c-info{
-    display:flex;flex-direction:column;gap:0.35rem;
+    display:flex;flex-direction:column;gap:0.3rem;
     position:relative;z-index:2;
   }
-  .nav-card .c-num{font-size:0.9rem;letter-spacing:0.22em}
-  .nav-card .c-title{font-size:2.6rem;line-height:1;letter-spacing:-0.02em}
-  .nav-card .c-sub{font-size:1.05rem}
+  .nav-card .c-num{font-size:0.85rem;letter-spacing:0.22em;opacity:0.7}
+  .nav-card .c-title{font-size:2rem;line-height:0.95;letter-spacing:-0.02em}
+  .nav-card .c-sub{font-size:0.9rem;line-height:1.2}
   .nav-card .c-icon{
-    position:absolute;right:-3rem;bottom:-3rem;
-    width:19rem;height:19rem;z-index:1;
-    opacity:0.88;pointer-events:none;
+    position:absolute;right:-2rem;bottom:-2rem;
+    width:14rem;height:14rem;z-index:1;
+    opacity:0.85;pointer-events:none;
   }
   .nav-card .c-icon svg{width:100%;height:100%}
-
-  /* dots indicator */
-  .carousel-dots{
-    flex:0 0 auto;
-    display:flex;justify-content:center;gap:0.6rem;
-    padding:0.4rem 0 1.5rem;
-  }
-  .carousel-dots .dot{
-    width:0.55rem;height:0.55rem;border-radius:50%;
-    background:var(--accent);opacity:0.3;cursor:pointer;
-    transition:opacity 0.25s ease, transform 0.25s ease;
-  }
-  .carousel-dots .dot.active{opacity:1;transform:scale(1.4)}
+  /* give each section its own bg color in the grid view */
+  .nav-card[data-id="originals"]{background:#0D0D0D;color:#FF313B;border-color:#FF313B}
+  .nav-card[data-id="bubble"]{background:#D0FA51;color:#584CF5;border-color:#584CF5}
+  .nav-card[data-id="music"]{background:#FF313B;color:#D0FA51;border-color:#D0FA51}
+  .nav-card[data-id="vision"]{background:#584CF5;color:#D0FA51;border-color:#D0FA51}
 
   /* CUSTOM CURSOR — hide on touch (already via hover:none, belt+braces) */
   .cursor{display:none !important}

@@ -107,11 +107,12 @@ function buildNav() {
       <div class="c-icon">${ICONS[s.id] || ''}</div>
     `
     d.addEventListener('click', () => {
-      switchTo(i)
-      // on mobile, snap-scroll the carousel to center this card
+      // mobile: go straight into the section's detail page
       if (window.matchMedia('(max-width: 768px)').matches) {
-        d.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'})
+        openDetail(s.id)
+        return
       }
+      switchTo(i)
     })
     nav.appendChild(d)
   })
@@ -152,9 +153,15 @@ function applyCardStyles(activeIdx) {
   document.querySelectorAll('.carousel-dots .dot').forEach((d, j) => {
     d.classList.toggle('active', j === activeIdx)
   })
+  const isMobile = window.matchMedia('(max-width: 768px)').matches
   document.querySelectorAll('.nav-card').forEach((c, j) => {
     const isActive = j === activeIdx
-    if (isActive) {
+    if (isMobile) {
+      // mobile: CSS per-card colors. Clear inline styles so CSS wins.
+      c.style.background = ''
+      c.style.color = ''
+      c.style.borderColor = ''
+    } else if (isActive) {
       c.style.background = s.bg
       c.style.color = s.accent
       c.style.borderColor = s.accent
