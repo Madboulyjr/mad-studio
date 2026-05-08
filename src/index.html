@@ -899,8 +899,9 @@ body{
   padding-bottom:0;
 }
 
-/* ─── TOPBAR ───────────────────────────── */
-.topbar{
+/* ─── TOPBAR — hidden per design direction (more space for hero) ─── */
+.topbar{display:none}
+.topbar-was{
   display:flex;justify-content:space-between;align-items:center;
   padding:2rem 2.4rem;
   position:relative;z-index:5;
@@ -929,14 +930,14 @@ body{
   display:grid;
   grid-template-rows:auto minmax(0,1fr);
   align-items:center;justify-items:center;
-  padding:1.5rem 2rem 7rem;
+  padding:3rem 2rem 7rem;
   overflow:hidden;
-  gap:1rem;
+  gap:1.5rem;
 }
 .hero-copy{
   grid-row:1;position:relative;z-index:3;
-  text-align:center;max-width:50rem;
-  margin-top:0.5rem;
+  text-align:center;max-width:62rem;
+  margin-top:1rem;
 }
 .hero .illustration{
   position:relative !important;
@@ -968,10 +969,10 @@ body{
 }
 .hero-line{
   font-family:'Hanken Grotesk',system-ui,sans-serif;
-  font-weight:500;font-size:2.4rem;line-height:1.1;
-  letter-spacing:-0.02em;color:var(--accent);
+  font-weight:500;font-size:3.4rem;line-height:1.08;
+  letter-spacing:-0.025em;color:var(--accent);
   white-space:normal;text-transform:none;
-  margin-bottom:0.4rem;text-shadow:none;
+  margin-bottom:0.7rem;text-shadow:none;
 }
 .hero-line em, .hero-line .accent{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
@@ -979,8 +980,8 @@ body{
 }
 .hero-line-sub{
   font-family:'Newsreader',serif;font-style:italic;font-weight:400;
-  font-size:1.05rem;line-height:1.4;color:var(--accent-soft);
-  max-width:40rem;margin:0 auto;
+  font-size:1.45rem;line-height:1.4;color:var(--accent-soft);
+  max-width:46rem;margin:0 auto;
 }
 .hero-counter{display:none !important}
 
