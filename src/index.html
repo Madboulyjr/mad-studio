@@ -989,8 +989,9 @@ body{
 }
 .hero-counter .counter-section{font-weight:700;opacity:1}
 
-/* ─── 3D ORB — poch-style rotating torus ─── */
-.orb3d{
+/* ─── 3D ORB — disabled per design direction ─── */
+.orb3d, .detail-orb{display:none !important}
+.orb3d-keep-styles{
   position:absolute;left:50%;bottom:7rem;transform:translateX(-50%);
   width:11rem;height:11rem;
   perspective:600px;transform-style:preserve-3d;
