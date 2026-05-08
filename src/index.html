@@ -887,16 +887,16 @@ body.switching{animation:invertFlash 0.5s ease-out}
    Drops the per-section red flips, switches to cream-on-black,
    floating bottom pill navbar, calmer hero.
    ═══════════════════════════════════════════════════════ */
-html, body{overflow-y:auto;overflow-x:hidden;height:auto;min-height:100vh}
+html, body{overflow:hidden;height:100vh;max-height:100vh}
 body{
   font-family:'Hanken Grotesk', system-ui, sans-serif;
   font-weight:400;
   background:var(--bg) !important;
   color:var(--accent) !important;
-  display:block !important;
+  display:flex !important;flex-direction:column;
   grid-template-rows:none !important;
-  height:auto;min-height:100vh;
-  padding-bottom:11rem;
+  height:100vh;max-height:100vh;
+  padding-bottom:0;
 }
 
 /* ─── TOPBAR ───────────────────────────── */
@@ -922,28 +922,28 @@ body{
 }
 .topbar-link:hover{opacity:1}
 
-/* ─── HERO — text top, avatar dominant below ─── */
+/* ─── HERO — text top, avatar dominant below; full-viewport, no scroll ─── */
 .hero{
   position:relative;
-  min-height:calc(100vh - 14rem);
+  flex:1 1 0%;min-height:0;
   display:grid;
-  grid-template-rows:auto 1fr auto;
+  grid-template-rows:auto minmax(0,1fr);
   align-items:center;justify-items:center;
-  padding:3rem 2rem 6rem;
-  overflow:visible;
+  padding:1.5rem 2rem 7rem;
+  overflow:hidden;
   gap:1rem;
 }
 .hero-copy{
   grid-row:1;position:relative;z-index:3;
-  text-align:center;max-width:62rem;
-  margin-top:1rem;
+  text-align:center;max-width:50rem;
+  margin-top:0.5rem;
 }
 .hero .illustration{
   position:relative !important;
-  grid-row:2;
+  grid-row:2;min-height:0;
   inset:auto;width:100%;height:100%;
   display:flex;align-items:center;justify-content:center;
-  z-index:2;opacity:1;
+  z-index:2;opacity:1;overflow:hidden;
   pointer-events:auto;
   perspective:1100px;
   transition:opacity 0.5s ease;
@@ -951,8 +951,9 @@ body{
 /* line-art SVG illustrations: HIDDEN until we have a 3D avatar for that section */
 .hero .illustration svg{display:none}
 /* 3D avatar PNG (transparent bg) — main hero feature */
+.hero .illustration{height:100%}
 .hero .illustration .avatar3d{
-  height:auto;max-height:60vh;width:auto;max-width:80%;
+  height:100%;max-height:100%;width:auto;max-width:100%;
   object-fit:contain;display:block;
   filter:drop-shadow(0 40px 90px rgba(248,229,181,0.12));
   transform:rotateX(var(--avatar-rx, 0deg)) rotateY(var(--avatar-ry, 0deg)) translateZ(0);
@@ -967,10 +968,10 @@ body{
 }
 .hero-line{
   font-family:'Hanken Grotesk',system-ui,sans-serif;
-  font-weight:500;font-size:3.6rem;line-height:1.1;
-  letter-spacing:-0.025em;color:var(--accent);
+  font-weight:500;font-size:2.4rem;line-height:1.1;
+  letter-spacing:-0.02em;color:var(--accent);
   white-space:normal;text-transform:none;
-  margin-bottom:0.8rem;text-shadow:none;
+  margin-bottom:0.4rem;text-shadow:none;
 }
 .hero-line em, .hero-line .accent{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
@@ -978,16 +979,10 @@ body{
 }
 .hero-line-sub{
   font-family:'Newsreader',serif;font-style:italic;font-weight:400;
-  font-size:1.6rem;line-height:1.4;color:var(--accent-soft);
-  max-width:46rem;margin:0 auto;
+  font-size:1.05rem;line-height:1.4;color:var(--accent-soft);
+  max-width:40rem;margin:0 auto;
 }
-.hero-counter{
-  position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
-  font-size:0.78rem;letter-spacing:0.28em;text-transform:uppercase;
-  color:var(--accent);opacity:0.55;z-index:2;
-}
-.hero-counter .counter-section{font-weight:700;opacity:1}
+.hero-counter{display:none !important}
 
 /* ─── 3D ORB — disabled per design direction ─── */
 .orb3d, .detail-orb{display:none !important}
