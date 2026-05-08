@@ -11,8 +11,12 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 html{
-  font-size:clamp(4px, min(0.5208vw, 0.9259vh), 18px);
+  /* desktop reads at sensible size; smaller screens scale down via mobile media queries */
+  font-size:16px;
 }
+@media (min-width: 1600px){ html{font-size:17px} }
+@media (min-width: 2000px){ html{font-size:18px} }
+@media (min-width: 2600px){ html{font-size:20px} }
 html,body{width:100%;height:100%;overflow:hidden}
 
 :root{
@@ -944,21 +948,13 @@ body{
   perspective:1100px;
   transition:opacity 0.5s ease;
 }
-.hero .illustration svg{
-  height:62% !important;max-height:none;width:auto;
-  color:var(--accent);opacity:0.18;
-  translate:0 0 !important;
-  transform:rotateX(var(--avatar-rx, 0deg)) rotateY(var(--avatar-ry, 0deg));
-  transform-style:preserve-3d;
-  transition:transform 0.05s linear;
-}
-/* 3D avatar PNG — main hero feature; radial mask fades the bg seam */
+/* line-art SVG illustrations: HIDDEN until we have a 3D avatar for that section */
+.hero .illustration svg{display:none}
+/* 3D avatar PNG (transparent bg) — main hero feature */
 .hero .illustration .avatar3d{
-  height:auto;max-height:54vh;width:auto;max-width:82%;
+  height:auto;max-height:60vh;width:auto;max-width:80%;
   object-fit:contain;display:block;
-  -webkit-mask-image:radial-gradient(ellipse 65% 75% at 50% 50%, #000 50%, transparent 95%);
-  mask-image:radial-gradient(ellipse 65% 75% at 50% 50%, #000 50%, transparent 95%);
-  filter:drop-shadow(0 30px 80px rgba(248,229,181,0.18));
+  filter:drop-shadow(0 40px 90px rgba(248,229,181,0.12));
   transform:rotateX(var(--avatar-rx, 0deg)) rotateY(var(--avatar-ry, 0deg)) translateZ(0);
   transform-style:preserve-3d;
   transition:transform 0.08s linear, filter 0.4s ease;
