@@ -66,10 +66,69 @@ function illusMarkup(slug) {
           <img class="avatar3d" src="${AVATAR_PNG[slug]}" alt="${slug}" draggable="false">
           <div class="avatar-light"></div>
         </div>
+        <div class="speech-bubble" id="speech-bubble" aria-hidden="true">
+          <span class="speech-text"></span>
+        </div>
       </div>
     `
   }
   return ILLUS[slug] || ''
+}
+
+/* ─── Speech bubble — rotating witty phrases per section ─── */
+const SPEECH = {
+  originals: [
+    '9+ years of madness.',
+    'Currently making something mad.',
+    'Last project: BIOLAB.',
+    'Coffee: too many.',
+    'Ask me anything.',
+    'Stop scrolls.',
+  ],
+  bubble: [
+    'Off the brief.',
+    'Personal art only.',
+    'No rules here.',
+    'Side obsession #47.',
+  ],
+  music: [
+    'Beats since forever.',
+    'Egyptian instruments + deep house.',
+    'No formula.',
+    'Currently producing.',
+  ],
+  vision: [
+    'Rolling.',
+    'AI tools, no limits.',
+    'Films, shorts, music videos.',
+    'Concept first.',
+  ],
+}
+
+let speechTimer = null
+let speechIdx = 0
+function startSpeechRotation(slug) {
+  const bubble = document.getElementById('speech-bubble')
+  if (!bubble) return
+  const phrases = SPEECH[slug] || []
+  if (!phrases.length) {
+    bubble.style.display = 'none'
+    return
+  }
+  bubble.style.display = ''
+  const textEl = bubble.querySelector('.speech-text')
+  speechIdx = 0
+  if (speechTimer) clearInterval(speechTimer)
+  function show() {
+    bubble.classList.remove('show')
+    setTimeout(() => {
+      textEl.textContent = phrases[speechIdx % phrases.length]
+      bubble.classList.add('show')
+      speechIdx++
+    }, 300)
+  }
+  show()
+  speechTimer = setInterval(show, 4500)
 }
 
 // Detail PAGES keyed by slug, with works filtered per section
@@ -240,6 +299,7 @@ function switchTo(i) {
     hl.classList.remove('fading')
     sub.classList.remove('fading')
     illus.classList.remove('fading')
+    startSpeechRotation(s.id)
   }, 180)
 
   applyCardStyles(i)
@@ -255,6 +315,7 @@ if (s0) {
   document.getElementById('illustration').innerHTML = illusMarkup(s0.id)
   document.getElementById('illustration').dataset.id = s0.id
   applyCardStyles(0)
+  startSpeechRotation(s0.id)
 }
 
 /* ─── DETAIL PAGE ────────────────────────────────── */

@@ -972,7 +972,7 @@ body{
 }
 /* the actual image — cursor-driven 3D tilt + slight translation toward cursor for parallax depth */
 .hero .illustration .avatar3d{
-  height:108%;max-height:108%;width:auto;max-width:none;
+  height:140%;max-height:140%;width:auto;max-width:none;
   object-fit:contain;display:block;
   position:relative;z-index:2;
   filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55));
@@ -1004,6 +1004,45 @@ body{
 /* hover state — scale up slightly, brighter light */
 .hero .illustration:hover .avatar3d{--avatar-scale:1.04}
 .hero .illustration:hover .avatar-light{opacity:1.2}
+
+/* ─── SPEECH BUBBLE — rotating witty phrases ─── */
+.speech-bubble{
+  position:absolute;top:8%;right:8%;z-index:5;
+  background:rgba(22, 20, 16, 0.7);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  backdrop-filter:blur(14px) saturate(140%);
+  border:0.08rem solid rgba(245, 240, 225, 0.14);
+  color:var(--accent);
+  padding:0.85rem 1.4rem;
+  border-radius:1.4rem 1.4rem 1.4rem 0.4rem;
+  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  font-size:1.15rem;letter-spacing:-0.005em;
+  white-space:nowrap;
+  box-shadow:0 12px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(245,240,225,0.05);
+  opacity:0;transform:translateY(0.5rem) scale(0.96);
+  transition:opacity 0.4s cubic-bezier(.2,.7,.2,1), transform 0.5s cubic-bezier(.2,.7,.2,1);
+  pointer-events:none;
+}
+.speech-bubble.show{
+  opacity:1;transform:translateY(0) scale(1);
+  animation:speechFloat 4s ease-in-out infinite;
+}
+@keyframes speechFloat{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-0.4rem) scale(1)}
+}
+/* tiny tail line connecting bubble to avatar */
+.speech-bubble::before{
+  content:'';position:absolute;left:-0.4rem;bottom:-0.4rem;
+  width:0.7rem;height:0.7rem;
+  background:rgba(22, 20, 16, 0.7);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:0.08rem solid rgba(245, 240, 225, 0.14);
+  border-left:0.08rem solid rgba(245, 240, 225, 0.14);
+  border-radius:0 0 0 0.3rem;
+  transform:rotate(-15deg);
+}
 .hero-counter{grid-row:3}
 .hero-copy{
   position:relative;z-index:2;text-align:center;
