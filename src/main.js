@@ -59,7 +59,15 @@ const AVATAR_PNG = {
 
 function illusMarkup(slug) {
   if (AVATAR_PNG[slug]) {
-    return `<img class="avatar3d" src="${AVATAR_PNG[slug]}" alt="${slug}" draggable="false">`
+    return `
+      <div class="avatar-stage">
+        <div class="avatar-shadow"></div>
+        <div class="avatar-float">
+          <img class="avatar3d" src="${AVATAR_PNG[slug]}" alt="${slug}" draggable="false">
+          <div class="avatar-light"></div>
+        </div>
+      </div>
+    `
   }
   return ILLUS[slug] || ''
 }
@@ -490,26 +498,43 @@ function rafCursor() {
   requestAnimationFrame(rafCursor)
 }
 
-/* ─── 3D AVATAR PARALLAX TILT ───────────────────── */
+/* ─── 3D AVATAR PARALLAX (fake 3D: tilt + cursor light + floor shift) ─── */
 let avatarRotX = 0, avatarRotY = 0
+let lightX = 50, lightY = 30
+let shadowShift = 0
 function updateAvatarParallax(mx, my) {
   const illus = document.getElementById('illustration')
   if (!illus) return
-  const r = illus.getBoundingClientRect()
+  const stage = illus.querySelector('.avatar-stage')
+  const target = stage || illus
+  const r = target.getBoundingClientRect()
   if (!r.width) return
   const centerX = r.left + r.width / 2
   const centerY = r.top + r.height / 2
-  // normalize cursor offset to range [-1, 1]
+  // normalize cursor offset to range [-1, 1] relative to viewport
   const nx = Math.max(-1, Math.min(1, (mx - centerX) / (window.innerWidth / 2)))
   const ny = Math.max(-1, Math.min(1, (my - centerY) / (window.innerHeight / 2)))
-  // target tilt: ±12° rotateY (left/right) + ±8° rotateX (up/down inverted)
-  const targetRotY = nx * 12
-  const targetRotX = -ny * 8
-  // smooth lerp
-  avatarRotY += (targetRotY - avatarRotY) * 0.08
-  avatarRotX += (targetRotX - avatarRotX) * 0.08
+  // target tilt: ±20° rotateY + ±14° rotateX (more dramatic for fake-3D feel)
+  const targetRotY = nx * 20
+  const targetRotX = -ny * 14
+  // light position relative to avatar bounds (clamped 0–100%)
+  const localX = Math.max(0, Math.min(1, (mx - r.left) / r.width))
+  const localY = Math.max(0, Math.min(1, (my - r.top) / r.height))
+  const targetLightX = localX * 100
+  const targetLightY = localY * 100
+  // shadow shifts opposite to head tilt (light from above-cursor side)
+  const targetShadowShift = -nx * 24
+  // smooth lerps
+  avatarRotY += (targetRotY - avatarRotY) * 0.09
+  avatarRotX += (targetRotX - avatarRotX) * 0.09
+  lightX += (targetLightX - lightX) * 0.12
+  lightY += (targetLightY - lightY) * 0.12
+  shadowShift += (targetShadowShift - shadowShift) * 0.08
   illus.style.setProperty('--avatar-rx', avatarRotX.toFixed(2) + 'deg')
   illus.style.setProperty('--avatar-ry', avatarRotY.toFixed(2) + 'deg')
+  illus.style.setProperty('--light-x', lightX.toFixed(1) + '%')
+  illus.style.setProperty('--light-y', lightY.toFixed(1) + '%')
+  illus.style.setProperty('--shadow-shift', shadowShift.toFixed(1))
 }
 
 rafCursor()
