@@ -49,6 +49,21 @@ const ILLUS = Object.fromEntries(
   sectionsDocs.map((s) => [s.slug, s.illustrationSvg || ''])
 )
 
+// 3D PNG avatar overrides — when a slug is here, we render the PNG instead of the SVG
+const AVATAR_PNG = {
+  originals: '/avatars/originals.png',
+  // bubble: '/avatars/bubble.png',  (add when user provides)
+  // music: '/avatars/music.png',
+  // vision: '/avatars/vision.png',
+}
+
+function illusMarkup(slug) {
+  if (AVATAR_PNG[slug]) {
+    return `<img class="avatar3d" src="${AVATAR_PNG[slug]}" alt="${slug}" draggable="false">`
+  }
+  return ILLUS[slug] || ''
+}
+
 // Detail PAGES keyed by slug, with works filtered per section
 const PAGES = Object.fromEntries(
   sectionsDocs.map((s) => {
@@ -211,7 +226,7 @@ function switchTo(i) {
   setTimeout(() => {
     hl.innerHTML = s.heroLine
     sub.innerHTML = s.heroSub
-    illus.innerHTML = ILLUS[s.id]
+    illus.innerHTML = illusMarkup(s.id)
     illus.dataset.id = s.id
     counter.innerHTML = renderCounter(s)
     hl.classList.remove('fading')
@@ -229,7 +244,7 @@ if (s0) {
   document.getElementById('headline').innerHTML = s0.heroLine
   document.getElementById('subtitle').innerHTML = s0.heroSub
   document.getElementById('counter').innerHTML = renderCounter(s0)
-  document.getElementById('illustration').innerHTML = ILLUS[s0.id] || ''
+  document.getElementById('illustration').innerHTML = illusMarkup(s0.id)
   document.getElementById('illustration').dataset.id = s0.id
   applyCardStyles(0)
 }
@@ -470,8 +485,33 @@ function rafCursor() {
   cx += (tx - cx) * 0.22
   cy += (ty - cy) * 0.22
   cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`
+  // 3D-tilt parallax on illustration following cursor
+  updateAvatarParallax(tx, ty)
   requestAnimationFrame(rafCursor)
 }
+
+/* ─── 3D AVATAR PARALLAX TILT ───────────────────── */
+let avatarRotX = 0, avatarRotY = 0
+function updateAvatarParallax(mx, my) {
+  const illus = document.getElementById('illustration')
+  if (!illus) return
+  const r = illus.getBoundingClientRect()
+  if (!r.width) return
+  const centerX = r.left + r.width / 2
+  const centerY = r.top + r.height / 2
+  // normalize cursor offset to range [-1, 1]
+  const nx = Math.max(-1, Math.min(1, (mx - centerX) / (window.innerWidth / 2)))
+  const ny = Math.max(-1, Math.min(1, (my - centerY) / (window.innerHeight / 2)))
+  // target tilt: ±12° rotateY (left/right) + ±8° rotateX (up/down inverted)
+  const targetRotY = nx * 12
+  const targetRotX = -ny * 8
+  // smooth lerp
+  avatarRotY += (targetRotY - avatarRotY) * 0.08
+  avatarRotX += (targetRotX - avatarRotX) * 0.08
+  illus.style.setProperty('--avatar-rx', avatarRotX.toFixed(2) + 'deg')
+  illus.style.setProperty('--avatar-ry', avatarRotY.toFixed(2) + 'deg')
+}
+
 rafCursor()
 
 const illusEl = document.querySelector('.illustration')
