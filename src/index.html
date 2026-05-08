@@ -1063,19 +1063,24 @@ body{
 }
 .bottomnav-pill{
   display:inline-flex;align-items:center;justify-content:center;
-  background:#1A1815;
+  background:rgba(22, 20, 16, 0.55);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  backdrop-filter:blur(18px) saturate(140%);
   color:var(--accent);
-  border:0.08rem solid var(--line);
+  border:0.08rem solid rgba(245, 240, 225, 0.12);
   border-radius:999px;
   padding:0.7rem 1.2rem;
   font-family:'Hanken Grotesk',system-ui,sans-serif;
   font-weight:500;font-size:0.95rem;letter-spacing:-0.005em;
   transition:background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   white-space:nowrap;
+  box-shadow:0 6px 22px rgba(0,0,0,0.35), inset 0 1px 0 rgba(245,240,225,0.04);
 }
 .bottomnav-mark{
   width:3.2rem;height:3.2rem;padding:0.65rem;
-  background:var(--accent);color:var(--bg);border-color:transparent;
+  background:var(--accent);color:var(--bg);
+  border-color:rgba(245, 240, 225, 0.18);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
 }
 .bottomnav-mark svg{width:100%;height:auto}
 .bottomnav-links{
@@ -1115,9 +1120,10 @@ body{
 .bottomnav-links .nav-card .c-enter{display:none !important}
 
 .bottomnav-cta{
-  background:var(--cta);color:#1A1815;border:0;
-  font-weight:600;
-  text-decoration:none;
+  background:var(--cta);color:#1A1815;
+  border:0.08rem solid rgba(0,0,0,0.06);
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+  font-weight:600;text-decoration:none;
 }
 .bottomnav-cta:hover{background:#fff}
 
