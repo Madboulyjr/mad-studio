@@ -23,19 +23,26 @@ function coverImageUrl(project, w = 1600) {
 const content = await fetchContent()
 const {sections: sectionsDocs, projects: projectDocs} = content
 
-// Landing SECTIONS (derived from Sanity)
-const SECTIONS = sectionsDocs.map((s, i) => ({
-  id: s.slug,
-  bg: s.landingBg || '#0D0D0D',
-  accent: s.landingAccent || '#FF313B',
-  headline: s.landingHeadline || (s.title || '').toUpperCase(),
-  subtitle: s.landingSubtitle || '',
-  counterPrefix: `${String(s.order).padStart(2, '0')} / ${String(sectionsDocs.length).padStart(2, '0')} — `,
-  counterSection: s.counterLabel || s.title,
-  cNum: `__${String(s.order).padStart(2, '0')}`,
-  cTitle: (s.title || '').replace(/\.$/, '').toUpperCase(),
-  cSub: s.cardLabel || s.subtitle || '',
-}))
+// Landing SECTIONS (derived from Sanity) — palette stays cream-on-black globally
+const SECTIONS = sectionsDocs.map((s, i) => {
+  const cleanTitle = (s.title || '').replace(/\.$/, '')
+  const cleanSubtitle = (s.subtitle || '').replace(/\.$/, '')
+  const description = (s.description || s.subtitle || '').replace(/\.$/, '')
+  return {
+    id: s.slug,
+    bg: '#0A0A0A',
+    accent: '#F5F0E1',
+    // hero copy: "We are MAD Originals, the main studio practice."
+    heroLine: `We are <em>${cleanTitle}</em>, ${description.toLowerCase()}.`,
+    heroSub: cleanSubtitle ? `${cleanSubtitle}.` : '',
+    counterPrefix: `${String(s.order).padStart(2, '0')} / ${String(sectionsDocs.length).padStart(2, '0')} — `,
+    counterSection: s.counterLabel || cleanTitle,
+    cNum: `__${String(s.order).padStart(2, '0')}`,
+    // bottom-nav label: short, no "MAD" prefix, no period
+    cTitle: cleanTitle.replace(/^MAD\s*\+?\s*/i, '') || cleanTitle,
+    cSub: s.cardLabel || s.subtitle || '',
+  }
+})
 
 // Illustration HTML by slug
 const ILLUS = Object.fromEntries(
@@ -109,11 +116,6 @@ function buildNav() {
       <div class="c-enter">Enter</div>
     `
     d.addEventListener('click', () => {
-      // mobile: go straight into the section's detail page
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        openDetail(s.id)
-        return
-      }
       switchTo(i)
     })
     nav.appendChild(d)
@@ -151,28 +153,13 @@ function renderCounter(s) {
 }
 
 function applyCardStyles(activeIdx) {
-  const s = SECTIONS[activeIdx]
-  document.querySelectorAll('.carousel-dots .dot').forEach((d, j) => {
-    d.classList.toggle('active', j === activeIdx)
-  })
-  const isMobile = window.matchMedia('(max-width: 768px)').matches
+  // poch-style monochrome: no per-section color flips, only active state via CSS class
   document.querySelectorAll('.nav-card').forEach((c, j) => {
-    const isActive = j === activeIdx
-    if (isMobile) {
-      // mobile: CSS per-card colors. Clear inline styles so CSS wins.
-      c.style.background = ''
-      c.style.color = ''
-      c.style.borderColor = ''
-    } else if (isActive) {
-      c.style.background = s.bg
-      c.style.color = s.accent
-      c.style.borderColor = s.accent
-    } else {
-      c.style.background = s.accent
-      c.style.color = s.bg
-      c.style.borderColor = s.accent
-    }
-    c.classList.toggle('active', isActive)
+    // ensure no leftover inline styles from earlier states
+    c.style.background = ''
+    c.style.color = ''
+    c.style.borderColor = ''
+    c.classList.toggle('active', j === activeIdx)
   })
 }
 
@@ -211,8 +198,6 @@ function switchTo(i) {
   if (i === current) return
   current = i
   const s = SECTIONS[i]
-  document.documentElement.style.setProperty('--bg', s.bg)
-  document.documentElement.style.setProperty('--accent', s.accent)
 
   const hl = document.getElementById('headline')
   const sub = document.getElementById('subtitle')
@@ -224,36 +209,28 @@ function switchTo(i) {
   illus.classList.add('fading')
 
   setTimeout(() => {
-    hl.textContent = s.headline
-    sub.innerHTML = s.subtitle
+    hl.innerHTML = s.heroLine
+    sub.innerHTML = s.heroSub
     illus.innerHTML = ILLUS[s.id]
     illus.dataset.id = s.id
     counter.innerHTML = renderCounter(s)
     hl.classList.remove('fading')
     sub.classList.remove('fading')
     illus.classList.remove('fading')
-    document.body.classList.add('switching')
-    void document.body.offsetWidth
-    document.body.classList.remove('switching')
-    requestAnimationFrame(() => document.body.classList.add('switching'))
-    setTimeout(() => document.body.classList.remove('switching'), 900)
   }, 180)
 
   applyCardStyles(i)
-  typeActiveCard(i)
 }
 
 /* Init landing */
 buildNav()
 const s0 = SECTIONS[0]
 if (s0) {
-  document.getElementById('headline').textContent = s0.headline
-  document.getElementById('subtitle').innerHTML = s0.subtitle
+  document.getElementById('headline').innerHTML = s0.heroLine
+  document.getElementById('subtitle').innerHTML = s0.heroSub
   document.getElementById('counter').innerHTML = renderCounter(s0)
   document.getElementById('illustration').innerHTML = ILLUS[s0.id] || ''
   document.getElementById('illustration').dataset.id = s0.id
-  document.documentElement.style.setProperty('--bg', s0.bg)
-  document.documentElement.style.setProperty('--accent', s0.accent)
   applyCardStyles(0)
 }
 
@@ -292,25 +269,51 @@ function buildDetail(id) {
     <h2 class="section-title">${p.worksTitle}</h2>
     <div class="works-list">
       ${works
-        .map(
-          (w, i) => `
+        .map((w, i) => {
+          // build a 2-column description: left = brief, right = approach
+          // for now reuse the caption as a single paragraph and split if there's a separator (· or |)
+          const cap = w.caption || ''
+          const descParts = cap.includes(' — ')
+            ? cap.split(' — ')
+            : cap.includes(' · ')
+            ? cap.split(' · ')
+            : [cap, '']
+          const descLeft = descParts[0] || ''
+          const descRight = descParts[1] || (cap ? '' : '')
+          // strip pages 2..n from media for the strip preview
+          const stripImgs = (w.media || [])
+            .filter((m) => m._type === 'image' && m.asset)
+            .slice(1, 6)
+            .map((m) => m.asset?.url)
+            .filter(Boolean)
+          return `
         <article class="work-row" data-idx="${i}">
-          <div class="work-num">${String(i + 1).padStart(2, '0')}</div>
+          <div class="work-tags-row">
+            <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
+            <span class="work-see-full">See Full Case ↗</span>
+          </div>
           <div class="work-mid">
-            <div class="work-title">${w.title}${
-              w.caption ? `<span class="caption">${w.caption}</span>` : ''
-            }</div>
-            <div class="work-meta">
-              <span class="work-year">${w.year || ''}</span>
-              <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
-            </div>
+            <h3 class="work-title"><strong>${w.title}${w.year ? ` · ${w.year}` : ''}:</strong>${
+              descLeft ? ` <span class="caption">${descLeft}</span>` : ''
+            }</h3>
           </div>
           <div class="work-preview">${
             w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy">` : ''
           }</div>
+          <div class="work-desc">
+            <p>${descLeft || cap || ''}</p>
+            <p>${descRight || ''}</p>
+          </div>
+          ${
+            stripImgs.length
+              ? `<div class="work-row-strip">${stripImgs
+                  .map((u) => `<div class="strip-item"><img src="${u}?w=600&auto=format" alt="" loading="lazy"></div>`)
+                  .join('')}</div>`
+              : ''
+          }
         </article>
       `
-        )
+        })
         .join('')}
     </div>
     <div class="collab-cta">
