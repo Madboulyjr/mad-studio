@@ -268,9 +268,15 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .detail-lead{
   font-family:'Roboto',sans-serif;font-weight:300;
-  font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.9;
+  font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.92;
 }
 .detail-lead strong{font-weight:700;font-style:normal}
+/* editorial drop cap — first letter of lead paragraph */
+.detail-lead::first-letter{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  font-size:6rem;line-height:0.85;
+  float:left;padding:0.4rem 1.2rem 0 0;color:var(--accent);
+}
 .detail-illus{display:flex;align-items:center;justify-content:center}
 .detail-illus svg{width:100%;max-width:56rem;height:auto}
 
@@ -385,8 +391,8 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .project-view .detail-topbar{margin-bottom:2rem}
 
-/* project hero — editorial magazine opener */
-.project-hero{margin:6rem 0 4rem}
+/* project hero — editorial magazine opener with brutalist case-number */
+.project-hero{margin:6rem 0 4rem;position:relative}
 .project-hero .p-top{
   display:flex;justify-content:space-between;align-items:baseline;
   padding-bottom:1.5rem;border-bottom:0.1rem solid rgba(255,49,59,0.35);
@@ -399,6 +405,17 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   font-family:'Roboto',sans-serif;font-weight:900;
   font-size:18rem;line-height:0.88;letter-spacing:-0.035em;
   text-transform:uppercase;margin:4rem 0 3rem;
+  position:relative;z-index:2;
+}
+/* huge case-number watermark behind title */
+.project-hero[data-num]::before{
+  content:attr(data-num);
+  position:absolute;right:0;top:5rem;
+  font-family:'Roboto',sans-serif;font-weight:900;
+  font-size:32rem;line-height:0.85;letter-spacing:-0.06em;
+  color:var(--accent);opacity:0.06;
+  z-index:1;pointer-events:none;
+  font-feature-settings:'tnum' 1;
 }
 .project-hero .p-meta-row{
   display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;
@@ -696,46 +713,78 @@ body.switching{animation:invertFlash 0.5s ease-out}
   /* HIDE the hero/counter/dots on mobile — just cards */
   .hero, .footer-info, .carousel-dots{display:none !important}
 
-  /* NAV CARDS — 2x2 grid filling the screen */
+  /* NAV CARDS — full-bleed brutalist 2x2 grid, no gaps */
   .nav-cards{
     flex:1 1 auto;
     display:grid;
     grid-template-columns:1fr 1fr;
     grid-template-rows:1fr 1fr;
-    gap:0.8rem;
-    padding:1rem 1.2rem 1.5rem;
-    transform:none;overflow:hidden;
-    height:auto;
+    gap:0;
+    padding:0;margin-top:0.6rem;
+    transform:none;overflow:hidden;height:auto;
+    border-top:0.15rem solid var(--accent);
   }
   .nav-card{
-    padding:1.3rem;
-    display:flex;flex-direction:column;justify-content:space-between;
+    padding:1.5rem;
+    display:flex;flex-direction:column;justify-content:flex-start;
     align-items:stretch;gap:0;
     position:relative;overflow:hidden;
-    border-width:0.15rem;
+    border:0;border-right:0.15rem solid currentColor;border-bottom:0.15rem solid currentColor;
     min-height:0;max-height:none;
-    /* kill carousel behavior */
     flex:0 1 auto;scroll-snap-align:none;
+    transition:transform 0.18s ease;
   }
+  .nav-card:nth-child(2n){border-right:0}
+  .nav-card:nth-child(n+3){border-bottom:0}
+  .nav-card:active{transform:scale(0.97)}
   .nav-card:hover{transform:none}
-  .nav-card .c-info{
-    display:flex;flex-direction:column;gap:0.3rem;
-    position:relative;z-index:2;
+  /* GIANT section number watermark */
+  .nav-card::before{
+    content:attr(data-num);
+    position:absolute;top:-2rem;right:-0.5rem;
+    font-family:'Roboto',sans-serif;font-weight:900;
+    font-size:14rem;line-height:1;letter-spacing:-0.06em;
+    color:currentColor;opacity:0.1;
+    z-index:1;pointer-events:none;
   }
-  .nav-card .c-num{font-size:0.85rem;letter-spacing:0.22em;opacity:0.7}
-  .nav-card .c-title{font-size:2rem;line-height:0.95;letter-spacing:-0.02em}
-  .nav-card .c-sub{font-size:0.9rem;line-height:1.2}
+  .nav-card .c-info{
+    display:flex;flex-direction:column;gap:0.6rem;
+    position:relative;z-index:3;
+  }
+  .nav-card .c-num{
+    font-family:'IBM Plex Mono',monospace;font-weight:700;
+    font-size:0.85rem;letter-spacing:0.3em;opacity:0.85;
+    text-transform:uppercase;margin-bottom:0.2rem;
+  }
+  .nav-card .c-title{
+    font-size:2.6rem;line-height:0.9;letter-spacing:-0.03em;
+    font-weight:900;
+  }
+  .nav-card .c-sub{
+    font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+    font-size:1.1rem;line-height:1.25;text-transform:none;
+    opacity:0.85;letter-spacing:0;margin-top:0.4rem;
+  }
   .nav-card .c-icon{
-    position:absolute;right:-2rem;bottom:-2rem;
-    width:14rem;height:14rem;z-index:1;
-    opacity:0.85;pointer-events:none;
+    position:absolute;right:-3.5rem;bottom:-3rem;
+    width:17rem;height:17rem;z-index:2;
+    opacity:0.55;pointer-events:none;
   }
   .nav-card .c-icon svg{width:100%;height:100%}
-  /* give each section its own bg color in the grid view */
-  .nav-card[data-id="originals"]{background:#0D0D0D;color:#FF313B;border-color:#FF313B}
-  .nav-card[data-id="bubble"]{background:#D0FA51;color:#584CF5;border-color:#584CF5}
-  .nav-card[data-id="music"]{background:#FF313B;color:#D0FA51;border-color:#D0FA51}
-  .nav-card[data-id="vision"]{background:#584CF5;color:#D0FA51;border-color:#D0FA51}
+  /* enter affordance — arrow + ENTER label bottom-left */
+  .nav-card .c-enter{
+    position:absolute;left:1.5rem;bottom:1.3rem;
+    z-index:3;display:flex;align-items:center;gap:0.4rem;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;
+    font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;
+    opacity:0.85;
+  }
+  .nav-card .c-enter::after{content:'→';font-size:1.1rem;line-height:1}
+  /* per-section palette */
+  .nav-card[data-id="originals"]{background:#0D0D0D;color:#FF313B}
+  .nav-card[data-id="bubble"]{background:#D0FA51;color:#584CF5}
+  .nav-card[data-id="music"]{background:#FF313B;color:#D0FA51}
+  .nav-card[data-id="vision"]{background:#584CF5;color:#D0FA51}
 
   /* CUSTOM CURSOR — hide on touch (already via hover:none, belt+braces) */
   .cursor{display:none !important}

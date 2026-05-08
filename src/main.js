@@ -98,6 +98,7 @@ function buildNav() {
     const d = document.createElement('div')
     d.className = 'nav-card' + (i === 0 ? ' active' : '')
     d.dataset.id = s.id
+    d.dataset.num = String(i + 1).padStart(2, '0')
     d.innerHTML = `
       <div class="c-info">
         <span class="c-num">${s.cNum}</span>
@@ -105,6 +106,7 @@ function buildNav() {
         <span class="c-sub">${s.cSub}</span>
       </div>
       <div class="c-icon">${ICONS[s.id] || ''}</div>
+      <div class="c-enter">Enter</div>
     `
     d.addEventListener('click', () => {
       // mobile: go straight into the section's detail page
@@ -364,7 +366,7 @@ function buildProject(works, idx) {
   const next = works[(idx + 1) % works.length]
   const media = w.media || []
   projectViewInner.innerHTML = `
-    <div class="project-hero">
+    <div class="project-hero" data-num="${String(idx + 1).padStart(2, '0')}">
       <div class="p-top">
         <span class="p-index">— Case ${String(idx + 1).padStart(2, '0')} / ${String(works.length).padStart(2, '0')}</span>
         <span class="p-year-top">${w.year || ''}</span>
