@@ -265,6 +265,14 @@ function buildDetail(id) {
       </div>
     </div>
     ${agenciesHTML}
+    <div class="detail-orb" aria-hidden="true">
+      <div class="orb3d">
+        <div class="orb3d-ring"></div>
+        <div class="orb3d-ring orb3d-ring-2"></div>
+        <div class="orb3d-ring orb3d-ring-3"></div>
+        <div class="orb3d-glow"></div>
+      </div>
+    </div>
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
     <h2 class="section-title">${p.worksTitle}</h2>
     <div class="works-list">

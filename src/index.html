@@ -968,6 +968,74 @@ body{
 }
 .hero-counter .counter-section{font-weight:700;opacity:1}
 
+/* ─── 3D ORB — poch-style rotating torus ─── */
+.orb3d{
+  position:absolute;left:50%;bottom:7rem;transform:translateX(-50%);
+  width:11rem;height:11rem;
+  perspective:600px;transform-style:preserve-3d;
+  z-index:2;pointer-events:none;
+}
+.orb3d-ring{
+  position:absolute;inset:0;
+  border-radius:50%;
+  border:0.18rem solid var(--cta);
+  transform-style:preserve-3d;
+  animation:orb3dSpin 8s linear infinite;
+  box-shadow:
+    0 0 30px rgba(248, 229, 181, 0.25),
+    inset 0 0 18px rgba(248, 229, 181, 0.15),
+    inset 0 -12px 30px rgba(248, 229, 181, 0.08);
+}
+.orb3d-ring-2{
+  border-color:rgba(245, 240, 225, 0.4);
+  border-width:0.12rem;
+  animation:orb3dSpin2 12s linear infinite reverse;
+  inset:0.6rem;
+}
+.orb3d-ring-3{
+  border-color:rgba(245, 240, 225, 0.18);
+  border-width:0.08rem;
+  animation:orb3dSpin3 18s linear infinite;
+  inset:1.2rem;
+}
+.orb3d-glow{
+  position:absolute;left:50%;bottom:-1rem;
+  width:6rem;height:1.2rem;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse, rgba(248, 229, 181, 0.25) 0%, transparent 70%);
+  filter:blur(8px);
+  animation:orb3dPulse 4s ease-in-out infinite;
+}
+@keyframes orb3dSpin{
+  0% { transform: rotateX(72deg) rotateZ(0deg); }
+  50% { transform: rotateX(78deg) rotateZ(180deg); }
+  100% { transform: rotateX(72deg) rotateZ(360deg); }
+}
+@keyframes orb3dSpin2{
+  0% { transform: rotateX(75deg) rotateY(15deg) rotateZ(0deg); }
+  100% { transform: rotateX(75deg) rotateY(15deg) rotateZ(-360deg); }
+}
+@keyframes orb3dSpin3{
+  0% { transform: rotateX(70deg) rotateY(-12deg) rotateZ(0deg); }
+  100% { transform: rotateX(70deg) rotateY(-12deg) rotateZ(360deg); }
+}
+@keyframes orb3dPulse{
+  0%,100% { opacity:0.7; transform:translateX(-50%) scaleX(1); }
+  50% { opacity:1; transform:translateX(-50%) scaleX(1.15); }
+}
+@media (max-width: 768px){
+  .orb3d{width:4.6rem;height:4.6rem;bottom:auto;top:38rem}
+}
+.detail-orb{
+  display:flex;justify-content:center;
+  margin:6rem 0 4rem;height:11rem;position:relative;
+}
+.detail-orb .orb3d{position:relative;left:auto;bottom:auto;transform:none;width:7rem;height:7rem}
+@media (max-width: 768px){
+  .detail-orb{margin:4rem 0 2.5rem;height:7rem}
+  .detail-orb .orb3d{width:5rem;height:5rem}
+}
+
 /* ─── FLOATING BOTTOM PILL NAVBAR ─── */
 .bottomnav{
   position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);
@@ -1326,6 +1394,13 @@ body{
   <div class="hero-copy">
     <h1 class="hero-line" id="headline"></h1>
     <p class="hero-line-sub" id="subtitle"></p>
+  </div>
+  <!-- 3D rotating ring/orb (poch-style) -->
+  <div class="orb3d" aria-hidden="true">
+    <div class="orb3d-ring"></div>
+    <div class="orb3d-ring orb3d-ring-2"></div>
+    <div class="orb3d-ring orb3d-ring-3"></div>
+    <div class="orb3d-glow"></div>
   </div>
   <span class="hero-counter" id="counter"></span>
 </main>
