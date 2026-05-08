@@ -105,8 +105,13 @@ const SPEECH = {
   ],
 }
 
+const SPEECH_POSITIONS = [
+  'top-right', 'top-left', 'bottom-right', 'bottom-left',
+  'right-middle', 'left-middle', 'top-center',
+]
 let speechTimer = null
 let speechIdx = 0
+let lastPosIdx = -1
 function startSpeechRotation(slug) {
   const bubble = document.getElementById('speech-bubble')
   if (!bubble) return
@@ -123,9 +128,16 @@ function startSpeechRotation(slug) {
     bubble.classList.remove('show')
     setTimeout(() => {
       textEl.textContent = phrases[speechIdx % phrases.length]
+      // pick a random position, never the same as last time
+      let p
+      do {
+        p = Math.floor(Math.random() * SPEECH_POSITIONS.length)
+      } while (p === lastPosIdx && SPEECH_POSITIONS.length > 1)
+      lastPosIdx = p
+      bubble.dataset.pos = SPEECH_POSITIONS[p]
       bubble.classList.add('show')
       speechIdx++
-    }, 300)
+    }, 350)
   }
   show()
   speechTimer = setInterval(show, 4500)
