@@ -498,9 +498,9 @@ function rafCursor() {
   requestAnimationFrame(rafCursor)
 }
 
-/* ─── 3D AVATAR PARALLAX (fake 3D: tilt + cursor light + floor shift) ─── */
+/* ─── 3D AVATAR PARALLAX (fake 3D: tilt + translation + floor shift) ─── */
 let avatarRotX = 0, avatarRotY = 0
-let lightX = 50, lightY = 30
+let avatarTx = 0, avatarTy = 0
 let shadowShift = 0
 function updateAvatarParallax(mx, my) {
   const illus = document.getElementById('illustration')
@@ -511,29 +511,27 @@ function updateAvatarParallax(mx, my) {
   if (!r.width) return
   const centerX = r.left + r.width / 2
   const centerY = r.top + r.height / 2
-  // normalize cursor offset to range [-1, 1] relative to viewport
+  // normalize cursor offset to [-1, 1] relative to viewport
   const nx = Math.max(-1, Math.min(1, (mx - centerX) / (window.innerWidth / 2)))
   const ny = Math.max(-1, Math.min(1, (my - centerY) / (window.innerHeight / 2)))
-  // target tilt: ±20° rotateY + ±14° rotateX (more dramatic for fake-3D feel)
-  const targetRotY = nx * 20
-  const targetRotX = -ny * 14
-  // light position relative to avatar bounds (clamped 0–100%)
-  const localX = Math.max(0, Math.min(1, (mx - r.left) / r.width))
-  const localY = Math.max(0, Math.min(1, (my - r.top) / r.height))
-  const targetLightX = localX * 100
-  const targetLightY = localY * 100
-  // shadow shifts opposite to head tilt (light from above-cursor side)
-  const targetShadowShift = -nx * 24
-  // smooth lerps
-  avatarRotY += (targetRotY - avatarRotY) * 0.09
-  avatarRotX += (targetRotX - avatarRotX) * 0.09
-  lightX += (targetLightX - lightX) * 0.12
-  lightY += (targetLightY - lightY) * 0.12
-  shadowShift += (targetShadowShift - shadowShift) * 0.08
+  // gentler tilt: ±10° Y / ±7° X — less robotic, more natural
+  const targetRotY = nx * 10
+  const targetRotX = -ny * 7
+  // subtle translation toward cursor — adds parallax depth (head shifts a bit)
+  const targetTx = nx * 14
+  const targetTy = ny * 10
+  // shadow shifts opposite to head tilt
+  const targetShadowShift = -nx * 18
+  // smooth lerps (slower for more natural feel)
+  avatarRotY += (targetRotY - avatarRotY) * 0.07
+  avatarRotX += (targetRotX - avatarRotX) * 0.07
+  avatarTx += (targetTx - avatarTx) * 0.08
+  avatarTy += (targetTy - avatarTy) * 0.08
+  shadowShift += (targetShadowShift - shadowShift) * 0.07
   illus.style.setProperty('--avatar-rx', avatarRotX.toFixed(2) + 'deg')
   illus.style.setProperty('--avatar-ry', avatarRotY.toFixed(2) + 'deg')
-  illus.style.setProperty('--light-x', lightX.toFixed(1) + '%')
-  illus.style.setProperty('--light-y', lightY.toFixed(1) + '%')
+  illus.style.setProperty('--avatar-tx', avatarTx.toFixed(1) + 'px')
+  illus.style.setProperty('--avatar-ty', avatarTy.toFixed(1) + 'px')
   illus.style.setProperty('--shadow-shift', shadowShift.toFixed(1))
 }
 
