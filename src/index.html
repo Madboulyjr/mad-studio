@@ -1091,16 +1091,16 @@ body{
   border:0.08rem solid rgba(245, 240, 225, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants — pushed FAR out beyond avatar bounds so cheek never touches bubble ─── */
-/* UPPER SIDES — beside the temples/upper head, above the eyes */
-.speech-bubble[data-pos="side-left-upper"]{top:8%;left:-15%;right:auto}
-.speech-bubble[data-pos="side-right-upper"]{top:8%;right:-15%;left:auto}
-/* LOWER SIDES — beside the cheek/jaw, below the eyes */
-.speech-bubble[data-pos="side-left-lower"]{top:60%;left:-15%;right:auto}
-.speech-bubble[data-pos="side-right-lower"]{top:60%;right:-15%;left:auto}
-/* BOTTOM SIDES — at chin/jaw bottom edge */
-.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:8%;left:-12%;right:auto}
-.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:8%;right:-12%;left:auto}
+/* ─── Position variants — far OUTSIDE avatar bounds, never touch the head ─── */
+/* UPPER SIDES — beside the temples, way out */
+.speech-bubble[data-pos="side-left-upper"]{top:6%;left:-28%;right:auto}
+.speech-bubble[data-pos="side-right-upper"]{top:6%;right:-28%;left:auto}
+/* LOWER SIDES — beside the cheek, way out */
+.speech-bubble[data-pos="side-left-lower"]{top:55%;left:-28%;right:auto}
+.speech-bubble[data-pos="side-right-lower"]{top:55%;right:-28%;left:auto}
+/* BOTTOM SIDES — at chin level, way out */
+.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:6%;left:-24%;right:auto}
+.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:6%;right:-24%;left:auto}
 
 .speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
@@ -1417,7 +1417,7 @@ body{
 }
 .work-row-strip::-webkit-scrollbar{display:none}
 .work-row-strip .strip-item{
-  flex:0 0 32%;aspect-ratio:16/9;
+  flex:0 0 28%;aspect-ratio:4/3;
   background:#161310;border-radius:0.4rem;overflow:hidden;
   scroll-snap-align:start;
 }

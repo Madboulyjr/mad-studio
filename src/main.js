@@ -379,17 +379,14 @@ function buildDetail(id) {
     <div class="works-list">
       ${works
         .map((w, i) => {
-          // build a 2-column description: left = brief, right = approach
-          // for now reuse the caption as a single paragraph and split if there's a separator (· or |)
+          // caption format: "Brief — About — Approach" (3 parts split on em-dash)
           const cap = w.caption || ''
-          const descParts = cap.includes(' — ')
+          const parts = cap.includes(' — ')
             ? cap.split(' — ')
-            : cap.includes(' · ')
-            ? cap.split(' · ')
-            : [cap, '']
-          const descLeft = descParts[0] || ''
-          const descRight = descParts[1] || (cap ? '' : '')
-          // strip pages 2..n from media for the strip preview
+            : [cap]
+          const titleBrief = parts[0] || ''
+          const aboutCol = parts[1] || (parts.length === 1 ? cap : '')
+          const approachCol = parts[2] || ''
           const stripImgs = (w.media || [])
             .filter((m) => m._type === 'image' && m.asset)
             .slice(1, 6)
@@ -403,15 +400,15 @@ function buildDetail(id) {
           </div>
           <div class="work-mid">
             <h3 class="work-title"><strong>${w.title}${w.year ? ` · ${w.year}` : ''}:</strong>${
-              descLeft ? ` <span class="caption">${descLeft}</span>` : ''
+              titleBrief ? ` <span class="caption">${titleBrief}</span>` : ''
             }</h3>
           </div>
           <div class="work-preview">${
             w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy">` : ''
           }</div>
           <div class="work-desc">
-            <p>${descLeft || cap || ''}</p>
-            <p>${descRight || ''}</p>
+            <p>${aboutCol}</p>
+            <p>${approachCol}</p>
           </div>
           ${
             stripImgs.length
@@ -617,6 +614,12 @@ rafCursor()
 
 const illusEl = document.querySelector('.illustration')
 function charBBox() {
+  // Prefer PNG avatar bounds (current setup); fall back to SVG paths if any
+  const png = illusEl.querySelector('.avatar3d')
+  if (png) {
+    const r = png.getBoundingClientRect()
+    if (r.width > 0) return {minX: r.left, minY: r.top, maxX: r.right, maxY: r.bottom}
+  }
   const svg = illusEl.querySelector('svg')
   if (!svg) return null
   const shapes = svg.querySelectorAll('path, circle, rect, line, polyline, polygon, ellipse')
