@@ -944,9 +944,9 @@ body{
   display:grid;
   grid-template-rows:auto minmax(0,1fr);
   align-items:center;justify-items:center;
-  padding:3rem 2rem 7rem;
+  padding:2.5rem 2rem 7rem;
   overflow:hidden;
-  gap:1.5rem;
+  gap:3rem;
 }
 .hero-copy{
   grid-row:1;position:relative;z-index:3;
@@ -987,7 +987,7 @@ body{
 }
 /* the actual image — cursor-driven 3D tilt + slight translation toward cursor for parallax depth */
 .hero .illustration .avatar3d{
-  height:123%;max-height:123%;width:auto;max-width:none;
+  height:100%;max-height:100%;width:auto;max-width:none;
   object-fit:contain;display:block;
   position:relative;z-index:2;
   filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55));
@@ -1023,16 +1023,16 @@ body{
 
 /* Per-section scale + vertical offset so all avatars match MAD+'s size & placement */
 .illustration[data-id="originals"] .avatar3d{
-  --avatar-base-scale:1.18;--avatar-scale:1.18;--avatar-base-y:0px;
+  --avatar-base-scale:1.05;--avatar-scale:1.05;--avatar-base-y:0px;
 }
 .illustration[data-id="bubble"] .avatar3d{
-  --avatar-base-scale:1.18;--avatar-scale:1.18;--avatar-base-y:0px;
+  --avatar-base-scale:1.05;--avatar-scale:1.05;--avatar-base-y:0px;
 }
 .illustration[data-id="music"] .avatar3d{
-  --avatar-base-scale:1;--avatar-scale:1;--avatar-base-y:0px;
+  --avatar-base-scale:0.92;--avatar-scale:0.92;--avatar-base-y:0px;
 }
 .illustration[data-id="vision"] .avatar3d{
-  --avatar-base-scale:1.15;--avatar-scale:1.15;--avatar-base-y:0px;
+  --avatar-base-scale:1.02;--avatar-scale:1.02;--avatar-base-y:0px;
 }
 
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
@@ -1256,7 +1256,12 @@ body{
   -webkit-backdrop-filter:none;backdrop-filter:none;
   font-weight:600;text-decoration:none;
 }
-.bottomnav-cta:hover{background:#fff}
+.bottomnav-cta:hover{background:#fff;transform:translateY(-1px)}
+.bottomnav-pill:not(.bottomnav-cta):not(.bottomnav-mark):hover,
+.bottomnav-mark:hover{
+  background:linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%);
+  border-color:rgba(255,255,255,0.28);
+}
 
 /* hide legacy header / footer-info / carousel-dots in new layout */
 .header, .footer-info, .carousel-dots[hidden]{display:none !important}
@@ -1399,7 +1404,7 @@ body{
 }
 .work-row-strip::-webkit-scrollbar{display:none}
 .work-row-strip .strip-item{
-  flex:0 0 28%;aspect-ratio:1/1;
+  flex:0 0 32%;aspect-ratio:16/9;
   background:#161310;border-radius:0.4rem;overflow:hidden;
   scroll-snap-align:start;
 }
