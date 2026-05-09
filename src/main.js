@@ -69,8 +69,17 @@ const SECTIONS = sectionsDocs.map((s, i) => {
     counterPrefix: `${String(s.order).padStart(2, '0')} / ${String(sectionsDocs.length).padStart(2, '0')} — `,
     counterSection: s.counterLabel || cleanTitle,
     cNum: `__${String(s.order).padStart(2, '0')}`,
-    // bottom-nav label: short, no "MAD" prefix, no period
-    cTitle: cleanTitle.replace(/^MAD\s*\+?\s*/i, '') || cleanTitle,
+    // bottom-nav label: short, no "MAD" prefix, no period.
+    // If the cleaned title is empty or all-uppercase (e.g. Sanity has
+    // title:"PLUS" for the music section), prefer counterLabel which
+    // we control as a properly-cased display string ("Plus" / "Bubble"
+    // / etc). Falls back to cleanTitle when there's nothing else.
+    cTitle: (() => {
+      const stripped = cleanTitle.replace(/^MAD\s*\+?\s*/i, '').trim()
+      const isAllCaps = stripped && /[A-Z]/.test(stripped) && stripped === stripped.toUpperCase()
+      if ((!stripped || isAllCaps) && s.counterLabel) return s.counterLabel
+      return stripped || cleanTitle
+    })(),
     cSub: s.cardLabel || s.subtitle || '',
   }
 })
