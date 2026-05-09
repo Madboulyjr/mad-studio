@@ -956,30 +956,6 @@ body{
   padding-bottom:0;
 }
 
-/* ─── TOPBAR — hidden per design direction (more space for hero) ─── */
-.topbar{display:none}
-.topbar-was{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:2rem 2.4rem;
-  position:relative;z-index:5;
-}
-.topbar-logo{
-  display:inline-flex;align-items:baseline;gap:0.6rem;
-  color:var(--accent);text-decoration:none;
-}
-.topbar-logo .logo-svg{height:2.2rem;width:auto;color:var(--accent)}
-.topbar-logo .topbar-mark{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  font-size:1.3rem;letter-spacing:-0.01em;color:var(--accent);
-}
-.topbar-link{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
-  font-size:0.85rem;letter-spacing:0.06em;
-  color:var(--accent);text-decoration:none;opacity:0.8;
-  transition:opacity 0.2s ease;
-}
-.topbar-link:hover{opacity:1}
-
 /* ─── HERO — text top, avatar dominant below; full-viewport, no scroll ─── */
 .hero{
   position:relative;
@@ -1142,75 +1118,6 @@ body{
 .hero-line-sub{display:none}
 .hero-counter{display:none !important}
 
-/* ─── 3D ORB — disabled per design direction ─── */
-.orb3d, .detail-orb{display:none !important}
-.orb3d-keep-styles{
-  position:absolute;left:50%;bottom:7rem;transform:translateX(-50%);
-  width:11rem;height:11rem;
-  perspective:600px;transform-style:preserve-3d;
-  z-index:2;pointer-events:none;
-}
-.orb3d-ring{
-  position:absolute;inset:0;
-  border-radius:50%;
-  border:0.18rem solid var(--cta);
-  transform-style:preserve-3d;
-  animation:orb3dSpin 8s linear infinite;
-  box-shadow:
-    0 0 30px rgba(248, 229, 181, 0.25),
-    inset 0 0 18px rgba(248, 229, 181, 0.15),
-    inset 0 -12px 30px rgba(248, 229, 181, 0.08);
-}
-.orb3d-ring-2{
-  border-color:rgba(245, 240, 225, 0.4);
-  border-width:0.12rem;
-  animation:orb3dSpin2 12s linear infinite reverse;
-  inset:0.6rem;
-}
-.orb3d-ring-3{
-  border-color:rgba(245, 240, 225, 0.18);
-  border-width:0.08rem;
-  animation:orb3dSpin3 18s linear infinite;
-  inset:1.2rem;
-}
-.orb3d-glow{
-  position:absolute;left:50%;bottom:-1rem;
-  width:6rem;height:1.2rem;
-  transform:translateX(-50%);
-  background:radial-gradient(ellipse, rgba(248, 229, 181, 0.25) 0%, transparent 70%);
-  filter:blur(8px);
-  animation:orb3dPulse 4s ease-in-out infinite;
-}
-@keyframes orb3dSpin{
-  0% { transform: rotateX(72deg) rotateZ(0deg); }
-  50% { transform: rotateX(78deg) rotateZ(180deg); }
-  100% { transform: rotateX(72deg) rotateZ(360deg); }
-}
-@keyframes orb3dSpin2{
-  0% { transform: rotateX(75deg) rotateY(15deg) rotateZ(0deg); }
-  100% { transform: rotateX(75deg) rotateY(15deg) rotateZ(-360deg); }
-}
-@keyframes orb3dSpin3{
-  0% { transform: rotateX(70deg) rotateY(-12deg) rotateZ(0deg); }
-  100% { transform: rotateX(70deg) rotateY(-12deg) rotateZ(360deg); }
-}
-@keyframes orb3dPulse{
-  0%,100% { opacity:0.7; transform:translateX(-50%) scaleX(1); }
-  50% { opacity:1; transform:translateX(-50%) scaleX(1.15); }
-}
-@media (max-width: 768px){
-  .orb3d{width:4.6rem;height:4.6rem;bottom:auto;top:38rem}
-}
-.detail-orb{
-  display:flex;justify-content:center;
-  margin:6rem 0 4rem;height:11rem;position:relative;
-}
-.detail-orb .orb3d{position:relative;left:auto;bottom:auto;transform:none;width:7rem;height:7rem}
-@media (max-width: 768px){
-  .detail-orb{margin:4rem 0 2.5rem;height:7rem}
-  .detail-orb .orb3d{width:5rem;height:5rem}
-}
-
 /* ─── FLOATING BOTTOM PILL NAVBAR ─── */
 .bottomnav{
   position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);
@@ -1297,6 +1204,56 @@ body{
 
 /* hide legacy header / footer-info / carousel-dots in new layout */
 .header, .footer-info, .carousel-dots[hidden]{display:none !important}
+
+/* ─── 404 OVERLAY — brutalist editorial, full-viewport ─── */
+.not-found{
+  position:fixed;inset:0;z-index:200;
+  display:none;
+  background:var(--bg);
+  padding:2.5rem 2.4rem;
+  align-items:center;justify-content:center;
+  text-align:center;
+}
+.not-found.open{display:flex;animation:fadeIn 0.35s ease}
+.not-found[aria-hidden="false"]{display:flex}
+.not-found-inner{max-width:48rem}
+.not-found-num{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-weight:700;font-size:9rem;line-height:0.9;
+  letter-spacing:-0.05em;color:var(--cta);
+  margin-bottom:1.5rem;
+}
+.not-found-title{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-weight:500;font-size:4.5rem;line-height:1.05;
+  letter-spacing:-0.025em;color:var(--accent);
+  margin:0 0 1.5rem;
+}
+.not-found-title em{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;color:var(--cta);
+}
+.not-found-lead{
+  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-size:1.4rem;line-height:1.55;color:var(--accent);
+  opacity:0.85;margin:0 0 2.5rem;
+}
+.not-found-back{
+  background:var(--cta);color:#1A1815;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:1rem;letter-spacing:0;
+  padding:1rem 2rem;border-radius:999px;border:0;cursor:pointer;
+  transition:background 0.2s ease, transform 0.2s ease;
+}
+.not-found-back:hover{background:#fff;transform:translateY(-1px)}
+.not-found-back:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media (max-width: 768px){
+  .not-found{padding:2rem 1.5rem}
+  .not-found-num{font-size:6rem}
+  .not-found-title{font-size:3rem}
+  .not-found-lead{font-size:1.2rem}
+}
 
 /* ─── ENTER PILL — glass doorway, bottom-right ─── */
 .enter-pill{
@@ -1573,6 +1530,10 @@ body{
 }
 .project-nav-next .pn-arrow{background:var(--cta);color:#1A1815}
 .project-nav-next .pn-arrow:hover{background:#fff}
+/* Cross-section transition cue: tint the label cream→accent + add → emoji-free arrow */
+.project-nav-next.is-cross-section .pn-label{
+  color:var(--cta);opacity:1;
+}
 
 /* cursor — keep but in cream */
 .cursor-ring{background:var(--accent) !important}
@@ -1582,7 +1543,6 @@ body{
 /* mobile overrides for poch */
 @media (max-width: 768px){
   body{padding-bottom:8rem}
-  .topbar{padding:1.5rem 1.25rem;flex:0 0 auto}
   .hero{min-height:auto;padding:2rem 1.5rem 6rem;display:block}
   .hero .illustration{position:relative !important;height:auto !important;width:100% !important;opacity:1;margin:0 0 1.5rem;inset:auto !important;display:flex;justify-content:center}
   .hero .illustration svg{height:auto !important;max-height:30rem;width:auto;opacity:0.22}
@@ -1594,7 +1554,15 @@ body{
   .bottomnav{bottom:1rem;flex-wrap:nowrap;max-width:calc(100% - 2rem);overflow-x:auto;scrollbar-width:none}
   .bottomnav::-webkit-scrollbar{display:none}
   .bottomnav-mark{width:2.6rem;height:2.6rem;padding:0.55rem;flex-shrink:0}
-  .bottomnav-links{padding:0.3rem 0.4rem;gap:0.1rem;overflow-x:auto;scrollbar-width:none;flex-shrink:1;min-width:0}
+  /* Fade-edge mask on the scrollable links pill — visual hint that more
+     items exist beyond the visible edge. Uses CSS mask-image. */
+  .bottomnav-links{
+    padding:0.3rem 0.4rem;gap:0.1rem;
+    overflow-x:auto;scrollbar-width:none;
+    flex-shrink:1;min-width:0;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 1.2rem), transparent 100%);
+    mask-image:linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 1.2rem), transparent 100%);
+  }
   .bottomnav-links::-webkit-scrollbar{display:none}
   .bottomnav-links .nav-card{padding:0.45rem 0.85rem;font-size:0.85rem}
   .bottomnav-links .nav-card .c-title{font-size:0.85rem}
@@ -1655,32 +1623,12 @@ body{
   </svg>
 </div>
 
-<!-- TOP-LEFT MARK -->
-<header class="topbar">
-  <a class="topbar-logo" href="/">
-    <svg class="logo-svg" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
-      <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
-      <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
-    </svg>
-    <span class="topbar-mark">Studio</span>
-  </a>
-  <a class="topbar-link" href="https://beingmad.co" target="_blank">beingmad.co ↗</a>
-</header>
-
 <!-- HERO — centered conversational, illustration as backdrop -->
 <main class="hero">
   <div class="illustration" id="illustration" role="img" aria-label="Section avatar — click to enter"></div>
   <div class="hero-copy">
     <h1 class="hero-line" id="headline"></h1>
     <p class="hero-line-sub" id="subtitle"></p>
-  </div>
-  <!-- 3D rotating ring/orb (poch-style) -->
-  <div class="orb3d" aria-hidden="true">
-    <div class="orb3d-ring"></div>
-    <div class="orb3d-ring orb3d-ring-2"></div>
-    <div class="orb3d-ring orb3d-ring-3"></div>
-    <div class="orb3d-glow"></div>
   </div>
   <span class="hero-counter" id="counter" aria-live="polite" aria-atomic="true"></span>
 </main>
@@ -1704,6 +1652,16 @@ body{
   <span class="enter-pill-label" id="enter-pill-label">Enter</span>
   <span class="enter-pill-arrow" aria-hidden="true">↗</span>
 </button>
+
+<!-- 404 OVERLAY — shown for unknown URLs (e.g. /foo) -->
+<section class="not-found" id="not-found" aria-hidden="true">
+  <div class="not-found-inner">
+    <div class="not-found-num">404</div>
+    <h1 class="not-found-title">Page <em>not found.</em></h1>
+    <p class="not-found-lead">This URL doesn't lead anywhere. Maybe it moved, maybe it never existed.</p>
+    <button class="not-found-back" id="not-found-back" type="button">← Back to home</button>
+  </div>
+</section>
 
 <!-- DETAIL PAGE OVERLAY -->
 <section class="detail-page" id="detail-page" aria-hidden="true">

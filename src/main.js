@@ -191,6 +191,21 @@ const PAGES = Object.fromEntries(
   })
 )
 
+/* Global ordered list of all projects across all sections.
+   Used to power cross-section "Next Project" navigation: at the end of
+   one section we jump to the first project of the next section. Sections
+   without projects are skipped. Loops back to the very first project at
+   the very end. */
+const ALL_PROJECTS = sectionsDocs
+  .flatMap((s) => (PAGES[s.slug] && PAGES[s.slug].works.length ? PAGES[s.slug].works.map((w) => ({sectionId: s.slug, work: w})) : []))
+
+function findNextProject(sectionId, projectSlug) {
+  if (!ALL_PROJECTS.length) return null
+  const i = ALL_PROJECTS.findIndex((e) => e.sectionId === sectionId && e.work.slug === projectSlug)
+  if (i < 0) return null
+  return ALL_PROJECTS[(i + 1) % ALL_PROJECTS.length]
+}
+
 const SITE = content.siteSettings || {}
 
 /* ─── Landing page state & rendering ─────────────────────────────── */
@@ -408,14 +423,6 @@ function buildDetail(id) {
       </div>
     </div>
     ${agenciesHTML}
-    <div class="detail-orb" aria-hidden="true">
-      <div class="orb3d">
-        <div class="orb3d-ring"></div>
-        <div class="orb3d-ring orb3d-ring-2"></div>
-        <div class="orb3d-ring orb3d-ring-3"></div>
-        <div class="orb3d-glow"></div>
-      </div>
-    </div>
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
     <h2 class="section-title">${p.worksTitle}</h2>
     <div class="works-list">
@@ -546,7 +553,16 @@ function renderGalleryItem(item, gi) {
 function buildProject(works, idx, sectionId) {
   const w = works[idx]
   if (!w) return
-  const next = works[(idx + 1) % works.length]
+  // Cross-section next: at the end of Originals we jump to the first
+  // project in Bubble (or whichever section ships next). Loops globally.
+  const nextEntry = findNextProject(sectionId, w.slug)
+  const next = nextEntry ? nextEntry.work : works[(idx + 1) % works.length]
+  const nextSectionId = nextEntry ? nextEntry.sectionId : sectionId
+  const nextSection = SECTIONS.find((s) => s.id === nextSectionId)
+  const isCrossSection = nextSectionId !== sectionId
+  const nextLabel = isCrossSection
+    ? `Next · From ${nextSection ? nextSection.cTitle : nextSectionId}`
+    : 'Next Project'
   const media = w.media || []
   projectViewInner.innerHTML = `
     <div class="project-hero" data-num="${String(idx + 1).padStart(2, '0')}">
@@ -567,15 +583,16 @@ function buildProject(works, idx, sectionId) {
           : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;text-transform:uppercase;">No images yet · draft</div>`
       }
     </div>
-    <div class="project-nav-next">
+    <div class="project-nav-next${isCrossSection ? ' is-cross-section' : ''}">
       <div class="pn-block">
-        <div class="pn-label">Next Project</div>
+        <div class="pn-label">${nextLabel}</div>
         <div class="pn-title" id="pn-title">${next.title} →</div>
       </div>
       <div class="pn-arrow" id="pn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
   `
-  const goNext = () => navigate({view: 'project', id: sectionId, projectSlug: next.slug})
+  const goNext = () =>
+    navigate({view: 'project', id: nextSectionId, projectSlug: next.slug})
   document.getElementById('pn-title').addEventListener('click', goNext)
   document.getElementById('pn-arrow').addEventListener('click', goNext)
 }
@@ -619,7 +636,10 @@ detailInner.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    if (projectView.classList.contains('open')) {
+    const notFound = document.getElementById('not-found')
+    if (notFound && notFound.classList.contains('open')) {
+      navigate({view: 'landing'})
+    } else if (projectView.classList.contains('open')) {
       const sectionId = projectView.dataset.sectionId
       if (sectionId) navigate({view: 'detail', id: sectionId})
       else history.back()
@@ -660,13 +680,14 @@ function parseRoute(pathname) {
   const segs = (pathname || location.pathname).split('/').filter(Boolean)
   if (!segs.length) return {view: 'landing'}
   const id = URL_TO_ID[segs[0].toLowerCase()]
-  if (!id) return {view: 'landing'}
+  if (!id) return {view: 'notfound', path: pathname || location.pathname}
   if (segs.length === 1) return {view: 'detail', id}
   return {view: 'project', id, projectSlug: decodeURIComponent(segs[1])}
 }
 
 function urlForRoute(r) {
   if (r.view === 'landing') return '/'
+  if (r.view === 'notfound') return r.path || '/404'
   const seg = ID_TO_URL[r.id] || r.id
   if (r.view === 'project') return `/${seg}/${encodeURIComponent(r.projectSlug)}`
   return `/${seg}`
@@ -676,6 +697,7 @@ function titleForRoute(r) {
   const tagline = SITE.tagline || 'Creativity is madness with a deadline.'
   const base = `MAD Studio — ${tagline}`
   if (r.view === 'landing') return base
+  if (r.view === 'notfound') return `404 — Page not found · MAD Studio`
   const sec = SECTIONS.find((s) => s.id === r.id)
   const secTitle = sec ? sec.cTitle : r.id
   if (r.view === 'detail') return `${secTitle} — MAD Studio`
@@ -684,11 +706,34 @@ function titleForRoute(r) {
   return `${w ? w.title : r.projectSlug} — ${secTitle} — MAD Studio`
 }
 
+function setNotFoundVisible(show) {
+  const el = document.getElementById('not-found')
+  if (!el) return
+  if (show) {
+    el.classList.add('open')
+    el.setAttribute('aria-hidden', 'false')
+    document.body.style.overflow = 'hidden'
+    setEnterPillVisible(false)
+  } else {
+    el.classList.remove('open')
+    el.setAttribute('aria-hidden', 'true')
+  }
+}
+
 function applyRoute(r) {
   document.title = titleForRoute(r)
+  if (r.view === 'notfound') {
+    if (projectView.classList.contains('open')) closeProjectDOM()
+    if (detailPage.classList.contains('open')) closeDetailDOM()
+    setNotFoundVisible(true)
+    return
+  }
+  // any non-404 route: hide the 404 overlay if it was up
+  setNotFoundVisible(false)
   if (r.view === 'landing') {
     if (projectView.classList.contains('open')) closeProjectDOM()
     if (detailPage.classList.contains('open')) closeDetailDOM()
+    document.body.style.overflow = ''
     return
   }
   if (r.view === 'detail') {
@@ -727,10 +772,24 @@ window.addEventListener('popstate', (e) => {
   applyRoute(r)
 })
 
+// 404 splash → back-home button + ESC dismissal
+{
+  const backBtn = document.getElementById('not-found-back')
+  if (backBtn) {
+    backBtn.addEventListener('click', () => navigate({view: 'landing'}))
+  }
+}
+
 // Initial route — handle deep links and refresh-mid-flow
 {
   const initRoute = parseRoute()
-  history.replaceState(initRoute, '', urlForRoute(initRoute))
+  // We don't replaceState for 404 — keep the URL the user typed so they
+  // can correct it. The overlay tells them what's going on.
+  if (initRoute.view !== 'notfound') {
+    history.replaceState(initRoute, '', urlForRoute(initRoute))
+  } else {
+    history.replaceState(initRoute, '', location.pathname)
+  }
   if (initRoute.view !== 'landing') applyRoute(initRoute)
   else document.title = titleForRoute(initRoute)
 }
