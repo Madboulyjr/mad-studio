@@ -1351,6 +1351,31 @@ body{
 .bottomnav-links .nav-card:hover:not(.active){
   background:rgba(245,240,225,0.08) !important;
 }
+/* Hover preview: subtle title shimmer + arrow appears, hinting at click */
+.bottomnav-links .nav-card{
+  transition:background 0.25s ease, color 0.25s ease, padding 0.25s ease;
+}
+.bottomnav-links .nav-card::after{
+  /* Tiny hover-only ↗ arrow (separate from the main bottomnav after rule
+     which is set to display:none) */
+  display:none !important;
+}
+.bottomnav-links .nav-card .c-title{
+  position:relative;
+  transition:transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.bottomnav-links .nav-card:hover:not(.active) .c-title{
+  transform:translateY(-1px);
+}
+/* When hovering a non-active section, the ENTER pill on the right
+   updates its label to show what you'd jump to. (Not committing the
+   switch — that requires a click.) Visual nudge only. */
+@media (hover: hover){
+  /* Subtle pulse on the active card to call attention to current state */
+  .bottomnav-links .nav-card.active{
+    box-shadow:0 0 0 0.18rem rgba(208, 250, 81, 0.18);
+  }
+}
 /* hide all decorative pseudo-elements from the old card style */
 .bottomnav-links .nav-card::before,
 .bottomnav-links .nav-card::after,
@@ -1399,8 +1424,11 @@ body{
   align-items:center;justify-content:center;
   padding:4rem 6rem;
 }
-.lightbox.open{display:flex;animation:lbFadeIn 0.25s ease}
-@keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+.lightbox.open{display:flex;animation:lbFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)}
+@keyframes lbFadeIn{
+  from{opacity:0;backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px)}
+  to{opacity:1;backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px)}
+}
 .lightbox-img{
   max-width:100%;max-height:100%;
   object-fit:contain;
@@ -1408,11 +1436,21 @@ body{
   border-radius:0.4rem;
   box-shadow:0 30px 80px rgba(0,0,0,0.6);
   user-select:none;
-  animation:lbImgIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Smoother spring-like open: starts slightly down + 0.92 scale,
+     overshoots to 1 with cubic ease-out for a tactile "pop" */
+  animation:lbImgIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Ongoing transition for prev/next image swaps (set src triggers
+     a brief fade) */
+  transition:opacity 0.18s ease;
 }
+.lightbox-img.is-swapping{opacity:0}
 @keyframes lbImgIn{
-  from{opacity:0;transform:scale(0.96)}
-  to{opacity:1;transform:scale(1)}
+  from{opacity:0;transform:scale(0.92) translateY(0.8rem)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+@media (prefers-reduced-motion: reduce){
+  .lightbox.open{animation:none}
+  .lightbox-img{animation:none;transition:none}
 }
 .lightbox-close,
 .lightbox-prev,

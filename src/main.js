@@ -857,25 +857,38 @@ function closeLightbox() {
   }
 }
 
-function renderLightbox() {
+function renderLightbox(animate = false) {
   if (!lightboxImg || !lightboxImages.length) return
   const src = lightboxImages[lightboxIdx]
-  lightboxImg.src = src
-  lightboxImg.alt = `Project image ${lightboxIdx + 1} of ${lightboxImages.length}`
-  if (lightboxCounter) {
-    lightboxCounter.textContent = `${lightboxIdx + 1} / ${lightboxImages.length}`
+  const apply = () => {
+    lightboxImg.src = src
+    lightboxImg.alt = `Project image ${lightboxIdx + 1} of ${lightboxImages.length}`
+    if (lightboxCounter) {
+      lightboxCounter.textContent = `${lightboxIdx + 1} / ${lightboxImages.length}`
+    }
+  }
+  if (animate) {
+    // Brief fade between images during prev/next nav
+    lightboxImg.classList.add('is-swapping')
+    setTimeout(() => {
+      apply()
+      // Tiny RAF lets the new src kick in before we remove the fade class
+      requestAnimationFrame(() => lightboxImg.classList.remove('is-swapping'))
+    }, 180)
+  } else {
+    apply()
   }
 }
 
 function lightboxPrev() {
   if (lightboxImages.length < 2) return
   lightboxIdx = (lightboxIdx - 1 + lightboxImages.length) % lightboxImages.length
-  renderLightbox()
+  renderLightbox(true)
 }
 function lightboxNext() {
   if (lightboxImages.length < 2) return
   lightboxIdx = (lightboxIdx + 1) % lightboxImages.length
-  renderLightbox()
+  renderLightbox(true)
 }
 
 if (lightboxEl) {
