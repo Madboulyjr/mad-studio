@@ -467,28 +467,41 @@ function buildFeaturedReleaseCard(featured) {
   const meta = [featured.year, featured.label].filter(Boolean).map(escMusic).join(' · ')
   const platformPills = buildPlatformLinks(featured.platforms, null)
 
-  // Audio preview block — only rendered when an MP3 is uploaded
+  // Audio preview block — rendered only when an MP3 is uploaded.
+  // The waveform itself is generated client-side from the actual audio
+  // bytes (Web Audio API decodeAudioData → peak-sampled into ~80 SVG
+  // bars on first play). Until then we render a placeholder gradient.
   const audioBlock = featured.previewAudioUrl
-    ? `<div class="release-player" data-audio-src="${escMusic(featured.previewAudioUrl)}">
+    ? `<div class="release-player" data-audio-src="${escMusic(featured.previewAudioUrl)}" data-state="idle">
         <button class="release-play" type="button" aria-label="Play preview" data-state="paused">
           <svg class="release-play-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M6 4l14 8-14 8z"/>
+            <path d="M8 5v14l11-7z"/>
           </svg>
           <svg class="release-play-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <rect x="6" y="4" width="4" height="16" rx="1"/>
-            <rect x="14" y="4" width="4" height="16" rx="1"/>
+            <rect x="6" y="5" width="4" height="14" rx="0.5"/>
+            <rect x="14" y="5" width="4" height="14" rx="0.5"/>
+          </svg>
+          <svg class="release-play-icon-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke-dasharray="14 42" stroke-linecap="round"/>
           </svg>
         </button>
-        <div class="release-player-meta">
-          <div class="release-player-track">${escMusic(featured.title || 'Preview')}</div>
-          <div class="release-player-time"><span class="rp-cur">0:00</span> · <span class="rp-dur">—</span></div>
-        </div>
-        <div class="release-scrub" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="release-scrub-bg" aria-hidden="true">
-            ${Array.from({length: 48}).map((_, i) => `<span class="rs-bar" style="--i:${i}"></span>`).join('')}
+        <div class="release-player-body">
+          <div class="release-player-head">
+            <span class="release-player-track">${escMusic(featured.title || 'Preview')}</span>
+            <span class="release-player-time"><span class="rp-cur">0:00</span><span class="rp-sep"> / </span><span class="rp-dur">0:30</span></span>
           </div>
-          <div class="release-scrub-fill" aria-hidden="true"></div>
-          <div class="release-scrub-thumb" aria-hidden="true"></div>
+          <div class="release-scrub" role="slider" aria-label="Seek through preview" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <svg class="release-wave" viewBox="0 0 320 64" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <clipPath id="wave-clip-${Math.random().toString(36).slice(2, 8)}" class="release-wave-clip">
+                  <rect x="0" y="0" width="0" height="64" class="release-wave-clip-rect"/>
+                </clipPath>
+              </defs>
+              <g class="release-wave-bg"></g>
+              <g class="release-wave-fg"></g>
+            </svg>
+            <div class="release-wave-cursor" aria-hidden="true"></div>
+          </div>
         </div>
        </div>`
     : ''
@@ -568,14 +581,179 @@ function buildMusicEmbed(featuredOrEmbed, releases) {
 }
 
 /**
- * Wires up custom audio players inside the section page after the
- * detail HTML is injected. Each .release-player block becomes an
- * interactive play/pause + scrubber. We keep one global Audio element
- * per page (tracked in state) so opening another section pauses any
- * playing preview.
+ * Custom MAD-branded audio player.
+ *
+ * Replaces the third-party iframe + the earlier "decorative bars"
+ * scrubber. The waveform is REAL — peak-sampled from the actual MP3
+ * via Web Audio API's decodeAudioData on first play, then rendered
+ * as crisp SVG rects. Cached in localStorage by URL so revisits load
+ * instantly without re-decoding.
+ *
+ * Layout:
+ *   [▶] TITLE                                     0:12 / 0:30
+ *       ─────────────────●─────────────────────
+ *       (waveform: red below progress, dim cream above; click to seek)
+ *
+ * Interaction:
+ *   • Click the play button → toggles playback
+ *   • Click anywhere on the waveform → seeks to that position
+ *   • Drag along the waveform → continuous scrub
+ *   • Keyboard ←/→ → ±5% seek; space/enter → toggle
+ *   • Tab focus shows a visible ring (a11y)
+ *
+ * State machine (data-state on .release-player):
+ *   idle      → before first interaction; waveform shows placeholder
+ *   loading   → fetching/decoding the MP3
+ *   ready     → waveform decoded, paused
+ *   playing   → actively playing
+ *   error     → decode/playback failed (shows fallback gradient)
  */
-const _audioState = {audio: null, currentBtn: null}
 
+const _audioState = {audio: null, currentSrc: null}
+const _waveCache = new Map() // src → number[] (in-memory)
+const WAVE_BARS = 80
+const WAVE_LS_PREFIX = 'mad-wave-v1:'
+
+/* Try localStorage so the same MP3 doesn't re-decode on revisit. */
+function readCachedPeaks(src) {
+  if (_waveCache.has(src)) return _waveCache.get(src)
+  try {
+    const raw = localStorage.getItem(WAVE_LS_PREFIX + src)
+    if (!raw) return null
+    const peaks = JSON.parse(raw)
+    if (Array.isArray(peaks) && peaks.length === WAVE_BARS) {
+      _waveCache.set(src, peaks)
+      return peaks
+    }
+  } catch (_) {}
+  return null
+}
+
+function writeCachedPeaks(src, peaks) {
+  _waveCache.set(src, peaks)
+  try {
+    localStorage.setItem(WAVE_LS_PREFIX + src, JSON.stringify(peaks))
+  } catch (_) {
+    // localStorage full / blocked — that's fine, in-memory cache still works
+  }
+}
+
+/**
+ * Decode the MP3 via Web Audio API and downsample into WAVE_BARS peak
+ * values, each in [0, 1]. Returns null on failure (CORS, decode error,
+ * unsupported format) — the caller falls back to the placeholder.
+ */
+async function decodeAudioPeaks(src) {
+  const cached = readCachedPeaks(src)
+  if (cached) return cached
+  try {
+    const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext
+    // OfflineAudioContext lets us decode without spinning up output hardware.
+    const r = await fetch(src, {mode: 'cors'})
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const buf = await r.arrayBuffer()
+    // We need a regular AudioContext for decodeAudioData — Offline can't decode.
+    const AC = window.AudioContext || window.webkitAudioContext
+    if (!AC) return null
+    const decodeCtx = new AC()
+    const audio = await decodeCtx.decodeAudioData(buf)
+    decodeCtx.close && decodeCtx.close()
+    const channelData = audio.getChannelData(0)
+    const blockSize = Math.floor(channelData.length / WAVE_BARS)
+    const peaks = new Array(WAVE_BARS)
+    let peakMax = 0
+    for (let i = 0; i < WAVE_BARS; i++) {
+      let max = 0
+      const start = i * blockSize
+      for (let j = 0; j < blockSize; j++) {
+        const v = Math.abs(channelData[start + j])
+        if (v > max) max = v
+      }
+      peaks[i] = max
+      if (max > peakMax) peakMax = max
+    }
+    // Normalize to 0..1 range so quiet tracks fill the same height
+    if (peakMax > 0) {
+      for (let i = 0; i < WAVE_BARS; i++) peaks[i] = peaks[i] / peakMax
+    }
+    writeCachedPeaks(src, peaks)
+    return peaks
+  } catch (e) {
+    return null
+  }
+}
+
+/**
+ * Render peaks as two layered groups of SVG rects: a dim "background"
+ * showing the unplayed portion + a bright "foreground" clipped by the
+ * progress rect. The clip-path width is animated as playback advances
+ * (cheap, GPU-accelerated, and looks like the played region is
+ * literally washing color across the waveform).
+ */
+function renderWaveform(player, peaks) {
+  const svg = player.querySelector('.release-wave')
+  if (!svg) return
+  const bgGroup = svg.querySelector('.release-wave-bg')
+  const fgGroup = svg.querySelector('.release-wave-fg')
+  if (!bgGroup || !fgGroup) return
+
+  // Clear any prior render
+  bgGroup.innerHTML = ''
+  fgGroup.innerHTML = ''
+
+  const W = 320
+  const H = 64
+  const gap = 2
+  const barWidth = (W - gap * (peaks.length - 1)) / peaks.length
+  const minBarH = 2 // never zero — flat-line moments still register
+  const fragmentBg = document.createDocumentFragment()
+  const fragmentFg = document.createDocumentFragment()
+  for (let i = 0; i < peaks.length; i++) {
+    const h = Math.max(minBarH, peaks[i] * H)
+    const x = i * (barWidth + gap)
+    const y = (H - h) / 2
+    const bgBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    bgBar.setAttribute('x', String(x.toFixed(2)))
+    bgBar.setAttribute('y', String(y.toFixed(2)))
+    bgBar.setAttribute('width', String(barWidth.toFixed(2)))
+    bgBar.setAttribute('height', String(h.toFixed(2)))
+    bgBar.setAttribute('rx', '0.6')
+    fragmentBg.appendChild(bgBar)
+    const fgBar = bgBar.cloneNode()
+    fragmentFg.appendChild(fgBar)
+  }
+  bgGroup.appendChild(fragmentBg)
+  fgGroup.appendChild(fragmentFg)
+
+  // Width-clip the fg group to reveal it as playback progresses
+  const clipRect = svg.querySelector('.release-wave-clip-rect')
+  const clipPath = svg.querySelector('clipPath')
+  if (clipPath && fgGroup) {
+    fgGroup.setAttribute('clip-path', `url(#${clipPath.id})`)
+  }
+  if (clipRect) clipRect.setAttribute('width', '0')
+}
+
+function setProgress(player, pct) {
+  const svg = player.querySelector('.release-wave')
+  const cursor = player.querySelector('.release-wave-cursor')
+  const clipRect = svg && svg.querySelector('.release-wave-clip-rect')
+  if (clipRect) clipRect.setAttribute('width', String((pct / 100) * 320))
+  if (cursor) cursor.style.left = `${pct}%`
+}
+
+function fmtTime(s) {
+  if (!isFinite(s) || s < 0) s = 0
+  const m = Math.floor(s / 60)
+  const sec = Math.floor(s % 60)
+  return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
+/**
+ * Bind player elements inside `scopeEl`. Each player gets its own
+ * close-over state but they all share `_audioState.audio` so only one
+ * track plays at a time.
+ */
 function bindReleasePlayers(scopeEl) {
   if (!scopeEl) return
   scopeEl.querySelectorAll('.release-player').forEach((player) => {
@@ -583,97 +761,131 @@ function bindReleasePlayers(scopeEl) {
     if (!src) return
     const btn = player.querySelector('.release-play')
     const scrub = player.querySelector('.release-scrub')
-    const fill = player.querySelector('.release-scrub-fill')
-    const thumb = player.querySelector('.release-scrub-thumb')
     const curEl = player.querySelector('.rp-cur')
     const durEl = player.querySelector('.rp-dur')
+    if (!btn || !scrub) return
 
-    const fmtTime = (s) => {
-      if (!isFinite(s) || s < 0) s = 0
-      const m = Math.floor(s / 60)
-      const sec = Math.floor(s % 60)
-      return `${m}:${sec.toString().padStart(2, '0')}`
+    let waveformReady = false
+    let isDragging = false
+
+    const setState = (s) => {
+      player.dataset.state = s
     }
 
-    let audio = _audioState.audio
     const ensureAudio = () => {
-      if (!audio || audio.src !== src) {
-        // Switching tracks → tear down previous listeners
-        if (_audioState.audio) {
-          _audioState.audio.pause()
-          _audioState.audio.src = ''
+      let a = _audioState.audio
+      if (!a || _audioState.currentSrc !== src) {
+        if (a) {
+          a.pause()
+          a.src = ''
         }
-        audio = new Audio(src)
-        audio.preload = 'metadata'
-        _audioState.audio = audio
+        a = new Audio(src)
+        a.preload = 'metadata'
+        a.crossOrigin = 'anonymous'
+        _audioState.audio = a
+        _audioState.currentSrc = src
+        a.addEventListener('timeupdate', updateUI)
+        a.addEventListener('loadedmetadata', updateUI)
+        a.addEventListener('ended', () => {
+          a.currentTime = 0
+          updateUI()
+        })
+        a.addEventListener('play', () => setState(waveformReady ? 'playing' : 'loading'))
+        a.addEventListener('pause', () => setState(waveformReady ? 'ready' : 'idle'))
+        a.addEventListener('error', () => setState('error'))
       }
-      return audio
+      return a
     }
 
     const updateUI = () => {
       const a = _audioState.audio
-      if (!a || a.src !== src) {
-        btn.dataset.state = 'paused'
-        if (fill) fill.style.transform = 'scaleX(0)'
-        if (thumb) thumb.style.left = '0%'
-        if (curEl) curEl.textContent = '0:00'
-        return
-      }
-      btn.dataset.state = a.paused ? 'paused' : 'playing'
-      btn.setAttribute('aria-label', a.paused ? 'Play preview' : 'Pause preview')
-      const dur = isFinite(a.duration) ? a.duration : 0
-      const pct = dur > 0 ? (a.currentTime / dur) * 100 : 0
-      if (fill) fill.style.transform = `scaleX(${pct / 100})`
-      if (thumb) thumb.style.left = `${pct}%`
-      if (curEl) curEl.textContent = fmtTime(a.currentTime)
-      if (durEl) durEl.textContent = dur > 0 ? fmtTime(dur) : '—'
+      const isOurs = a && _audioState.currentSrc === src
+      btn.dataset.state = isOurs && !a.paused ? 'playing' : 'paused'
+      btn.setAttribute('aria-label', isOurs && !a.paused ? 'Pause preview' : 'Play preview')
+      const dur = isOurs && isFinite(a.duration) ? a.duration : 30
+      const cur = isOurs ? a.currentTime : 0
+      const pct = dur > 0 ? (cur / dur) * 100 : 0
+      setProgress(player, pct)
+      if (curEl) curEl.textContent = fmtTime(cur)
+      if (durEl) durEl.textContent = dur > 0 ? fmtTime(dur) : '0:30'
       scrub.setAttribute('aria-valuenow', String(Math.round(pct)))
     }
 
-    const attachListeners = (a) => {
-      a.addEventListener('timeupdate', updateUI)
-      a.addEventListener('loadedmetadata', updateUI)
-      a.addEventListener('ended', updateUI)
-      a.addEventListener('play', updateUI)
-      a.addEventListener('pause', updateUI)
+    /* Decode the waveform once. Triggered on hover OR first play —
+       whichever comes first — so most users see real bars before
+       they ever click play. */
+    let decoding = null
+    const ensureWaveform = () => {
+      if (waveformReady || decoding) return decoding
+      setState('loading')
+      decoding = decodeAudioPeaks(src).then((peaks) => {
+        if (peaks) {
+          renderWaveform(player, peaks)
+          waveformReady = true
+          setState((_audioState.audio && _audioState.currentSrc === src && !_audioState.audio.paused) ? 'playing' : 'ready')
+        } else {
+          // Decode failed (CORS or codec) → fall back to placeholder gradient
+          setState('error')
+        }
+      })
+      return decoding
     }
 
-    btn.addEventListener('click', () => {
+    // Decode early if the user hovers — feels instant when they click play
+    player.addEventListener('mouseenter', ensureWaveform, {once: true})
+    player.addEventListener('focusin', ensureWaveform, {once: true})
+
+    btn.addEventListener('click', async () => {
       const a = ensureAudio()
-      if (!a._mad_listenersBound) {
-        attachListeners(a)
-        a._mad_listenersBound = true
-      }
-      _audioState.currentBtn = btn
-      if (a.paused) a.play().catch(() => {})
+      ensureWaveform()
+      if (a.paused) a.play().catch(() => setState('error'))
       else a.pause()
     })
 
-    // Click-to-seek on the scrub bar
-    const seekFromEvent = (e) => {
-      const a = _audioState.audio
-      if (!a || a.src !== src || !isFinite(a.duration) || a.duration <= 0) return
+    // Click-to-seek + drag-scrub
+    const pctFromEvent = (e) => {
       const rect = scrub.getBoundingClientRect()
       const x = (e.clientX != null ? e.clientX : e.touches && e.touches[0] && e.touches[0].clientX) || 0
-      const pct = Math.min(1, Math.max(0, (x - rect.left) / rect.width))
-      a.currentTime = pct * a.duration
+      return Math.min(1, Math.max(0, (x - rect.left) / rect.width))
+    }
+    const seekTo = (frac) => {
+      const a = ensureAudio()
+      const dur = isFinite(a.duration) ? a.duration : 30
+      a.currentTime = frac * dur
       updateUI()
     }
-    scrub.addEventListener('click', seekFromEvent)
-    // Keyboard accessibility on scrub
+    scrub.addEventListener('pointerdown', (e) => {
+      e.preventDefault()
+      isDragging = true
+      scrub.setPointerCapture && scrub.setPointerCapture(e.pointerId)
+      seekTo(pctFromEvent(e))
+    })
+    scrub.addEventListener('pointermove', (e) => {
+      if (!isDragging) return
+      seekTo(pctFromEvent(e))
+    })
+    scrub.addEventListener('pointerup', (e) => {
+      isDragging = false
+      try { scrub.releasePointerCapture && scrub.releasePointerCapture(e.pointerId) } catch (_) {}
+    })
+    scrub.addEventListener('pointercancel', () => { isDragging = false })
+
+    // Keyboard accessibility
     scrub.addEventListener('keydown', (e) => {
-      const a = _audioState.audio
-      if (!a || a.src !== src || !isFinite(a.duration)) return
-      const step = a.duration * 0.05 // 5% per key
+      const a = ensureAudio()
+      const dur = isFinite(a.duration) ? a.duration : 30
+      const step = dur * 0.05 // 5% per key
       if (e.key === 'ArrowLeft') {
+        e.preventDefault()
         a.currentTime = Math.max(0, a.currentTime - step)
         updateUI()
       } else if (e.key === 'ArrowRight') {
-        a.currentTime = Math.min(a.duration, a.currentTime + step)
+        e.preventDefault()
+        a.currentTime = Math.min(dur, a.currentTime + step)
         updateUI()
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault()
-        if (a.paused) a.play().catch(() => {})
+        if (a.paused) a.play().catch(() => setState('error'))
         else a.pause()
       }
     })
