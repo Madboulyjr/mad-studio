@@ -86,15 +86,17 @@ await sharp(Buffer.from(ogSvg))
   .toFile(path.join(OUT, 'og-cover.png'))
 
 // ─── Apple Touch Icon (180×180) ──────────────────────────────────────────────
-// iOS home-screen pinning. Black background + cream M, no text.
+// iOS home-screen pinning. Black background + cream M ONLY (no full MAD).
 // iOS auto-rounds corners; we ship square + iOS rounds it.
+// M art-coord bounds: x[39.25,236.77] y[329.84,469.23], center (138,400).
+// Scale 0.72× brings the M to ~142×100 px on a 180×180 canvas, leaving
+// generous padding so it reads well even after iOS scales it down for
+// home-screen icons.
 const touchIconSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
   <rect width="180" height="180" fill="#0A0A0A"/>
-  <g transform="translate(24 70) scale(0.25) translate(-30 -320)" fill="#F5F0E1">
+  <g transform="translate(90 90) scale(0.72) translate(-138 -400)" fill="#F5F0E1">
     <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
-    <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
-    <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
   </g>
 </svg>
 `
