@@ -215,7 +215,12 @@ function buildNav() {
       <div class="c-enter">Enter</div>
     `
     d.addEventListener('click', () => {
-      switchTo(i)
+      // If user is currently on a detail/project overlay, navigate to that section's detail.
+      // Otherwise (on landing) just switch the active section — landing stays at "/".
+      const onOverlay =
+        detailPage.classList.contains('open') || projectView.classList.contains('open')
+      if (onOverlay) navigate({view: 'detail', id: s.id})
+      else switchTo(i)
     })
     nav.appendChild(d)
   })
@@ -436,6 +441,14 @@ function openDetailDOM(id) {
   const idx = SECTIONS.findIndex((s) => s.id === id)
   if (idx >= 0 && idx !== current) switchTo(idx)
   buildDetail(id)
+  // sync the topbar sub-label ("Originals" / "Bubble" / "MAD+" / "Vision")
+  const sec = SECTIONS.find((s) => s.id === id)
+  if (sec) {
+    const subEl = detailPage.querySelector('.detail-logo .sub')
+    if (subEl) subEl.textContent = sec.cTitle
+    const subEl2 = projectView.querySelector('.detail-logo .sub')
+    if (subEl2) subEl2.textContent = sec.cTitle
+  }
   detailPage.classList.add('open')
   detailPage.setAttribute('aria-hidden', 'false')
   detailPage.dataset.sectionId = id
