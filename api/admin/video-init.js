@@ -37,10 +37,12 @@ export default async function handler(req, res) {
         cors_origin: '*',
         new_asset_settings: {
           playback_policy: ['public'],
-          mp4_support: 'standard',
-          encoding_tier: 'baseline',
+          // Don't set mp4_support: 'standard' — deprecated on Basic tier.
+          // Default (none) is fine since the public site uses HLS streaming
+          // via <mux-player>, which handles adaptive playback natively.
+          // Don't set encoding_tier — Mux picks smart defaults per token.
         },
-        timeout: 3600, // upload URL valid for 1 hour
+        timeout: 3600,
       }),
     })
     const json = await r.json()
