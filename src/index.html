@@ -701,13 +701,29 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 body::after{content:'';position:fixed;inset:0;background:var(--accent);opacity:0;pointer-events:none;z-index:999;mix-blend-mode:difference}
 body.switching::after{animation:flashBurst 0.45s ease-out}
 
-@keyframes invertFlash{
-  0%,100%{filter:none}
-  10%{filter:invert(1) hue-rotate(180deg)}
-  25%{filter:invert(1) hue-rotate(180deg)}
-  40%{filter:none}
+/* old red/cyan glitch transitions DISABLED — replaced with subtle poch-style transitions */
+@keyframes invertFlash{0%,100%{filter:none}}
+body.switching{animation:none}
+.switching .headline{animation:none !important}
+.switching .illustration svg{animation:none !important}
+.switching .subtitle{animation:none !important}
+body::after{display:none}
+
+/* New poch-style section transition: avatar fades up + scales slightly on swap */
+@keyframes heroSwitchAvatar{
+  0%{opacity:0;transform:translateY(1.5rem) scale(0.95)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
 }
-body.switching{animation:invertFlash 0.5s ease-out}
+.hero .illustration .avatar-stage{
+  animation:heroSwitchAvatar 0.6s cubic-bezier(.2,.7,.2,1) both;
+}
+/* hero text fade — uses the existing .fading toggle in JS */
+.hero-line, .hero-line-sub{
+  transition:opacity 0.35s cubic-bezier(.2,.7,.2,1), transform 0.45s cubic-bezier(.2,.7,.2,1);
+}
+.hero-line.fading, .hero-line-sub.fading{
+  opacity:0 !important;transform:translateY(0.4rem);
+}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}
@@ -1023,16 +1039,16 @@ body{
 
 /* Per-section scale + vertical offset so all avatars match MAD+'s size & placement */
 .illustration[data-id="originals"] .avatar3d{
-  --avatar-base-scale:1.05;--avatar-scale:1.05;--avatar-base-y:0px;
+  --avatar-base-scale:1.32;--avatar-scale:1.32;--avatar-base-y:0px;
 }
 .illustration[data-id="bubble"] .avatar3d{
-  --avatar-base-scale:1.05;--avatar-scale:1.05;--avatar-base-y:0px;
+  --avatar-base-scale:1.32;--avatar-scale:1.32;--avatar-base-y:0px;
 }
 .illustration[data-id="music"] .avatar3d{
-  --avatar-base-scale:0.92;--avatar-scale:0.92;--avatar-base-y:0px;
+  --avatar-base-scale:1.15;--avatar-scale:1.15;--avatar-base-y:0px;
 }
 .illustration[data-id="vision"] .avatar3d{
-  --avatar-base-scale:1.02;--avatar-scale:1.02;--avatar-base-y:0px;
+  --avatar-base-scale:1.28;--avatar-scale:1.28;--avatar-base-y:0px;
 }
 
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
@@ -1094,20 +1110,17 @@ body{
 }
 .hero-line{
   font-family:'Hanken Grotesk',system-ui,sans-serif;
-  font-weight:500;font-size:3.4rem;line-height:1.08;
-  letter-spacing:-0.025em;color:var(--accent);
+  font-weight:500;font-size:4rem;line-height:1.06;
+  letter-spacing:-0.028em;color:var(--accent);
   white-space:normal;text-transform:none;
-  margin-bottom:0.7rem;text-shadow:none;
+  margin-bottom:0.4rem;text-shadow:none;
+  max-width:64rem;
 }
 .hero-line em, .hero-line .accent{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   letter-spacing:-0.01em;color:var(--cta);
 }
-.hero-line-sub{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
-  font-size:1.45rem;line-height:1.4;color:var(--accent-soft);
-  max-width:46rem;margin:0 auto;
-}
+.hero-line-sub{display:none}
 .hero-counter{display:none !important}
 
 /* ─── 3D ORB — disabled per design direction ─── */
