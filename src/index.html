@@ -76,6 +76,23 @@ body{
 /* loading: keep body invisible, splash overlay handles the visual */
 body.loading{opacity:1}
 
+/* ─── SKIP LINK — keyboard users skip the bottom navbar tab cycle ─── */
+.skip-link{
+  position:fixed;top:1rem;left:1rem;
+  z-index:10000;
+  background:var(--cta);color:#1A1815;
+  padding:0.7rem 1.4rem;border-radius:999px;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:0.9rem;text-decoration:none;
+  /* Hidden offscreen until focused */
+  transform:translateY(-200%);
+  transition:transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.skip-link:focus,.skip-link:focus-visible{
+  transform:translateY(0);
+  outline:0.16rem solid var(--accent);outline-offset:0.18rem;
+}
+
 /* ─── GLOBAL FOCUS RING — accessibility fallback ─────────────────
    Per ui-ux-pro-max accessibility rules, every interactive element
    needs a visible focus indicator. Most components have their own,
@@ -2246,7 +2263,10 @@ body{
   /* Fade-edge mask on the scrollable links pill — visual hint that more
      items exist beyond the visible edge. Uses CSS mask-image. */
   .bottomnav-links{
-    padding:0.3rem 0.4rem;gap:0.1rem;
+    /* Increased gap from 0.1rem (1.6px) → 0.5rem (8px) per ui-ux-pro-max
+       touch-spacing rule: adjacent touch targets need ≥ 8px gap to
+       avoid mis-taps. */
+    padding:0.3rem 0.5rem;gap:0.5rem;
     overflow-x:auto;scrollbar-width:none;
     flex-shrink:1;min-width:0;
     -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 1.2rem, #000 calc(100% - 1.2rem), transparent 100%);
@@ -2297,6 +2317,10 @@ body{
 </head>
 <body class="loading">
 
+<!-- Skip-to-content link — first focusable element when tabbing.
+     Hidden visually until focused (per ui-ux-pro-max a11y rule). -->
+<a class="skip-link" href="#main">Skip to main content</a>
+
 <noscript>
   <style>
     .splash{display:none !important}
@@ -2330,7 +2354,7 @@ body{
 </div>
 
 <!-- HERO — centered conversational, illustration as backdrop -->
-<main class="hero">
+<main class="hero" id="main">
   <div class="illustration" id="illustration" role="img" aria-label="Section avatar — click to enter"></div>
   <div class="hero-copy">
     <h1 class="hero-line" id="headline"></h1>
