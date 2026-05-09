@@ -1737,6 +1737,96 @@ body{
   font-family:'Hanken Grotesk',sans-serif;font-weight:500;
   font-size:0.82rem;letter-spacing:0;text-transform:none;
 }
+
+/* ─── CASE STUDY BLOCKS — render between hero and gallery ─── */
+/* Credits line: role + agency, sits under title */
+.p-credits{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-size:1.3rem;line-height:1.4;color:var(--accent);
+  opacity:0.75;margin:0 0 1.5rem;
+}
+.p-credits strong{
+  font-family:'Hanken Grotesk',sans-serif;font-style:normal;
+  font-weight:600;color:var(--cta);opacity:1;
+}
+/* Outcome stat row — biggest credibility unlock per case-study research */
+.p-outcome{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr));
+  gap:0.8rem;
+  margin:0 0 4rem;
+  padding-top:2rem;border-top:0.08rem solid var(--line);
+}
+.p-stat{
+  background:#1A1815;
+  border:0.08rem solid var(--line);
+  border-radius:1rem;
+  padding:2rem 1.6rem;
+}
+.p-stat-num{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:3.6rem;line-height:0.9;letter-spacing:-0.04em;
+  color:var(--cta);
+  margin-bottom:0.6rem;
+}
+.p-stat-label{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-size:1.05rem;line-height:1.35;color:var(--accent);opacity:0.85;
+}
+/* Generic case-study text block (problem, constraints, etc.) */
+.p-block{margin:0 0 3.5rem}
+.p-block-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent-soft);margin-bottom:1rem;
+}
+.p-block-body{
+  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-size:1.4rem;line-height:1.55;color:var(--accent);
+  opacity:0.9;max-width:48rem;margin:0;
+}
+.p-constraint-tags{display:flex;flex-wrap:wrap;gap:0.5rem}
+.p-constraint-tags span{
+  background:#1A1815;border:0;color:var(--accent);
+  padding:0.5rem 1rem;border-radius:999px;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:0.9rem;
+}
+.p-award-list{display:flex;flex-wrap:wrap;gap:0.6rem 1.4rem}
+.p-award-list span{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1.05rem;color:var(--cta);
+}
+/* External case-study link (bottom of project page, before next-nav) */
+.p-external{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  margin:2rem 0 4rem;
+  padding:1rem 2rem;
+  background:transparent;color:var(--accent);
+  border:0.08rem solid var(--line);border-radius:999px;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1rem;text-decoration:none;
+  transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.p-external:hover{
+  background:var(--accent);color:var(--bg);border-color:transparent;
+  transform:translateY(-1px);
+}
+
+@media (max-width: 768px){
+  .p-credits{font-size:1.1rem;margin-bottom:1.2rem}
+  .p-outcome{
+    grid-template-columns:repeat(2, 1fr);gap:0.6rem;
+    margin-bottom:2.5rem;padding-top:1.5rem;
+  }
+  .p-stat{padding:1.4rem 1.2rem}
+  .p-stat-num{font-size:2.4rem;margin-bottom:0.4rem}
+  .p-stat-label{font-size:0.9rem}
+  .p-block{margin-bottom:2.5rem}
+  .p-block-body{font-size:1.15rem}
+  .p-award-list span{font-size:0.95rem}
+  .p-external{font-size:0.9rem;padding:0.85rem 1.4rem}
+}
 .project-gallery .g-item{
   background:#161310;border:0;border-radius:0.6rem;overflow:hidden;
 }

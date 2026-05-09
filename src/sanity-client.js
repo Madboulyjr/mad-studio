@@ -32,6 +32,7 @@ const QUERY = `{
     "sectionSlug": section->slug.current,
     title, year, caption, tags,
     coverImage,
+    caseStudy,
     media[]{
       ...,
       _type,

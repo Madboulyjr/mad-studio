@@ -51,6 +51,88 @@ export const project = {
       options: {layout: 'tags'},
       description: 'e.g. "Art Direction", "Creative Direction", "360 Campaign"',
     },
+
+    // ─── CASE STUDY FIELDS ─── (per 2026 portfolio best practice: lead with results)
+    {
+      name: 'caseStudy',
+      title: 'Case study',
+      type: 'object',
+      description: 'Optional structured case-study fields. Render in priority order on the project page: outcome → role → problem → constraints → process.',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {
+          name: 'role',
+          title: 'Your role',
+          type: 'string',
+          description: 'e.g. "Art Direction · Creative Direction" — shown on the project hero',
+        },
+        {
+          name: 'agency',
+          title: 'Agency / collaborator credit',
+          type: 'string',
+          description: 'e.g. "with Wunderman Thompson MENA" — shown after role',
+        },
+        {
+          name: 'client',
+          title: 'Client',
+          type: 'string',
+          description: 'e.g. "BIOLAB" or "Vodafone Egypt"',
+        },
+        {
+          name: 'outcome',
+          title: 'Outcome / impact metrics',
+          type: 'array',
+          of: [
+            {
+              type: 'object',
+              fields: [
+                {name: 'metric', title: 'Metric', type: 'string', description: 'e.g. "37%" or "8M"'},
+                {name: 'label', title: 'Label', type: 'string', description: 'e.g. "lift in completion rate" or "regional reach"'},
+              ],
+              preview: {select: {title: 'metric', subtitle: 'label'}},
+            },
+          ],
+          description: '2–4 metrics shown as a stat row above the gallery. Leads with results — ✨ biggest credibility unlock for case studies.',
+          validation: (Rule) => Rule.max(4),
+        },
+        {
+          name: 'problem',
+          title: 'Problem statement',
+          type: 'text',
+          rows: 3,
+          description: 'What did the brand need? 1–2 sentences. e.g. "BIOLAB needed to feel clinical AND warm — without losing scientific authority."',
+        },
+        {
+          name: 'constraints',
+          title: 'Constraints',
+          type: 'array',
+          of: [{type: 'string'}],
+          options: {layout: 'tags'},
+          description: 'Time/budget/scope limits — adds credibility. e.g. "8-week timeline", "Single art director", "Print + digital + OOH"',
+        },
+        {
+          name: 'process',
+          title: 'Process notes (optional rich-text)',
+          type: 'array',
+          of: [{type: 'block'}],
+          description: 'Optional. Process narrative shown after the gallery. Keep tight — recruiters scan, they do not read.',
+        },
+        {
+          name: 'awards',
+          title: 'Awards / recognition',
+          type: 'array',
+          of: [{type: 'string'}],
+          options: {layout: 'tags'},
+          description: 'e.g. "Cannes Bronze 2024", "D&AD Wood Pencil"',
+        },
+        {
+          name: 'externalUrl',
+          title: 'External case study / press URL',
+          type: 'url',
+          description: 'Optional link to a fuller writeup, press article, or live project.',
+        },
+      ],
+    },
     {
       name: 'coverImage',
       title: 'Cover / preview image',

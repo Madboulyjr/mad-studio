@@ -185,6 +185,7 @@ const PAGES = Object.fromEntries(
         tags: p.tags || [],
         coverUrl: coverImageUrl(p),
         media: p.media || [],
+        caseStudy: p.caseStudy || null,
       }))
     return [
       s.slug,
@@ -683,6 +684,46 @@ function buildProject(works, idx, sectionId) {
     ? `Next · From ${nextSection ? nextSection.cTitle : nextSectionId}`
     : 'Next Project'
   const media = w.media || []
+
+  // ─── Case study fields (all optional; only render blocks that have data) ───
+  const cs = w.caseStudy || {}
+  const credits = [cs.role, cs.agency].filter(Boolean).join(' · ')
+  const outcomeHTML = (cs.outcome && cs.outcome.length)
+    ? `<div class="p-outcome">
+         ${cs.outcome.map((o) => `
+           <div class="p-stat">
+             <div class="p-stat-num">${o.metric || ''}</div>
+             <div class="p-stat-label">${o.label || ''}</div>
+           </div>
+         `).join('')}
+       </div>`
+    : ''
+  const problemHTML = cs.problem
+    ? `<div class="p-block p-problem">
+         <div class="p-block-label">— The Problem</div>
+         <p class="p-block-body">${cs.problem}</p>
+       </div>`
+    : ''
+  const constraintsHTML = (cs.constraints && cs.constraints.length)
+    ? `<div class="p-block p-constraints">
+         <div class="p-block-label">— Constraints</div>
+         <div class="p-constraint-tags">
+           ${cs.constraints.map((c) => `<span>${c}</span>`).join('')}
+         </div>
+       </div>`
+    : ''
+  const awardsHTML = (cs.awards && cs.awards.length)
+    ? `<div class="p-block p-awards">
+         <div class="p-block-label">— Recognition</div>
+         <div class="p-award-list">
+           ${cs.awards.map((a) => `<span>★ ${a}</span>`).join('')}
+         </div>
+       </div>`
+    : ''
+  const externalHTML = cs.externalUrl
+    ? `<a class="p-external" href="${cs.externalUrl}" target="_blank" rel="noopener">View full case study ↗</a>`
+    : ''
+
   projectViewInner.innerHTML = `
     <div class="project-hero" data-num="${String(idx + 1).padStart(2, '0')}">
       <div class="p-top">
@@ -690,11 +731,15 @@ function buildProject(works, idx, sectionId) {
         <span class="p-year-top">${w.year || ''}</span>
       </div>
       <h1 class="p-title">${w.title}</h1>
+      ${credits ? `<div class="p-credits">${credits}${cs.client ? ` · for <strong>${cs.client}</strong>` : ''}</div>` : ''}
       <div class="p-meta-row">
         ${w.caption ? `<p class="p-caption">${w.caption}</p>` : '<div></div>'}
         <div class="p-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
       </div>
     </div>
+    ${outcomeHTML}
+    ${problemHTML}
+    ${constraintsHTML}
     <div class="project-gallery">
       ${
         media.length
@@ -702,6 +747,8 @@ function buildProject(works, idx, sectionId) {
           : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;text-transform:uppercase;">No images yet · draft</div>`
       }
     </div>
+    ${awardsHTML}
+    ${externalHTML}
     <div class="project-nav-next${isCrossSection ? ' is-cross-section' : ''}">
       <div class="pn-block">
         <div class="pn-label">${nextLabel}</div>

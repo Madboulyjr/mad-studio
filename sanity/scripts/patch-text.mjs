@@ -51,13 +51,23 @@ async function patchSections() {
 }
 
 async function patchProjects() {
-  console.log('\nPatching projects (caption only)…')
+  console.log('\nPatching projects (caption + caseStudy)…')
   for (const p of ORIGINALS_PROJECTS) {
+    const patchData = {
+      caption: p.caption,
+      year: p.year,
+      tags: p.tags,
+    }
+    // Only set caseStudy if seed-data has one — leaves manually edited
+    // caseStudy fields in the Studio untouched for projects that haven't
+    // been spec'd yet in seed-data.
+    if (p.caseStudy) patchData.caseStudy = p.caseStudy
     await client
       .patch(`project-${p.slug}`)
-      .set({caption: p.caption, year: p.year, tags: p.tags})
+      .set(patchData)
       .commit()
-    console.log(`  ✓ ${p.slug}`)
+    const tag = p.caseStudy ? '✦ +case-study' : ''
+    console.log(`  ✓ ${p.slug}  ${tag}`)
   }
 }
 
