@@ -52,7 +52,7 @@ const ILLUS = Object.fromEntries(
 // 3D PNG avatar overrides — when a slug is here, we render the PNG instead of the SVG
 const AVATAR_PNG = {
   originals: '/avatars/originals.png',
-  // bubble: '/avatars/bubble.png',  (add when user provides)
+  bubble: '/avatars/bubble.png',
   // music: '/avatars/music.png',
   // vision: '/avatars/vision.png',
 }
