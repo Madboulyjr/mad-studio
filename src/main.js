@@ -431,18 +431,23 @@ function buildDetail(id) {
   `
 }
 
-function openDetail(id) {
+function openDetailDOM(id) {
+  // sync landing's selected section to match (so closing detail returns to the right one)
+  const idx = SECTIONS.findIndex((s) => s.id === id)
+  if (idx >= 0 && idx !== current) switchTo(idx)
   buildDetail(id)
   detailPage.classList.add('open')
   detailPage.setAttribute('aria-hidden', 'false')
+  detailPage.dataset.sectionId = id
   document.body.style.overflow = 'hidden'
 }
-function closeDetail() {
+function closeDetailDOM() {
   detailPage.classList.remove('open')
   detailPage.setAttribute('aria-hidden', 'true')
+  delete detailPage.dataset.sectionId
   document.body.style.overflow = ''
 }
-detailBack.addEventListener('click', closeDetail)
+detailBack.addEventListener('click', () => navigate({view: 'landing'}))
 
 /* ─── PROJECT VIEW (inside a work) ───────────────── */
 const projectView = document.getElementById('project-view')
@@ -469,7 +474,7 @@ function renderGalleryItem(item, gi) {
   return ''
 }
 
-function buildProject(works, idx) {
+function buildProject(works, idx, sectionId) {
   const w = works[idx]
   if (!w) return
   const next = works[(idx + 1) % works.length]
@@ -501,37 +506,51 @@ function buildProject(works, idx) {
       <div class="pn-arrow" id="pn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
   `
-  const goNext = () => openProject(works, (idx + 1) % works.length)
+  const goNext = () => navigate({view: 'project', id: sectionId, projectSlug: next.slug})
   document.getElementById('pn-title').addEventListener('click', goNext)
   document.getElementById('pn-arrow').addEventListener('click', goNext)
 }
 
-function openProject(works, idx) {
-  buildProject(works, idx)
+function openProjectDOM(works, idx, sectionId) {
+  buildProject(works, idx, sectionId)
   projectView.classList.add('open')
   projectView.setAttribute('aria-hidden', 'false')
+  projectView.dataset.sectionId = sectionId
   projectView.scrollTo(0, 0)
 }
-function closeProject() {
+function closeProjectDOM() {
   projectView.classList.remove('open')
   projectView.setAttribute('aria-hidden', 'true')
+  delete projectView.dataset.sectionId
 }
-projectBack.addEventListener('click', closeProject)
+projectBack.addEventListener('click', () => {
+  // back to detail page for the section the project belongs to
+  const sectionId = projectView.dataset.sectionId
+  if (sectionId) navigate({view: 'detail', id: sectionId})
+  else history.back()
+})
 
 detailInner.addEventListener('click', (e) => {
   const row = e.target.closest('.work-row')
   if (!row) return
   const idx = parseInt(row.dataset.idx, 10)
-  const id = document.getElementById('illustration').dataset.id
+  const id = detailPage.dataset.sectionId || document.getElementById('illustration').dataset.id
   const p = PAGES[id]
   if (!p || !p.works.length) return
-  openProject(p.works, idx)
+  const slug = p.works[idx] && p.works[idx].slug
+  if (!slug) return
+  navigate({view: 'project', id, projectSlug: slug})
 })
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    if (projectView.classList.contains('open')) closeProject()
-    else if (detailPage.classList.contains('open')) closeDetail()
+    if (projectView.classList.contains('open')) {
+      const sectionId = projectView.dataset.sectionId
+      if (sectionId) navigate({view: 'detail', id: sectionId})
+      else history.back()
+    } else if (detailPage.classList.contains('open')) {
+      navigate({view: 'landing'})
+    }
   }
 })
 
@@ -546,9 +565,100 @@ document.getElementById('illustration').addEventListener('click', (e) => {
     e.clientY <= bb.maxY
   ) {
     const id = document.getElementById('illustration').dataset.id
-    openDetail(id)
+    navigate({view: 'detail', id})
   }
 })
+
+/* ─── ROUTER (URL ↔ view state) ──────────────────────────────────────────
+   Public URLs:  /                        → landing
+                 /originals               → Originals detail
+                 /bubble                  → Bubble detail
+                 /madplus                 → MAD+ detail (internal slug "music")
+                 /vision                  → Vision detail
+                 /<section>/<projectSlug> → project view inside that section
+   Browser back/forward, refresh, and shared deep-links all work via popstate.
+*/
+const URL_TO_ID = {originals: 'originals', bubble: 'bubble', madplus: 'music', vision: 'vision'}
+const ID_TO_URL = {originals: 'originals', bubble: 'bubble', music: 'madplus', vision: 'vision'}
+
+function parseRoute(pathname) {
+  const segs = (pathname || location.pathname).split('/').filter(Boolean)
+  if (!segs.length) return {view: 'landing'}
+  const id = URL_TO_ID[segs[0].toLowerCase()]
+  if (!id) return {view: 'landing'}
+  if (segs.length === 1) return {view: 'detail', id}
+  return {view: 'project', id, projectSlug: decodeURIComponent(segs[1])}
+}
+
+function urlForRoute(r) {
+  if (r.view === 'landing') return '/'
+  const seg = ID_TO_URL[r.id] || r.id
+  if (r.view === 'project') return `/${seg}/${encodeURIComponent(r.projectSlug)}`
+  return `/${seg}`
+}
+
+function titleForRoute(r) {
+  const tagline = SITE.tagline || 'Creativity is madness with a deadline.'
+  const base = `MAD Studio — ${tagline}`
+  if (r.view === 'landing') return base
+  const sec = SECTIONS.find((s) => s.id === r.id)
+  const secTitle = sec ? sec.cTitle : r.id
+  if (r.view === 'detail') return `${secTitle} — MAD Studio`
+  const p = PAGES[r.id]
+  const w = p && p.works.find((w) => w.slug === r.projectSlug)
+  return `${w ? w.title : r.projectSlug} — ${secTitle} — MAD Studio`
+}
+
+function applyRoute(r) {
+  document.title = titleForRoute(r)
+  if (r.view === 'landing') {
+    if (projectView.classList.contains('open')) closeProjectDOM()
+    if (detailPage.classList.contains('open')) closeDetailDOM()
+    return
+  }
+  if (r.view === 'detail') {
+    if (projectView.classList.contains('open')) closeProjectDOM()
+    openDetailDOM(r.id)
+    return
+  }
+  // r.view === 'project'
+  const p = PAGES[r.id]
+  if (!p) {
+    history.replaceState({view: 'landing'}, '', '/')
+    applyRoute({view: 'landing'})
+    return
+  }
+  const pIdx = p.works.findIndex((w) => w.slug === r.projectSlug)
+  if (pIdx < 0) {
+    // unknown project slug → fall back to that section's detail
+    const fallback = {view: 'detail', id: r.id}
+    history.replaceState(fallback, '', urlForRoute(fallback))
+    openDetailDOM(r.id)
+    return
+  }
+  openDetailDOM(r.id)
+  openProjectDOM(p.works, pIdx, r.id)
+}
+
+function navigate(r, {replace = false} = {}) {
+  const url = urlForRoute(r)
+  if (replace) history.replaceState(r, '', url)
+  else history.pushState(r, '', url)
+  applyRoute(r)
+}
+
+window.addEventListener('popstate', (e) => {
+  const r = e.state && e.state.view ? e.state : parseRoute()
+  applyRoute(r)
+})
+
+// Initial route — handle deep links and refresh-mid-flow
+{
+  const initRoute = parseRoute()
+  history.replaceState(initRoute, '', urlForRoute(initRoute))
+  if (initRoute.view !== 'landing') applyRoute(initRoute)
+  else document.title = titleForRoute(initRoute)
+}
 
 /* ─── Custom cursor ─────────────────────────────── */
 const cursor = document.createElement('div')
