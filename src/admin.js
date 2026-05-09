@@ -58,6 +58,8 @@ export async function mountAdmin(sub) {
   rootEl.classList.add('open')
   rootEl.setAttribute('aria-hidden', 'false')
   document.body.style.overflow = 'hidden'
+  // Body class fallback for browsers without :has() — also hides .cursor
+  document.body.classList.add('is-admin')
 
   await refreshAuth()
   if (state.authed) await refreshLists()
@@ -69,6 +71,7 @@ export function unmountAdmin() {
   rootEl.classList.remove('open')
   rootEl.setAttribute('aria-hidden', 'true')
   document.body.style.overflow = ''
+  document.body.classList.remove('is-admin')
 }
 
 /* ─── Network ──────────────────────────────────────────────── */
@@ -1238,6 +1241,24 @@ function injectStyles() {
   font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:400;
 }
 .admin-root.open{display:block}
+/* While admin is open: hide the custom site cursor (the dot + "VIEW" pill)
+   and use the normal OS cursor everywhere. Keeps the admin feeling like a
+   regular app — pencils into inputs, click on buttons, no editorial flair. */
+body:has(.admin-root.open) .cursor,
+body.is-admin .cursor{display:none !important}
+body:has(.admin-root.open),
+body.is-admin,
+.admin-root *{cursor:auto}
+.admin-root button,
+.admin-root .adm-row-handle,
+.admin-root [role="button"],
+.admin-root label.adm-cover-btn,
+.admin-root .adm-gallery-add,
+.admin-root .adm-link{cursor:pointer}
+.admin-root input,
+.admin-root textarea{cursor:text}
+.admin-root .adm-crop-rect{cursor:move}
+.admin-root .adm-crop-zoom{cursor:pointer}
 .adm-shell{max-width:88rem;margin:0 auto;padding:2rem 2.4rem 6rem}
 .adm-topbar{
   display:flex;justify-content:space-between;align-items:center;gap:1.5rem;
