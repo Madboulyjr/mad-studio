@@ -907,6 +907,192 @@ function stopReleaseAudio() {
   }
 }
 
+/* ─── MAD+ CINEMATIC STAGE — carousel + glass player binding ────────
+ * Wires up the card carousel rotation, the glass player bar's
+ * controls, and the audio playback for the active release. Carousel
+ * uses 3D CSS transforms — each card has data-pos relative to the
+ * active index; we mutate those values to slide the deck.
+ *
+ * Active card determines:
+ *   - mp-now-cover thumbnail
+ *   - mp-now-title / mp-now-sub strings
+ *   - data-listen-url on the player bar (and the Spotify open link)
+ *   - data-preview-url (audio src for the play button)
+ */
+function bindMadplusStage(scopeEl) {
+  if (!scopeEl) return
+  const stage = scopeEl.querySelector('.madplus-stage')
+  if (!stage) return
+
+  const cardsEl = stage.querySelector('#madplus-cards')
+  const cards = Array.from(stage.querySelectorAll('.madplus-card'))
+  const deckSize = parseInt(cardsEl.dataset.deckSize, 10) || cards.length
+  const playerBar = stage.querySelector('#madplus-player-bar')
+  const playBtn = stage.querySelector('.mp-play')
+  const prevBtn = stage.querySelector('.mp-prev')
+  const nextBtn = stage.querySelector('.mp-next')
+  const muteBtn = stage.querySelector('.mp-mute')
+  const listenLink = stage.querySelector('#mp-listen-link')
+  const nowCoverEl = stage.querySelector('#mp-now-cover')
+  const nowTitleEl = stage.querySelector('#mp-now-title')
+  const nowSubEl = stage.querySelector('#mp-now-sub')
+  const stageTitleEl = stage.querySelector('#madplus-now-title')
+  const stageSubEl = stage.querySelector('#madplus-now-subtitle')
+
+  let activeIdx = 0
+
+  /* Re-position every card based on its offset from the active index.
+   * The CSS uses `data-pos` to drive the transform — values clamp at
+   * ±2 so very-far cards just stack invisibly off-screen. */
+  function applyDeckPositions() {
+    cards.forEach((card, i) => {
+      let offset = i - activeIdx
+      // Loop the deck so the carousel feels continuous on smaller decks
+      if (offset > deckSize / 2) offset -= deckSize
+      if (offset < -deckSize / 2) offset += deckSize
+      card.dataset.pos = String(offset)
+      card.classList.toggle('is-active', offset === 0)
+      card.setAttribute('aria-hidden', offset === 0 ? 'false' : 'true')
+      card.setAttribute('tabindex', offset === 0 ? '0' : '-1')
+    })
+    stage.dataset.activeI = String(activeIdx)
+  }
+
+  /* Sync the player bar + below-carousel meta to whatever card is active. */
+  function syncActiveCard() {
+    const card = cards[activeIdx]
+    if (!card) return
+    const title = card.dataset.title || ''
+    const subtitle = card.dataset.subtitle || ''
+    const listenUrl = card.dataset.listenUrl || ''
+    const previewUrl = card.dataset.previewUrl || ''
+    const coverImg = card.querySelector('.madplus-card-cover img')
+
+    if (stageTitleEl) stageTitleEl.textContent = title
+    if (stageSubEl) stageSubEl.textContent = subtitle
+
+    if (nowTitleEl) nowTitleEl.textContent = title
+    if (nowSubEl) nowSubEl.textContent = subtitle
+    if (nowCoverEl) {
+      const newSrc = coverImg ? coverImg.src : ''
+      if (newSrc) {
+        // Replace the cover thumb image (avoid layout shift)
+        nowCoverEl.innerHTML = `<img src="${newSrc}" alt="${title}">`
+      }
+    }
+    if (listenLink) listenLink.setAttribute('href', listenUrl || '#')
+
+    playerBar.dataset.listenUrl = listenUrl
+    playerBar.dataset.previewUrl = previewUrl
+
+    // If the active track changes mid-playback, stop the current audio.
+    if (_audioState.audio && _audioState.currentSrc !== previewUrl) {
+      _audioState.audio.pause()
+      _audioState.audio.src = ''
+      _audioState.audio = null
+      _audioState.currentSrc = null
+    }
+    setPlayState('paused')
+  }
+
+  function setPlayState(state) {
+    if (!playBtn) return
+    playBtn.dataset.state = state
+    if (state === 'playing') playBtn.setAttribute('aria-label', 'Pause preview')
+    else if (state === 'loading') playBtn.setAttribute('aria-label', 'Loading…')
+    else playBtn.setAttribute('aria-label', 'Play preview')
+    if (playerBar) playerBar.dataset.state = state
+  }
+
+  /* Carousel navigation */
+  function goTo(i) {
+    activeIdx = ((i % deckSize) + deckSize) % deckSize
+    applyDeckPositions()
+    syncActiveCard()
+  }
+  function next() { goTo(activeIdx + 1) }
+  function prev() { goTo(activeIdx - 1) }
+
+  /* Click any card → if it's the active one, toggle play; if it's a
+     side card, slide it to center. */
+  cards.forEach((card) => {
+    card.addEventListener('click', (e) => {
+      e.preventDefault()
+      const i = parseInt(card.dataset.i, 10)
+      if (i === activeIdx) {
+        // Active card click → toggle play (if there's a preview MP3)
+        toggleActivePlayback()
+      } else {
+        goTo(i)
+      }
+    })
+  })
+
+  if (prevBtn) prevBtn.addEventListener('click', prev)
+  if (nextBtn) nextBtn.addEventListener('click', next)
+
+  /* Keyboard arrow nav anywhere on the stage */
+  stage.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, button.mp-play')) return
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev() }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); next() }
+  })
+
+  /* Play/pause logic */
+  function toggleActivePlayback() {
+    const previewUrl = playerBar.dataset.previewUrl || ''
+    const listenUrl = playerBar.dataset.listenUrl || ''
+    if (!previewUrl) {
+      // No inline preview → fall back to opening the listen URL in Spotify
+      if (listenUrl) window.open(listenUrl, '_blank', 'noopener')
+      return
+    }
+    let a = _audioState.audio
+    if (!a || _audioState.currentSrc !== previewUrl) {
+      if (a) {
+        a.pause()
+        a.src = ''
+      }
+      a = new Audio(previewUrl)
+      a.preload = 'auto'
+      a.crossOrigin = 'anonymous'
+      _audioState.audio = a
+      _audioState.currentSrc = previewUrl
+      a.addEventListener('play', () => setPlayState('playing'))
+      a.addEventListener('pause', () => setPlayState('paused'))
+      a.addEventListener('ended', () => {
+        a.currentTime = 0
+        setPlayState('paused')
+      })
+      a.addEventListener('error', () => setPlayState('paused'))
+      // Apply current mute setting if user toggled it earlier
+      if (muteBtn && muteBtn.dataset.muted === 'true') a.muted = true
+    }
+    if (a.paused) {
+      setPlayState('loading')
+      a.play().then(() => setPlayState('playing')).catch(() => setPlayState('paused'))
+    } else {
+      a.pause()
+    }
+  }
+
+  if (playBtn) playBtn.addEventListener('click', toggleActivePlayback)
+
+  /* Mute toggle — purely visual; affects the global Audio element */
+  if (muteBtn) {
+    muteBtn.addEventListener('click', () => {
+      const muted = muteBtn.dataset.muted === 'true'
+      const next = !muted
+      muteBtn.dataset.muted = String(next)
+      muteBtn.setAttribute('aria-label', next ? 'Unmute' : 'Mute')
+      if (_audioState.audio) _audioState.audio.muted = next
+    })
+  }
+
+  /* Initial deck layout */
+  applyDeckPositions()
+}
+
 /* Platform metadata: brand color + official SVG icon path (sourced from
    Simple Icons https://simpleicons.org/, all 24×24 viewBox). The icons
    render in the platform's brand color so each pill is instantly
@@ -1019,6 +1205,186 @@ function buildPlatformLinks(platforms, instagramMusic) {
  * Re-run that script whenever you ship a new track. */
 
 
+/**
+ * MAD+ — cinematic stage layout (replaces the editorial detail flow).
+ *
+ * Inspired by the Marvel Creativestyle Spotify mockup the user shared:
+ *   • Ambient red→orange glow background
+ *   • Card carousel: covers fan out from center, click sides to rotate
+ *   • Glass player bar (backdrop-filter blur) with prev/play/next + mini cover
+ *   • Glass platform pills below the player
+ *   • Footer attribution
+ *
+ * Data sources stay the same — featuredRelease + releases array from
+ * Sanity feed both the carousel cards and the player metadata. Audio
+ * preview MP3 (when present on the featured release) drives the play
+ * button. Cards without a preview can still be selected; the player
+ * just falls back to "Listen on Spotify ↗" on play.
+ */
+function buildMadplusStage(p, secLabel, secIndexLabel) {
+  // Assemble the carousel deck: featured release first, then the releases
+  // wall items. Each card carries a title + cover + listen URL + optional
+  // preview MP3 URL so the player can swap tracks when the user rotates.
+  const deck = []
+  if (p.featuredRelease && (p.featuredRelease.coverUrl || p.featuredRelease.title)) {
+    const fr = p.featuredRelease
+    const spotify = (fr.platforms || []).find((x) => x && x.platform === 'spotify')
+    deck.push({
+      key: 'featured',
+      title: fr.title || 'Untitled',
+      subtitle: fr.subtitle || '',
+      coverUrl: fr.coverUrl || '',
+      listenUrl: spotify ? spotify.url : (fr.platforms && fr.platforms[0] && fr.platforms[0].url) || '',
+      previewUrl: fr.previewAudioUrl || '',
+    })
+  }
+  for (const r of p.releases || []) {
+    if (!r || (!r.title && !r.coverUrl)) continue
+    deck.push({
+      key: r.title || `r${deck.length}`,
+      title: r.title || 'Untitled',
+      subtitle: r.kind || '',
+      coverUrl: r.coverUrl || '',
+      listenUrl: r.listenUrl || '',
+      previewUrl: '', // wall items don't have preview MP3s seeded
+    })
+  }
+  if (!deck.length) {
+    return `<div class="madplus-empty">No releases yet — add one in /admin.</div>`
+  }
+
+  // Render the cover stack. Position is encoded as data-pos relative to
+  // the active card (active = 0, sides = ±1, ±2). JS rotates them.
+  const coverImg = (url, title) => url
+    ? `<img src="${escMusic(url)}?w=900&h=900&fit=crop&auto=format" alt="${escMusic(title)}" loading="lazy" decoding="async">`
+    : `<div class="madplus-card-empty" aria-hidden="true"></div>`
+
+  const cards = deck.map((d, i) => `
+    <button class="madplus-card" data-i="${i}" data-pos="${i}"
+            data-listen-url="${escMusic(d.listenUrl)}"
+            data-preview-url="${escMusic(d.previewUrl)}"
+            data-title="${escMusic(d.title)}"
+            data-subtitle="${escMusic(d.subtitle)}"
+            aria-label="${escMusic(d.title)}">
+      <div class="madplus-card-cover">${coverImg(d.coverUrl, d.title)}</div>
+    </button>
+  `).join('')
+
+  const platformPills = buildPlatformLinks(p.musicPlatforms, p.instagramMusic)
+
+  return `
+    <div class="madplus-stage" data-active-i="0">
+      <!-- Ambient glow backdrop (inside the stage so it scopes to MAD+) -->
+      <div class="madplus-glow" aria-hidden="true">
+        <div class="madplus-glow-blob madplus-glow-blob-1"></div>
+        <div class="madplus-glow-blob madplus-glow-blob-2"></div>
+        <div class="madplus-glow-blob madplus-glow-blob-3"></div>
+      </div>
+
+      <!-- Section banner (Back · MAD · MAD+ · index) -->
+      <div class="detail-section-banner madplus-banner" aria-label="MAD ${escMusic(secLabel)}">
+        <button class="detail-back detail-back-inline" type="button" aria-label="Back to home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+          <span>Back</span>
+        </button>
+        <svg class="detail-banner-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+          <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+          <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+        </svg>
+        <span class="detail-banner-name">${escMusic(secLabel)}</span>
+        <span class="detail-banner-rule" aria-hidden="true"></span>
+        ${secIndexLabel ? `<span class="detail-banner-index">${secIndexLabel}</span>` : ''}
+      </div>
+
+      <!-- Brand kicker for the section -->
+      <div class="madplus-brandmark" aria-hidden="true">— MAD+</div>
+
+      <!-- Card carousel -->
+      <div class="madplus-carousel" role="region" aria-label="Releases carousel">
+        <div class="madplus-cards" id="madplus-cards" data-deck-size="${deck.length}">
+          ${cards}
+        </div>
+      </div>
+
+      <!-- Active track meta — title + subtitle below the carousel -->
+      <div class="madplus-now-meta" id="madplus-now-meta">
+        <div class="madplus-now-title" id="madplus-now-title">${escMusic(deck[0].title)}</div>
+        ${deck[0].subtitle ? `<div class="madplus-now-subtitle" id="madplus-now-subtitle">${escMusic(deck[0].subtitle)}</div>` : '<div class="madplus-now-subtitle" id="madplus-now-subtitle"></div>'}
+      </div>
+
+      <!-- Glass player bar -->
+      <div class="madplus-player-bar" id="madplus-player-bar"
+           data-preview-url="${escMusic(deck[0].previewUrl || '')}"
+           data-listen-url="${escMusic(deck[0].listenUrl || '')}">
+        <div class="mp-controls">
+          <button class="mp-btn mp-prev" type="button" aria-label="Previous release">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M6 6h2v12H6zM9.5 12L20 18V6z"/>
+            </svg>
+          </button>
+          <button class="mp-btn mp-play" type="button" aria-label="Play preview" data-state="paused">
+            <svg class="mp-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg class="mp-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14"/>
+              <rect x="14" y="5" width="4" height="14"/>
+            </svg>
+            <svg class="mp-icon-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke-dasharray="14 42" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button class="mp-btn mp-next" type="button" aria-label="Next release">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M16 6h2v12h-2zM4 18l10.5-6L4 6z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="mp-now">
+          <div class="mp-now-cover" id="mp-now-cover">${coverImg(deck[0].coverUrl, deck[0].title)}</div>
+          <div class="mp-now-text">
+            <span class="mp-now-title" id="mp-now-title">${escMusic(deck[0].title)}</span>
+            <span class="mp-now-sub" id="mp-now-sub">${escMusic(deck[0].subtitle || '')}</span>
+          </div>
+          <div class="mp-eq" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="mp-extras">
+          <a class="mp-btn mp-listen" id="mp-listen-link" href="${escMusic(deck[0].listenUrl || '#')}" target="_blank" rel="noopener" aria-label="Open on Spotify">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M11.999 0C5.371 0 0 5.371 0 12s5.371 12 11.999 12C18.627 24 24 18.629 24 12s-5.373-12-12.001-12zm5.506 17.299a.747.747 0 0 1-1.029.249c-2.819-1.722-6.366-2.111-10.546-1.157a.748.748 0 1 1-.333-1.458c4.572-1.044 8.494-.594 11.658 1.337a.747.747 0 0 1 .25 1.029zm1.469-3.267a.937.937 0 0 1-1.286.308c-3.227-1.984-8.146-2.558-11.962-1.4a.937.937 0 1 1-.543-1.794c4.358-1.323 9.778-.682 13.483 1.6a.937.937 0 0 1 .308 1.286zm.126-3.403C15.244 8.474 8.524 8.272 4.78 9.408a1.124 1.124 0 1 1-.652-2.151c4.297-1.305 11.72-1.054 16.351 1.7a1.123 1.123 0 1 1-1.379 1.672z"/>
+            </svg>
+          </a>
+          <button class="mp-btn mp-mute" type="button" aria-label="Mute / Unmute" data-muted="false">
+            <svg class="mp-icon-volume" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/>
+            </svg>
+            <svg class="mp-icon-mute" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3.63 3.63a1 1 0 0 0 0 1.41L7.29 8.7 7 9H3v6h4l5 5v-6.59l4.18 4.18c-.65.49-1.38.88-2.18 1.11v2.06a8.99 8.99 0 0 0 3.61-1.75l2.05 2.05a1 1 0 0 0 1.41-1.41L5.04 3.63a1 1 0 0 0-1.41 0zM19 12c0-2.13-.67-4.05-1.81-5.66l-1.43 1.43C16.55 8.84 17 10.36 17 12c0 .91-.18 1.78-.49 2.59l1.45 1.45A8.95 8.95 0 0 0 19 12zM12 4l-2.71 2.71L12 9.41V4zM14 3.23v2.06c2.89.86 5 3.54 5 6.71 0 .77-.13 1.5-.35 2.19l1.61 1.61A8.94 8.94 0 0 0 21 12c0-4.28-3-7.86-7-8.77z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Platform pills (re-rendered with glass styling) -->
+      <div class="madplus-platforms-wrap">
+        ${platformPills}
+      </div>
+
+      <!-- Footer attribution -->
+      <div class="madplus-foot">
+        <span>© ${new Date().getFullYear()} — MAD+ MUSIC</span>
+        <span class="madplus-foot-sep" aria-hidden="true">·</span>
+        <span>By Mad Bouly</span>
+      </div>
+    </div>
+  `
+}
+
 function buildDetail(id) {
   const p = PAGES[id]
   if (!p) return
@@ -1042,6 +1408,12 @@ function buildDetail(id) {
   const secIndexLabel = secIdx >= 0
     ? `${String(secIdx + 1).padStart(2, '0')} / ${String(SECTIONS.length).padStart(2, '0')}`
     : ''
+  // MAD+ gets a completely different layout — cinematic stage with carousel + glass player
+  if (id === 'music') {
+    detailInner.innerHTML = buildMadplusStage(p, secLabel, secIndexLabel)
+    return
+  }
+
   detailInner.innerHTML = `
     <div class="detail-hero">
       <div class="detail-copy">
@@ -1068,9 +1440,7 @@ function buildDetail(id) {
     ${buildMusicEmbed(p.featuredRelease, p.releases)}
     ${buildPlatformLinks(p.musicPlatforms, p.instagramMusic)}
     ${agenciesHTML}
-    ${id === 'music'
-      ? '' // MAD+ replaces the works/empty-state block with Spotify content above
-      : `<div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
+    <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
     <h2 class="section-title">${p.worksTitle}</h2>
     ${isEmpty
       ? `<div class="works-empty">
@@ -1122,7 +1492,7 @@ function buildDetail(id) {
       `
         })
         .join('')}
-    </div>`}`}
+    </div>`}
     <div class="collab-cta">
       <div class="collab-kicker">Let's Collaborate</div>
       <h2 class="collab-title">Your brand,<br><em>legendary.</em></h2>
@@ -1224,6 +1594,10 @@ function openDetailDOM(id) {
   armWorkRowObserver()
   // wire up the custom MAD-branded mini player(s) inside the music hero
   bindReleasePlayers(detailInner)
+  // MAD+ — wire up the cinematic carousel + glass player bar
+  if (id === 'music') {
+    bindMadplusStage(detailInner)
+  }
   // Mark cover images as loaded once they're done so the shimmer
   // skeleton stops animating (bg goes back to flat dark).
   detailInner.querySelectorAll('.work-cover img').forEach((img) => {

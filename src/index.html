@@ -480,6 +480,434 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   background:#1A1815;border:0;display:block;overflow:hidden;
 }
 
+/* ═════════════════════════════════════════════════════════════════════
+   MAD+ CINEMATIC STAGE — full-page carousel + glass player layout.
+   Activated only when the detail page is for `id === "music"`. The
+   stage uses 3D card transforms, ambient gradient blobs, and
+   backdrop-filter glass surfaces. Detail-page padding is reset on
+   .detail-page:has(.madplus-stage) so the glow can extend full-bleed.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* When the stage is mounted, the parent .detail-page goes full-bleed
+   (no padding) so the ambient glow + glass surfaces fill the viewport.
+   Banner is positioned absolutely INSIDE the stage instead. */
+.detail-page:has(.madplus-stage){
+  padding:0;
+  background:#070707;
+  overflow:hidden auto;
+}
+
+.madplus-stage{
+  position:relative;
+  min-height:100vh;
+  min-height:100dvh;
+  width:100%;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:2rem 2rem 3rem;
+  isolation:isolate; /* contain blend modes inside */
+  /* Section-banner inside the stage */
+  --mp-glass:rgba(255,255,255,0.08);
+  --mp-glass-strong:rgba(255,255,255,0.14);
+  --mp-glass-line:rgba(255,255,255,0.12);
+}
+
+/* AMBIENT GLOW — three soft blurred blobs in warm tones */
+.madplus-glow{
+  position:absolute;inset:0;
+  pointer-events:none;
+  z-index:0;
+  overflow:hidden;
+  /* base radial fade so edges sit darker */
+  background:radial-gradient(120% 100% at 50% 25%, rgba(255,49,59,0.18) 0%, transparent 55%),
+             radial-gradient(80% 80% at 80% 60%, rgba(255,184,77,0.10) 0%, transparent 60%),
+             #050505;
+}
+.madplus-glow-blob{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(80px);
+  opacity:0.65;
+  will-change:transform;
+}
+.madplus-glow-blob-1{
+  width:60vw;height:60vw;
+  top:-15vw;left:50%;transform:translateX(-50%);
+  background:radial-gradient(circle, rgba(255,49,59,0.55) 0%, rgba(255,49,59,0) 60%);
+  animation:mpGlowFloat1 16s ease-in-out infinite;
+}
+.madplus-glow-blob-2{
+  width:50vw;height:50vw;
+  top:5vw;right:-10vw;
+  background:radial-gradient(circle, rgba(255,140,40,0.45) 0%, rgba(255,140,40,0) 65%);
+  animation:mpGlowFloat2 22s ease-in-out infinite;
+}
+.madplus-glow-blob-3{
+  width:45vw;height:45vw;
+  bottom:-15vw;left:-10vw;
+  background:radial-gradient(circle, rgba(220,30,60,0.35) 0%, rgba(220,30,60,0) 70%);
+  animation:mpGlowFloat3 19s ease-in-out infinite reverse;
+}
+@keyframes mpGlowFloat1{
+  0%,100%{transform:translate(-50%, 0) scale(1)}
+  50%{transform:translate(-50%, 5vw) scale(1.08)}
+}
+@keyframes mpGlowFloat2{
+  0%,100%{transform:translate(0, 0) scale(1)}
+  50%{transform:translate(-3vw, 4vw) scale(1.1)}
+}
+@keyframes mpGlowFloat3{
+  0%,100%{transform:translate(0, 0) scale(1)}
+  50%{transform:translate(4vw, -3vw) scale(1.05)}
+}
+@media (prefers-reduced-motion: reduce){
+  .madplus-glow-blob{animation:none}
+}
+
+/* ALL stage content sits above the glow */
+.madplus-stage > *:not(.madplus-glow){position:relative;z-index:1}
+
+/* SECTION BANNER inside the stage — slimmer, glass-tinted */
+.madplus-banner{
+  width:100%;max-width:80rem;
+  margin:0 auto 2rem;
+  padding:0 0.4rem;
+  color:#F5F0E1;
+}
+.madplus-banner .detail-back-inline{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-color:rgba(255,255,255,0.18);
+}
+.madplus-banner .detail-banner-rule{background:#F5F0E1;opacity:0.18}
+.madplus-banner .detail-banner-name{color:#F5F0E1}
+.madplus-banner .detail-banner-logo{color:#F5F0E1}
+.madplus-banner .detail-banner-index{color:#F5F0E1;opacity:0.55}
+
+/* Brand kicker above the carousel */
+.madplus-brandmark{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.32em;text-transform:uppercase;
+  color:#F5F0E1;opacity:0.55;
+  margin:1rem 0 2rem;
+}
+
+/* CAROUSEL ─────────────────────────────────────────────────────────── */
+.madplus-carousel{
+  position:relative;
+  width:100%;max-width:90rem;
+  height:34rem;
+  perspective:1200px;
+  margin:0 0 2rem;
+}
+.madplus-cards{
+  position:relative;width:100%;height:100%;
+  transform-style:preserve-3d;
+  display:flex;align-items:center;justify-content:center;
+}
+.madplus-card{
+  position:absolute;
+  top:50%;left:50%;
+  width:24rem;
+  aspect-ratio:1/1;
+  border:none;
+  background:none;
+  padding:0;
+  cursor:pointer;
+  border-radius:1.4rem;
+  /* Box shadow + transform animated together for parallax feel */
+  transition:
+    transform 0.6s cubic-bezier(0.2,0.8,0.2,1),
+    opacity 0.5s ease,
+    filter 0.6s ease,
+    box-shadow 0.6s ease;
+  outline:none;
+}
+.madplus-card-cover{
+  width:100%;height:100%;
+  border-radius:inherit;
+  overflow:hidden;
+  position:relative;
+  background:#161310;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.6),
+    0 8px 16px rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+}
+.madplus-card-cover img{
+  width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+.madplus-card-cover::after{
+  content:"";
+  position:absolute;inset:0;
+  border-radius:inherit;
+  background:linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.5) 100%);
+  opacity:0;transition:opacity 0.4s ease;
+}
+
+/* Position stack: each card placed in 3D using data-pos attribute.
+   data-pos="0" = active center; ±1 = adjacent; ±2 = far back. */
+.madplus-card[data-pos="0"]{
+  transform:translate(-50%, -50%) translateZ(50px) rotateY(0deg);
+  z-index:5;opacity:1;
+}
+.madplus-card[data-pos="-1"]{
+  transform:translate(-50%, -50%) translateX(-15rem) translateZ(-40px) rotateY(28deg);
+  z-index:4;opacity:0.85;filter:brightness(0.85);
+}
+.madplus-card[data-pos="1"]{
+  transform:translate(-50%, -50%) translateX(15rem) translateZ(-40px) rotateY(-28deg);
+  z-index:4;opacity:0.85;filter:brightness(0.85);
+}
+.madplus-card[data-pos="-2"]{
+  transform:translate(-50%, -50%) translateX(-26rem) translateZ(-120px) rotateY(40deg);
+  z-index:3;opacity:0.55;filter:brightness(0.6) blur(1px);
+}
+.madplus-card[data-pos="2"]{
+  transform:translate(-50%, -50%) translateX(26rem) translateZ(-120px) rotateY(-40deg);
+  z-index:3;opacity:0.55;filter:brightness(0.6) blur(1px);
+}
+/* Anything farther → off-stage */
+.madplus-card:not([data-pos="0"]):not([data-pos="-1"]):not([data-pos="1"]):not([data-pos="-2"]):not([data-pos="2"]){
+  transform:translate(-50%, -50%) translateZ(-200px);
+  opacity:0;pointer-events:none;
+}
+.madplus-card:hover .madplus-card-cover{
+  box-shadow:
+    0 40px 100px rgba(0,0,0,0.7),
+    0 12px 24px rgba(0,0,0,0.5),
+    inset 0 0 0 1px rgba(255,49,59,0.4);
+}
+.madplus-card:focus-visible .madplus-card-cover{
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.6),
+    0 0 0 3px rgba(255,49,59,0.6);
+}
+.madplus-card.is-active{cursor:pointer}
+
+/* Title/subtitle below carousel */
+.madplus-now-meta{
+  text-align:center;
+  margin:0 0 2.5rem;
+  color:#F5F0E1;
+  min-height:4rem;
+}
+.madplus-now-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:2rem;letter-spacing:-0.01em;line-height:1.1;
+  margin-bottom:0.4rem;
+}
+.madplus-now-subtitle{
+  font-family:'Newsreader',Georgia,serif;font-style:italic;
+  font-size:1.1rem;color:#F5F0E1;opacity:0.65;
+}
+
+/* GLASS PLAYER BAR ─────────────────────────────────────────────────── */
+.madplus-player-bar{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:1.4rem;
+  width:100%;max-width:60rem;
+  padding:0.7rem 0.9rem;
+  margin:0 0 2rem;
+  background:rgba(255,255,255,0.07);
+  -webkit-backdrop-filter:blur(40px) saturate(160%) brightness(110%);
+  backdrop-filter:blur(40px) saturate(160%) brightness(110%);
+  border:0.08rem solid rgba(255,255,255,0.14);
+  border-radius:999px;
+  box-shadow:
+    0 24px 48px rgba(0,0,0,0.5),
+    0 8px 16px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.mp-controls{display:flex;align-items:center;gap:0.4rem}
+.mp-btn{
+  width:2.6rem;height:2.6rem;
+  border:none;background:transparent;
+  border-radius:50%;
+  color:#F5F0E1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background 0.2s ease, transform 0.18s ease, color 0.2s ease;
+}
+.mp-btn:hover{background:rgba(255,255,255,0.12)}
+.mp-btn:active{transform:scale(0.94)}
+.mp-btn:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(255,49,59,0.6);
+}
+.mp-btn svg{width:1.1rem;height:1.1rem}
+
+/* Center play button is bigger + filled */
+.mp-play{
+  width:2.8rem;height:2.8rem;
+  background:rgba(255,255,255,0.18);
+  position:relative;
+}
+.mp-play:hover{background:rgba(255,255,255,0.28)}
+.mp-play svg{display:none;width:1.05rem;height:1.05rem}
+.mp-play[data-state="paused"] .mp-icon-play{display:block;margin-left:2px}
+.mp-play[data-state="playing"] .mp-icon-pause{display:block}
+.mp-play[data-state="loading"] .mp-icon-loading{display:block;animation:mpLoadingSpin 0.85s linear infinite}
+.mp-play[data-state="loading"] .mp-icon-play,
+.mp-play[data-state="loading"] .mp-icon-pause{display:none}
+@keyframes mpLoadingSpin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
+}
+
+.mp-now{
+  display:flex;align-items:center;gap:0.7rem;
+  min-width:0;
+  background:rgba(0,0,0,0.35);
+  border:0.06rem solid rgba(255,255,255,0.08);
+  border-radius:99px;
+  padding:0.35rem 0.85rem 0.35rem 0.35rem;
+}
+.mp-now-cover{
+  width:2.2rem;height:2.2rem;
+  border-radius:0.4rem;overflow:hidden;
+  flex-shrink:0;background:#161310;
+}
+.mp-now-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.mp-now-text{
+  display:flex;flex-direction:column;
+  min-width:0;flex:1;
+  line-height:1.15;
+}
+.mp-now-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:0.85rem;color:#F5F0E1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:-0.005em;
+}
+.mp-now-sub{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:#F5F0E1;opacity:0.55;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.mp-eq{
+  display:flex;align-items:flex-end;gap:0.18rem;
+  flex-shrink:0;
+  height:1rem;
+  margin-left:0.3rem;
+}
+.mp-eq span{
+  display:block;width:0.18rem;height:30%;
+  background:#F5F0E1;opacity:0.65;
+  border-radius:0.04rem;
+}
+.madplus-player-bar[data-state="playing"] .mp-eq span{
+  animation:mpEq 0.85s ease-in-out infinite;
+}
+.madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(1){animation-delay:-0.4s;background:#FF313B}
+.madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(2){animation-delay:-0.2s;background:#FF313B}
+.madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(3){animation-delay:-0.5s;background:#FF313B}
+.madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(4){animation-delay:-0.1s;background:#FF313B}
+@keyframes mpEq{
+  0%,100%{height:30%}
+  25%{height:90%}
+  50%{height:50%}
+  75%{height:80%}
+}
+@media (prefers-reduced-motion: reduce){
+  .madplus-player-bar[data-state="playing"] .mp-eq span{animation:none;height:60%}
+}
+
+.mp-extras{display:flex;align-items:center;gap:0.4rem}
+.mp-listen svg{width:1.1rem;height:1.1rem;color:#1DB954}
+.mp-mute svg{display:none}
+.mp-mute[data-muted="false"] .mp-icon-volume{display:block}
+.mp-mute[data-muted="true"] .mp-icon-mute{display:block}
+
+/* PLATFORM PILLS — re-themed glass */
+.madplus-platforms-wrap{
+  width:100%;max-width:60rem;
+  display:flex;justify-content:center;
+  margin:0 0 2.5rem;
+}
+.madplus-platforms-wrap .music-platforms{margin:0;width:100%}
+.madplus-platforms-wrap .music-platforms-label{
+  text-align:center;color:#F5F0E1;opacity:0.55;
+  margin-bottom:1rem;
+}
+.madplus-platforms-wrap .music-platforms-grid{
+  justify-content:center;
+}
+.madplus-platforms-wrap .music-pill{
+  background:rgba(255,255,255,0.06);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+  border-color:rgba(255,255,255,0.14);
+  color:#F5F0E1;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+.madplus-platforms-wrap .music-pill:hover{
+  background:rgba(255,255,255,0.12);
+  border-color:rgba(255,49,59,0.5);
+  transform:translateY(-2px);
+}
+
+/* FOOTER */
+.madplus-foot{
+  display:flex;align-items:center;justify-content:center;gap:0.7rem;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:#F5F0E1;opacity:0.45;
+  margin-top:auto;
+  padding-top:2rem;
+}
+.madplus-foot-sep{opacity:0.5}
+
+/* MOBILE — < 900px */
+@media (max-width: 900px){
+  .madplus-stage{padding:1.2rem 1rem 2rem}
+  .madplus-banner{margin-bottom:1.5rem}
+  .madplus-brandmark{font-size:0.75rem;margin:0.6rem 0 1.4rem}
+
+  .madplus-carousel{height:24rem;margin-bottom:1.4rem}
+  .madplus-card{width:17rem}
+  /* Tighter fan on mobile so side cards still fit */
+  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-9rem) translateZ(-40px) rotateY(22deg)}
+  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(9rem) translateZ(-40px) rotateY(-22deg)}
+  .madplus-card[data-pos="-2"]{transform:translate(-50%, -50%) translateX(-15rem) translateZ(-100px) rotateY(35deg)}
+  .madplus-card[data-pos="2"]{transform:translate(-50%, -50%) translateX(15rem) translateZ(-100px) rotateY(-35deg)}
+
+  .madplus-now-title{font-size:1.5rem}
+  .madplus-now-subtitle{font-size:0.95rem}
+
+  .madplus-player-bar{
+    grid-template-columns:auto 1fr auto;
+    gap:0.7rem;padding:0.5rem 0.6rem;
+  }
+  .mp-btn{width:2.3rem;height:2.3rem}
+  .mp-play{width:2.5rem;height:2.5rem}
+  .mp-now{padding:0.3rem 0.7rem 0.3rem 0.3rem;gap:0.55rem}
+  .mp-now-cover{width:1.9rem;height:1.9rem}
+  .mp-now-title{font-size:0.78rem}
+  .mp-now-sub{font-size:0.6rem}
+  .mp-eq{display:none} /* tight space — keep the player slim on mobile */
+}
+
+@media (max-width: 480px){
+  .madplus-carousel{height:20rem}
+  .madplus-card{width:14rem}
+  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-7rem) translateZ(-30px) rotateY(20deg);opacity:0.6}
+  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(7rem) translateZ(-30px) rotateY(-20deg);opacity:0.6}
+  .madplus-card[data-pos="-2"],
+  .madplus-card[data-pos="2"]{opacity:0;pointer-events:none}
+  .madplus-now-title{font-size:1.25rem}
+  .mp-extras .mp-listen{display:none} /* one fewer button to save room */
+}
+
+/* ═════════════════════════════════════════════════════════════════════ */
+
 /* ─── FEATURED RELEASE HERO CARD (MAD+ replaces Spotify iframe) ───
    Two-column editorial poster: big square cover (left) + body (right)
    with kicker, title, meta, inline player, and listen pills. Cover
