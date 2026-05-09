@@ -106,11 +106,9 @@ const SPEECH = {
 }
 
 const SPEECH_POSITIONS = [
-  'top-left', 'top-center', 'top-right',
-  'left-middle', 'right-middle',
-  'forehead-left', 'forehead-right',
-  'cheek-left', 'cheek-right',
-  'bottom-left', 'bottom-center', 'bottom-right',
+  // left/right side variations only — no center, no forehead/eye area
+  'side-left-upper', 'left-middle', 'cheek-left', 'side-left-lower',
+  'side-right-upper', 'right-middle', 'cheek-right', 'side-right-lower',
 ]
 let speechTimer = null
 let speechIdx = 0

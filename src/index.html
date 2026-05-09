@@ -1046,30 +1046,17 @@ body{
   border:0.08rem solid rgba(245, 240, 225, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants — varied across all sides + above + below ─── */
-/* TOP ROW — above the head */
-.speech-bubble[data-pos="top-left"]{top:-1%;left:14%;right:auto}
-.speech-bubble[data-pos="top-center"]{top:-3%;left:50%;right:auto;transform-origin:center}
-.speech-bubble[data-pos="top-center"].show{animation:speechFloatCenter 4s ease-in-out infinite}
-@keyframes speechFloatCenter{
-  0%,100%{transform:translateX(-50%) translateY(0) scale(1) translateZ(60px)}
-  50%{transform:translateX(-50%) translateY(-0.4rem) scale(1) translateZ(60px)}
-}
-.speech-bubble[data-pos="top-right"]{top:-1%;right:14%;left:auto}
-/* SIDES — left/right */
+/* ─── Position variants — LEFT and RIGHT side only, never over eyes/face ─── */
+.speech-bubble[data-pos="side-left-upper"]{top:18%;left:-3%;right:auto}
 .speech-bubble[data-pos="left-middle"]{top:38%;left:-3%;right:auto}
+.speech-bubble[data-pos="cheek-left"]{top:55%;left:-2%;right:auto}
+.speech-bubble[data-pos="side-left-lower"]{top:auto;bottom:18%;left:-3%;right:auto}
+
+.speech-bubble[data-pos="side-right-upper"]{top:18%;right:-3%;left:auto}
 .speech-bubble[data-pos="right-middle"]{top:38%;right:-3%;left:auto}
-/* FOREHEAD — slightly inside the head's upper region */
-.speech-bubble[data-pos="forehead-left"]{top:18%;left:8%;right:auto}
-.speech-bubble[data-pos="forehead-right"]{top:18%;right:8%;left:auto}
-/* CHEEK — middle height, just outside the face */
-.speech-bubble[data-pos="cheek-left"]{top:52%;left:6%;right:auto}
-.speech-bubble[data-pos="cheek-right"]{top:52%;right:6%;left:auto}
-/* BOTTOM ROW — below the chin */
-.speech-bubble[data-pos="bottom-left"]{top:auto;bottom:8%;left:14%;right:auto}
-.speech-bubble[data-pos="bottom-center"]{top:auto;bottom:5%;left:50%;right:auto;transform-origin:center}
-.speech-bubble[data-pos="bottom-center"].show{animation:speechFloatCenter 4s ease-in-out infinite}
-.speech-bubble[data-pos="bottom-right"]{top:auto;bottom:8%;right:14%;left:auto}
+.speech-bubble[data-pos="cheek-right"]{top:55%;right:-2%;left:auto}
+.speech-bubble[data-pos="side-right-lower"]{top:auto;bottom:18%;right:-3%;left:auto}
+
 .speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
 .hero-copy{
