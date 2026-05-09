@@ -308,10 +308,11 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 /* manifesto hero */
 .detail-hero{
   display:block;
-  margin:3rem 0 5rem;
-  /* (was min-height:48rem — that's what created the giant empty
-     gap between the lead paragraph and "— IN COLLABORATION WITH"
-     when the lead content was shorter than 48rem) */
+  /* Increased top margin so the section banner clears the fixed
+     "Back" pill button (which sits at top:3rem with ~3.5rem height,
+     bottom ≈ 6.5rem). Banner now starts at ~10rem from page top with
+     comfortable visual separation. */
+  margin:7rem 0 5rem;
 }
 .detail-hero .detail-copy{max-width:130rem}
 
@@ -919,7 +920,7 @@ body::after{display:none}
   .detail-logo .sub{font-size:1.4rem}
 
   .detail-inner{margin-top:5rem}
-  .detail-hero{min-height:auto;margin:2rem 0 4rem;align-items:flex-start}
+  .detail-hero{min-height:auto;margin:5rem 0 4rem;align-items:flex-start}
   .detail-hero .detail-copy{max-width:100%}
   .detail-kicker{font-size:1rem;margin-bottom:1.5rem}
   .manifesto{font-size:5.5rem;line-height:0.95;margin-bottom:2rem}
