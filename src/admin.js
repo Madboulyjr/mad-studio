@@ -44,7 +44,26 @@ let coverState = null // {assetId, url} or {remove: true} or null
 let cropState = null // {top, left, right, bottom} all 0-1, all are fractions to chop from each edge
 
 let rootEl = null
-let state = {authed: false, view: 'list', sections: [], projects: [], editing: null, busy: false}
+let state = {authed: false, view: 'list', sections: [], projects: [], editing: null, busy: false, searchQuery: ''}
+
+/* Filter project list by free-text query (title, year, tags, slug). Case-insensitive,
+   word-tokenized so "ramad 24" matches "Ramadan · 2024". */
+function filterProjects(list, query) {
+  if (!query || !query.trim()) return list
+  const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean)
+  return list.filter((p) => {
+    const haystack = [
+      p.title || '',
+      p.slug || '',
+      p.year || '',
+      p.caption || '',
+      ...(p.tags || []),
+    ]
+      .join(' ')
+      .toLowerCase()
+    return tokens.every((t) => haystack.includes(t))
+  })
+}
 
 /* ─── Public API ───────────────────────────────────────────── */
 export async function mountAdmin(sub) {
@@ -112,6 +131,10 @@ async function loginWith(password) {
     if (r.ok && j.ok) {
       state.authed = true
       await refreshLists()
+    } else if (r.status === 429) {
+      const sec = Math.max(1, Number(j.retryAfterSec) || 60)
+      const mins = Math.ceil(sec / 60)
+      alert(`Too many failed attempts.\n\nTry again in ~${mins} minute${mins === 1 ? '' : 's'}.`)
     } else {
       alert(j.error || 'Login failed')
     }
@@ -265,13 +288,28 @@ function renderDashboard() {
             .join('')}
         </div>
 
+        <div class="adm-search-wrap">
+          <label class="adm-search-label" for="adm-search">Search</label>
+          <input
+            id="adm-search"
+            class="adm-search"
+            type="search"
+            placeholder="Filter projects by title, year, tag…"
+            autocomplete="off"
+            value="${escapeAttr(state.searchQuery || '')}"
+          >
+          <span class="adm-search-count" id="adm-search-count" aria-live="polite"></span>
+        </div>
+
         ${state.sections
           .map((s) => {
-            const list = projectsBySection[s.slug] || []
+            const allList = projectsBySection[s.slug] || []
+            const list = filterProjects(allList, state.searchQuery)
+            const hidden = state.searchQuery && list.length === 0
             return `
-          <div class="adm-section-block" data-section-slug="${escapeAttr(s.slug)}">
+          <div class="adm-section-block${hidden ? ' is-hidden-empty' : ''}" data-section-slug="${escapeAttr(s.slug)}" data-section-total="${allList.length}" data-section-shown="${list.length}">
             <div class="adm-section-head">
-              <div class="adm-dash-kicker">— ${escapeHtml(s.title || s.slug)} · ${list.length} project${list.length === 1 ? '' : 's'}</div>
+              <div class="adm-dash-kicker">— ${escapeHtml(s.title || s.slug)} · ${list.length} project${list.length === 1 ? '' : 's'}${state.searchQuery && allList.length !== list.length ? ` <span class="adm-dim">/ ${allList.length}</span>` : ''}</div>
               <button class="adm-link adm-add-project" data-section-slug="${escapeAttr(s.slug)}">+ Add project</button>
             </div>
             ${list.length
@@ -293,7 +331,9 @@ function renderDashboard() {
               `,
                   )
                   .join('')}</div>`
-              : `<div class="adm-empty">No projects yet. Click "+ Add project" above to create one.</div>`}
+              : state.searchQuery
+                ? `<div class="adm-empty">No matches in this section.</div>`
+                : `<div class="adm-empty">No projects yet. Click "+ Add project" above to create one.</div>`}
           </div>`
           })
           .join('')}
@@ -301,6 +341,64 @@ function renderDashboard() {
     </div>
   `
   rootEl.querySelector('#adm-logout').addEventListener('click', logout)
+
+  // Search input — debounced filter (no full re-render, just hide/show rows
+  // so input stays focused + cursor stays put). Re-renders only when search
+  // toggles between empty/non-empty so the empty-state copy updates.
+  const searchInput = rootEl.querySelector('#adm-search')
+  if (searchInput) {
+    const countEl = rootEl.querySelector('#adm-search-count')
+    let searchT = null
+    const applyFilter = () => {
+      const q = (state.searchQuery || '').toLowerCase().trim()
+      const tokens = q.split(/\s+/).filter(Boolean)
+      let matched = 0
+      let total = 0
+      rootEl.querySelectorAll('.adm-section-block').forEach((block) => {
+        const sectionSlug = block.dataset.sectionSlug
+        const sectionList = projectsBySection[sectionSlug] || []
+        const filtered = filterProjects(sectionList, state.searchQuery)
+        const filteredIds = new Set(filtered.map((p) => p._id))
+        let visible = 0
+        block.querySelectorAll('.adm-row').forEach((row) => {
+          if (filteredIds.has(row.dataset.id)) {
+            row.style.display = ''
+            visible++
+          } else {
+            row.style.display = 'none'
+          }
+        })
+        matched += visible
+        total += sectionList.length
+        // Update header count
+        const headEl = block.querySelector('.adm-section-head .adm-dash-kicker')
+        if (headEl && state.sections.length) {
+          const s = state.sections.find((x) => x.slug === sectionSlug)
+          const title = (s?.title || sectionSlug || '')
+          headEl.innerHTML = `— ${escapeHtml(title)} · ${visible} project${visible === 1 ? '' : 's'}${q && sectionList.length !== visible ? ` <span class="adm-dim">/ ${sectionList.length}</span>` : ''}`
+        }
+        // Hide whole block when search active + no matches
+        block.classList.toggle('is-hidden-empty', q.length > 0 && visible === 0 && sectionList.length > 0)
+      })
+      if (countEl) {
+        countEl.textContent = q ? `${matched} / ${total}` : ''
+      }
+    }
+    searchInput.addEventListener('input', (e) => {
+      state.searchQuery = e.target.value
+      clearTimeout(searchT)
+      searchT = setTimeout(applyFilter, 80)
+    })
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        e.target.value = ''
+        state.searchQuery = ''
+        applyFilter()
+      }
+    })
+    // Run once on mount in case state.searchQuery survived a re-render.
+    if (state.searchQuery) applyFilter()
+  }
 
   // Section card click → edit section
   rootEl.querySelectorAll('.adm-card[data-kind]').forEach((el) => {
@@ -1338,6 +1436,42 @@ body.is-admin,
   font-family:'IBM Plex Mono',monospace;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;margin-bottom:1.2rem;
+}
+.adm-dim{opacity:0.5}
+.adm-section-block.is-hidden-empty{display:none}
+
+/* SEARCH */
+.adm-search-wrap{
+  position:relative;display:flex;align-items:center;gap:0.7rem;
+  background:#161310;border:0.08rem solid rgba(245,240,225,0.1);
+  border-radius:0.8rem;padding:0.4rem 0.9rem;
+  margin-bottom:0.5rem;
+  transition:border-color 0.2s ease, background 0.2s ease;
+}
+.adm-search-wrap:focus-within{
+  border-color:rgba(245,240,225,0.35);background:#1A1714;
+}
+.adm-search-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  opacity:0.55;flex-shrink:0;
+}
+.adm-search{
+  flex:1;background:transparent;border:none;outline:none;
+  color:#F5F0E1;font-family:inherit;font-size:1rem;
+  padding:0.7rem 0;min-width:0;
+}
+.adm-search::placeholder{color:rgba(245,240,225,0.35)}
+.adm-search::-webkit-search-cancel-button{
+  -webkit-appearance:none;appearance:none;
+  width:1rem;height:1rem;cursor:pointer;
+  background:rgba(245,240,225,0.4);
+  mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>") center/contain no-repeat;
+}
+.adm-search-count{
+  font-family:'IBM Plex Mono',monospace;font-size:0.78rem;
+  letter-spacing:0.06em;opacity:0.55;flex-shrink:0;
+  font-variant-numeric:tabular-nums;
 }
 .adm-grid{
   display:grid;

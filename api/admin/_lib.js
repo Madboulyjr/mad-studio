@@ -120,3 +120,56 @@ export function jsonResponse(res, status, body) {
   res.setHeader('Cache-Control', 'no-store')
   res.end(JSON.stringify(body))
 }
+
+/* ─── Login rate limiter (per-instance, in-memory) ─────────────
+ * Sliding-window counter on failed login attempts, keyed by client IP.
+ * Lives on the function instance — Fluid Compute reuses instances so
+ * this works in practice; not a substitute for an external store, but
+ * makes brute-force noticeably harder.
+ *
+ *   MAX_ATTEMPTS  = 5
+ *   WINDOW_MS     = 15 minutes
+ *
+ * On 6th fail in window → 429 + Retry-After header. Successful login
+ * clears the entry.
+ */
+const LOGIN_ATTEMPTS = new Map() // ip → [timestamp, ...]
+const RATE_MAX = 5
+const RATE_WINDOW_MS = 15 * 60 * 1000
+
+export function getClientIp(req) {
+  // Vercel sets x-forwarded-for; fall back to socket address.
+  const xff = (req.headers['x-forwarded-for'] || '').toString()
+  if (xff) return xff.split(',')[0].trim()
+  return req.headers['x-real-ip'] || req.socket?.remoteAddress || 'unknown'
+}
+
+export function checkLoginRate(ip) {
+  const now = Date.now()
+  const list = (LOGIN_ATTEMPTS.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS)
+  // Garbage-collect occasionally so the map doesn't grow unbounded.
+  if (LOGIN_ATTEMPTS.size > 500) {
+    for (const [k, v] of LOGIN_ATTEMPTS.entries()) {
+      const live = v.filter((t) => now - t < RATE_WINDOW_MS)
+      if (live.length === 0) LOGIN_ATTEMPTS.delete(k)
+      else LOGIN_ATTEMPTS.set(k, live)
+    }
+  }
+  if (list.length >= RATE_MAX) {
+    const oldest = list[0]
+    const retryMs = RATE_WINDOW_MS - (now - oldest)
+    return {blocked: true, retryAfterSec: Math.max(1, Math.ceil(retryMs / 1000))}
+  }
+  return {blocked: false, remaining: RATE_MAX - list.length}
+}
+
+export function recordLoginFailure(ip) {
+  const now = Date.now()
+  const list = (LOGIN_ATTEMPTS.get(ip) || []).filter((t) => now - t < RATE_WINDOW_MS)
+  list.push(now)
+  LOGIN_ATTEMPTS.set(ip, list)
+}
+
+export function clearLoginAttempts(ip) {
+  LOGIN_ATTEMPTS.delete(ip)
+}

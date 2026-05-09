@@ -1231,6 +1231,45 @@ body{
   --avatar-base-scale:1.2;--avatar-scale:1.2;--avatar-base-y:0px;
 }
 
+/* Easter egg: 5-rapid-click on the avatar fires a glitchy red flash burst.
+   Triggered from main.js via the .avatar-burst class. */
+.illustration.avatar-burst{position:relative}
+.illustration.avatar-burst .avatar3d{
+  animation:avatarBurst 0.8s cubic-bezier(0.2,0.8,0.2,1);
+}
+.illustration.avatar-burst::after{
+  content:"MAD!";
+  position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
+  font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-style:italic;
+  font-size:clamp(2rem,6vw,4.5rem);
+  color:#FF313B;
+  text-shadow:0 0 18px rgba(255,49,59,0.65);
+  letter-spacing:-0.02em;
+  pointer-events:none;
+  animation:burstWord 0.8s cubic-bezier(0.2,0.8,0.2,1) forwards;
+  z-index:10;
+}
+@keyframes avatarBurst{
+  0%{transform:translate3d(0,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2))}
+  15%{transform:translate3d(-6px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.04));filter:drop-shadow(0 0 30px rgba(255,49,59,0.6)) hue-rotate(-15deg)}
+  30%{transform:translate3d(8px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.06))}
+  45%{transform:translate3d(-4px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.02))}
+  60%{transform:translate3d(2px,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2))}
+  100%{transform:translate3d(0,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2));filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55))}
+}
+@keyframes burstWord{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(-8deg)}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(-2deg)}
+  40%{transform:translate(-50%,-50%) scale(0.95) rotate(1deg)}
+  60%{transform:translate(-50%,-50%) scale(1.05) rotate(-1deg)}
+  100%{opacity:0;transform:translate(-50%,-60%) scale(1.2) rotate(0deg)}
+}
+@media (prefers-reduced-motion: reduce){
+  .illustration.avatar-burst .avatar3d,
+  .illustration.avatar-burst::after{animation:none !important}
+  .illustration.avatar-burst::after{content:none}
+}
+
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
 .speech-bubble{
   position:absolute;z-index:50;

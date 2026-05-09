@@ -1130,6 +1130,40 @@ function currentProjectRef() {
   return {sectionId, projectSlug: slug}
 }
 
+/* Touch swipe handler — left/right swipe in project view = prev/next.
+   Threshold: 60px horizontal, < 80px vertical (so vertical scrolling
+   doesn't accidentally trigger). Touch-only — desktop already has
+   keyboard arrows + the explicit "Next Project" CTA. */
+{
+  const SWIPE_MIN_X = 60
+  const SWIPE_MAX_Y = 80
+  let touchStart = null
+  projectView.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return
+    const t = e.touches[0]
+    touchStart = {x: t.clientX, y: t.clientY, time: Date.now()}
+  }, {passive: true})
+  projectView.addEventListener('touchend', (e) => {
+    if (!touchStart) return
+    const start = touchStart
+    touchStart = null
+    if (!e.changedTouches.length) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+    if (Math.abs(dx) < SWIPE_MIN_X || Math.abs(dy) > SWIPE_MAX_Y) return
+    if (Date.now() - start.time > 600) return // ignore slow drags
+    const cur = currentProjectRef()
+    if (!cur) return
+    const ref = dx < 0
+      ? findNextProject(cur.sectionId, cur.projectSlug)
+      : findPrevProject(cur.sectionId, cur.projectSlug)
+    if (ref) {
+      navigate({view: 'project', id: ref.sectionId, projectSlug: ref.work.slug})
+    }
+  }, {passive: true})
+}
+
 document.addEventListener('keydown', (e) => {
   // ←/→ on landing — switch active section (no modifier keys, not in input)
   if (
@@ -1223,10 +1257,89 @@ document.getElementById('illustration').addEventListener('click', (e) => {
     e.clientY >= bb.minY &&
     e.clientY <= bb.maxY
   ) {
+    // Track easter-egg trigger BEFORE navigating. Five rapid clicks (<2s)
+    // on the avatar before the detail page loads = MAD jingle + glitch.
+    if (registerAvatarClick()) {
+      playMadJingle()
+      flashAvatarBurst()
+      // Don't navigate on the trigger click — let the user enjoy the moment.
+      return
+    }
     const id = document.getElementById('illustration').dataset.id
     navigate({view: 'detail', id})
   }
 })
+
+/* ─── Easter egg: 5 rapid avatar clicks → "MAD" jingle + glitch ──
+   Web Audio API synth (no asset, no payload). Respects
+   prefers-reduced-motion for the visual flourish. */
+const AVATAR_EE = {clicks: [], window: 2000, threshold: 5, audioCtx: null}
+
+function registerAvatarClick() {
+  const now = performance.now()
+  AVATAR_EE.clicks = AVATAR_EE.clicks.filter((t) => now - t < AVATAR_EE.window)
+  AVATAR_EE.clicks.push(now)
+  if (AVATAR_EE.clicks.length >= AVATAR_EE.threshold) {
+    AVATAR_EE.clicks = []
+    return true
+  }
+  return false
+}
+
+function playMadJingle() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    if (!Ctx) return
+    if (!AVATAR_EE.audioCtx) AVATAR_EE.audioCtx = new Ctx()
+    const ctx = AVATAR_EE.audioCtx
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+    // M-A-D as a punchy three-note motif: C5 → E5 → G5 (major triad arp).
+    const notes = [523.25, 659.25, 783.99]
+    const t0 = ctx.currentTime + 0.02
+    const noteDur = 0.18
+    const gap = 0.12
+    notes.forEach((freq, i) => {
+      const start = t0 + i * gap
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(freq, start)
+      // ADSR-ish ramp
+      gain.gain.setValueAtTime(0, start)
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.01)
+      gain.gain.exponentialRampToValueAtTime(0.001, start + noteDur)
+      osc.connect(gain).connect(ctx.destination)
+      osc.start(start)
+      osc.stop(start + noteDur + 0.05)
+    })
+    // Final accent: low kick on last note
+    const last = ctx.currentTime + notes.length * gap + 0.15
+    const kick = ctx.createOscillator()
+    const kgain = ctx.createGain()
+    kick.type = 'sine'
+    kick.frequency.setValueAtTime(120, last)
+    kick.frequency.exponentialRampToValueAtTime(40, last + 0.18)
+    kgain.gain.setValueAtTime(0.25, last)
+    kgain.gain.exponentialRampToValueAtTime(0.001, last + 0.22)
+    kick.connect(kgain).connect(ctx.destination)
+    kick.start(last)
+    kick.stop(last + 0.25)
+  } catch (_) {
+    /* audio failed — silent fallback */
+  }
+}
+
+function flashAvatarBurst() {
+  // Skip the visual flourish if user prefers reduced motion.
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  const illus = document.getElementById('illustration')
+  if (!illus) return
+  illus.classList.remove('avatar-burst')
+  // Force reflow so the animation restarts on rapid retriggers
+  void illus.offsetWidth
+  illus.classList.add('avatar-burst')
+  setTimeout(() => illus.classList.remove('avatar-burst'), 900)
+}
 
 /* ─── ROUTER (URL ↔ view state) ──────────────────────────────────────────
    Public URLs:  /                        → landing
