@@ -611,7 +611,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   opacity:0.55;
   flex-shrink:0;
 }
-.release-player-time .rp-cur{color:var(--cta);opacity:1;font-weight:600}
+.release-player-time .rp-cur{color:#FF313B;opacity:1;font-weight:600}
 .release-player-time .rp-sep{margin:0 0.2em;opacity:0.4}
 
 /* CONTROLS ROW — play button + waveform on a single line */
@@ -621,12 +621,15 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   min-width:0;
 }
 
-/* PLAY BUTTON — solid red square, brutalist edge (no rounded corners
-   on hover morph; static + confident). Cream icon for max contrast. */
+/* PLAY BUTTON — solid red (#FF313B is the MAD brand red, used as the
+   section accent on /madplus). Cream icon for max contrast. Hardcoded
+   red instead of var(--cta) because --cta resolves to beige #F8E5B5
+   in the detail-page palette, which gave near-invisible contrast with
+   the cream icon. Red reads as "press to play" instantly. */
 .release-play{
   width:3rem;height:3rem;
   border-radius:0.2rem;
-  background:var(--cta, #FF313B);
+  background:#FF313B;
   border:none;
   color:#F5F0E1;
   display:flex;align-items:center;justify-content:center;
@@ -638,12 +641,13 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .release-play:hover{
   transform:scale(1.06);
-  box-shadow:0 0 0 0.3rem rgba(255,49,59,0.18);
+  background:#FF4A53;
+  box-shadow:0 0 0 0.3rem rgba(255,49,59,0.22);
 }
 .release-play:active{transform:scale(0.96)}
 .release-play:focus-visible{
   outline:none;
-  box-shadow:0 0 0 0.18rem var(--bg, #0A0A0A), 0 0 0 0.36rem var(--cta);
+  box-shadow:0 0 0 0.18rem var(--bg, #0A0A0A), 0 0 0 0.36rem #FF313B;
 }
 .release-play svg{
   width:1.1rem;height:1.1rem;display:none;
@@ -669,7 +673,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   touch-action:none;
 }
 .release-scrub:focus-visible{
-  outline:1px solid var(--cta);outline-offset:4px;
+  outline:1px solid #FF313B;outline-offset:4px;
 }
 .release-wave{
   width:100%;height:100%;display:block;
@@ -682,10 +686,11 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   fill:var(--accent, #F5F0E1);
   opacity:0.32;
 }
-/* Foreground bars — same geometry, full red, clipped by the progress
-   rect so they reveal as a wash from left to right. */
+/* Foreground bars — same geometry, hardcoded red (NOT var(--cta) which
+   resolves to beige in this palette), clipped by the progress rect so
+   they reveal as a wash from left to right. */
 .release-wave-fg rect{
-  fill:var(--cta, #FF313B);
+  fill:#FF313B;
   opacity:1;
 }
 .release-wave-clip-rect{
@@ -695,7 +700,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .release-wave-cursor{
   position:absolute;top:18%;bottom:18%;left:0%;
   width:1px;
-  background:var(--cta);
+  background:#FF313B;
   pointer-events:none;
   transform:translateX(-50%);
   transition:left 0.08s linear;
