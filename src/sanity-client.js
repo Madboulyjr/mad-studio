@@ -25,7 +25,7 @@ const QUERY = `{
     landingBg, landingAccent, landingHeadline, landingSubtitle, counterLabel,
     kicker, manifesto, lead, agencies, worksLabel, worksTitle,
     illustrationSvg,
-    musicEmbed, musicPlatforms, instagramMusic,
+    musicPlatforms, instagramMusic,
     "featuredRelease": featuredRelease{
       kicker, title, subtitle, year, label,
       "coverUrl": cover.asset->url,

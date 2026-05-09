@@ -338,6 +338,12 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   pointer-events:none;
   transition:opacity 0.45s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0.45s;
   overflow-y:auto;overflow-x:hidden;
+  /* Prevent scroll chaining + rubber-band reveal of the landing page
+     underneath when the user pulls past the top/bottom of the detail
+     scroll. Without this, iOS Safari + some Chrome configs flash the
+     body (landing) for a moment when scrolling back to the top. */
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
   padding:3rem 4.29rem 6rem;
 }
 .detail-page.open{
@@ -467,18 +473,6 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .detail-illus svg{width:100%;max-width:56rem;height:auto}
 
 /* ─── MUSIC EMBED + PLATFORM PILLS (MAD+ section) ─── */
-/* Legacy iframe wrapper — kept for back-compat only. */
-.music-embed-wrap{margin:0 0 4rem;max-width:80rem}
-.music-embed-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
-  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
-  color:var(--accent-soft, #F5F0E1);opacity:0.55;
-  margin-bottom:1rem;
-}
-.music-embed{
-  width:100%;border-radius:0.8rem;
-  background:#1A1815;border:0;display:block;overflow:hidden;
-}
 
 /* ═════════════════════════════════════════════════════════════════════
    MAD+ CINEMATIC STAGE — full-page carousel + glass player layout.
@@ -1504,7 +1498,6 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .music-pill-ig:hover .music-pill-icon{color:#F58529}
 
 @media (max-width: 768px){
-  .music-embed-wrap{margin-bottom:3rem}
   .music-platforms{margin-bottom:3.5rem}
   .music-pill{padding:0.7rem 1.1rem;font-size:0.85rem;gap:0.55rem}
   .music-pill-icon{width:1rem;height:1rem}
@@ -1584,6 +1577,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   position:fixed;inset:0;z-index:700;
   background:var(--bg);color:var(--accent);
   overflow-y:auto;overflow-x:hidden;
+  /* Same overscroll containment as .detail-page so rubber-band scroll
+     doesn't reveal the page underneath. */
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
   opacity:0;visibility:hidden;pointer-events:none;
   transform:translateY(100%);
   transition:opacity 0.55s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0.7s;

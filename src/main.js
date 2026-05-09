@@ -207,7 +207,6 @@ const PAGES = Object.fromEntries(
         worksLabel: s.worksLabel || 'Selected Works',
         worksTitle: s.worksTitle || '',
         works,
-        musicEmbed: s.musicEmbed || null,
         musicPlatforms: s.musicPlatforms || [],
         instagramMusic: s.instagramMusic || null,
         featuredRelease: s.featuredRelease || null,
@@ -569,17 +568,15 @@ function buildReleasesWall(releases) {
 }
 
 /**
- * Combined block — featured + wall. Renders only what's available so
- * a page with just a hero card or just a wall still works cleanly.
- * If neither is set we fall back to the legacy iframe embed (only
- * for back-compat with already-seeded data).
+ * Render the music-section content for any non-MAD+ page that has
+ * featuredRelease + releases data (rare, but lets the studio reuse
+ * the hero-card + wall pattern elsewhere if Ali ever extends another
+ * section). MAD+ itself uses the cinematic stage and never calls this.
  */
-function buildMusicEmbed(featuredOrEmbed, releases) {
-  // New-style: { featuredRelease, releases } → custom blocks
-  if (featuredOrEmbed && (featuredOrEmbed.title || featuredOrEmbed.coverUrl || featuredOrEmbed.previewAudioUrl)) {
-    return buildFeaturedReleaseCard(featuredOrEmbed) + buildReleasesWall(releases || [])
+function buildMusicSection(featured, releases) {
+  if (featured && (featured.title || featured.coverUrl || featured.previewAudioUrl)) {
+    return buildFeaturedReleaseCard(featured) + buildReleasesWall(releases || [])
   }
-  // No featured release but releases array exists → just the wall
   if (Array.isArray(releases) && releases.length) {
     return buildReleasesWall(releases)
   }
@@ -1518,7 +1515,7 @@ function buildDetail(id) {
         <p class="detail-lead">${p.lead}</p>
       </div>
     </div>
-    ${buildMusicEmbed(p.featuredRelease, p.releases)}
+    ${buildMusicSection(p.featuredRelease, p.releases)}
     ${buildPlatformLinks(p.musicPlatforms, p.instagramMusic)}
     ${agenciesHTML}
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
