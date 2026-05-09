@@ -53,7 +53,7 @@ const ILLUS = Object.fromEntries(
 const AVATAR_PNG = {
   originals: '/avatars/originals.png',
   bubble: '/avatars/bubble.png',
-  // music: '/avatars/music.png',
+  music: '/avatars/music.png',
   // vision: '/avatars/vision.png',
 }
 
