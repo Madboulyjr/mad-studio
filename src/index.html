@@ -314,8 +314,17 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:width 0.3s cubic-bezier(.2,.7,.2,1), height 0.3s cubic-bezier(.2,.7,.2,1), border-radius 0.3s cubic-bezier(.2,.7,.2,1);
+  /* Hidden until the first real mousemove snaps it to the user's
+     actual pointer position. JS adds .is-active on first move (and
+     re-adds on mouseover after a mouseout) — fixes the "ghost cursor
+     parked on the avatar" issue right after page reload. */
+  opacity:0;
+  transition:opacity 0.2s ease,
+             width 0.3s cubic-bezier(.2,.7,.2,1),
+             height 0.3s cubic-bezier(.2,.7,.2,1),
+             border-radius 0.3s cubic-bezier(.2,.7,.2,1);
 }
+.cursor.is-active{opacity:1}
 /* solid filled dot */
 .cursor-ring{
   position:absolute;

@@ -2425,13 +2425,33 @@ cursor.className = 'cursor'
 cursor.innerHTML = '<div class="cursor-ring"></div><div class="cursor-label">View</div>'
 document.body.appendChild(cursor)
 
-let cx = window.innerWidth / 2,
-  cy = window.innerHeight / 2
+// Start the cursor off-screen + hidden so it doesn't park itself on the
+// avatar at viewport-center until the user actually moves the mouse.
+// The first mousemove snaps the position to the real cursor, adds the
+// `is-active` class (which fades the cursor in via CSS), then hands
+// off to the lerp loop for smooth follow.
+let cx = -100,
+  cy = -100
 let tx = cx,
   ty = cy
+let cursorFirstMove = true
 window.addEventListener('mousemove', (e) => {
   tx = e.clientX
   ty = e.clientY
+  if (cursorFirstMove) {
+    cx = tx
+    cy = ty
+    cursor.classList.add('is-active')
+    cursorFirstMove = false
+  }
+})
+// Hide again if the cursor leaves the window so it doesn't sit at the
+// last known position when the user is doing something else.
+window.addEventListener('mouseout', (e) => {
+  if (!e.relatedTarget && !e.toElement) cursor.classList.remove('is-active')
+})
+window.addEventListener('mouseover', () => {
+  if (!cursorFirstMove) cursor.classList.add('is-active')
 })
 function rafCursor() {
   cx += (tx - cx) * 0.22
