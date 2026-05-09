@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "studio": "cd sanity && npm run dev",
     "studio:build": "cd sanity && npm run build",
-    "studio:deploy": "cd sanity && npm run deploy",
+    "studio:deploy": "bash sanity/scripts/deploy-studio.sh",
     "seed": "node sanity/scripts/seed.mjs",
     "optimize-avatars": "node scripts/optimize-avatars.mjs",
     "brand-assets": "node scripts/generate-brand-assets.mjs"
