@@ -593,8 +593,12 @@ function buildDetail(id) {
   detailInner.innerHTML = `
     <div class="detail-hero">
       <div class="detail-copy">
-        <!-- Section banner: MAD logo + section name, always above the kicker -->
+        <!-- Section banner: Back pill + MAD logo + section name, all on one row -->
         <div class="detail-section-banner" aria-label="MAD ${secLabel}">
+          <button class="detail-back detail-back-inline" type="button" aria-label="Back to home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back</span>
+          </button>
           <svg class="detail-banner-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
             <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
@@ -760,6 +764,14 @@ function closeDetailDOM() {
   setEnterPillVisible(true)
 }
 detailBack.addEventListener('click', () => navigate({view: 'landing'}))
+// Inline Back button (built inside .detail-section-banner per buildDetail) —
+// delegated click goes to landing.
+detailInner.addEventListener('click', (e) => {
+  if (e.target.closest('.detail-back-inline')) {
+    e.preventDefault()
+    navigate({view: 'landing'})
+  }
+})
 
 /* ─── PROJECT VIEW (inside a work) ───────────────── */
 const projectView = document.getElementById('project-view')

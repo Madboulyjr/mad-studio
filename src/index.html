@@ -276,11 +276,14 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .detail-topbar{position:relative;height:0;pointer-events:none}
 .detail-topbar > *{pointer-events:auto}
-/* Back pill aligned with the MAD section banner. The banner sits at
-   ~11.5rem from the top (page-pad 2.5 + inner 2 + hero margin 7),
-   with the MAD logo center at ~12.8rem. Centering Back vertically on
-   that line: top = 12.8 - back_height/2 ≈ 11rem. */
-.detail-topbar .detail-back{position:fixed;top:11rem;left:2.4rem;z-index:30}
+/* Back pill: only the project view uses the FIXED position now (corner
+   button). On detail pages, the Back button is rendered INLINE inside
+   the .detail-section-banner row (see buildDetail in main.js) so it
+   sits naturally next to the MAD logo as one editorial header strip. */
+.project-view .detail-topbar .detail-back{position:fixed;top:3rem;left:2.4rem;z-index:30}
+/* Hide the original topbar Back button on detail pages — replaced by
+   the inline one inside the banner. */
+.detail-page .detail-topbar .detail-back:not(.detail-back-inline){display:none}
 /* Hide the small top-right MAD logo — replaced by the bigger
    .detail-section-banner that sits inside the hero above the kicker */
 .detail-topbar .detail-logo{display:none}
@@ -320,16 +323,18 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .detail-hero .detail-copy{max-width:130rem}
 
-/* SECTION BANNER — MAD logo + section name, sits on the same horizontal
-   line as the fixed "Back" pill. We pad-left enough to clear the Back
-   pill's footprint (it's at left:2.4rem, ~10rem wide) so the MAD logo
-   visually starts to the right of Back, in one editorial header row. */
+/* SECTION BANNER — Back pill + MAD logo + section name, all in one
+   inline flex row at the top of the detail page. */
 .detail-section-banner{
-  display:flex;align-items:center;gap:1.2rem;
-  padding-left:13rem;
+  display:flex;align-items:center;gap:1.6rem;
   margin-bottom:2.5rem;
   color:var(--accent);
-  min-height:3.3rem; /* match Back-pill height so flex-center aligns */
+}
+/* Inline Back pill — same visual as the corner Back, just in document flow */
+.detail-back-inline{
+  position:static;
+  margin-right:0.4rem;
+  flex-shrink:0;
 }
 .detail-section-banner .detail-banner-logo{
   height:2.6rem;width:auto;color:var(--accent);
