@@ -406,6 +406,10 @@ if (s0) {
 const detailPage = document.getElementById('detail-page')
 const detailInner = document.getElementById('detail-inner')
 const detailBack = document.getElementById('detail-back')
+const detailProgressUpdate = bindScrollProgress(
+  detailPage,
+  document.getElementById('detail-scroll-progress-fill'),
+)
 
 function buildDetail(id) {
   const p = PAGES[id]
@@ -497,6 +501,30 @@ function setEnterPillVisible(show) {
   else pill.setAttribute('hidden', '')
 }
 
+/* ─── SCROLL PROGRESS BARS ────────────────────────────────────────
+   Each overlay (detail, project) has a 0.18rem bar at its top edge
+   that fills as the user scrolls. Bound here to the scroll events
+   of the overlay element itself (not window — they're inner-scroll). */
+function bindScrollProgress(scrollEl, fillEl) {
+  if (!scrollEl || !fillEl) return
+  let raf = 0
+  const update = () => {
+    raf = 0
+    const max = scrollEl.scrollHeight - scrollEl.clientHeight
+    const pct = max > 0 ? Math.min(100, (scrollEl.scrollTop / max) * 100) : 0
+    fillEl.style.width = pct.toFixed(2) + '%'
+  }
+  scrollEl.addEventListener(
+    'scroll',
+    () => {
+      if (!raf) raf = requestAnimationFrame(update)
+    },
+    {passive: true},
+  )
+  // also recalc on opening (fresh content height)
+  return update
+}
+
 function openDetailDOM(id) {
   // If the detail page is already open for the SAME section, do nothing —
   // this preserves the user's scroll position when they back-out from a
@@ -525,6 +553,11 @@ function openDetailDOM(id) {
   detailPage.dataset.sectionId = id
   document.body.style.overflow = 'hidden'
   setEnterPillVisible(false)
+  // reset progress bar to 0 on fresh open
+  if (detailProgressUpdate) {
+    detailPage.scrollTop = 0
+    detailProgressUpdate()
+  }
 }
 function closeDetailDOM() {
   detailPage.classList.remove('open')
@@ -539,6 +572,82 @@ detailBack.addEventListener('click', () => navigate({view: 'landing'}))
 const projectView = document.getElementById('project-view')
 const projectViewInner = document.getElementById('project-view-inner')
 const projectBack = document.getElementById('project-back')
+const projectProgressUpdate = bindScrollProgress(
+  projectView,
+  document.getElementById('project-scroll-progress-fill'),
+)
+
+/* ─── LIGHTBOX — full-screen image viewer for project gallery ───
+   Shows when a user taps any non-video gallery image. Supports prev/next
+   within the current project's images, ESC/click-img to close, ←→ arrows. */
+const lightboxEl = document.getElementById('lightbox')
+const lightboxImg = document.getElementById('lightbox-img')
+const lightboxCounter = document.getElementById('lightbox-counter')
+let lightboxImages = []
+let lightboxIdx = 0
+
+function openLightbox(images, idx) {
+  if (!lightboxEl || !images || !images.length) return
+  lightboxImages = images
+  lightboxIdx = Math.max(0, Math.min(idx, images.length - 1))
+  renderLightbox()
+  lightboxEl.classList.add('open')
+  lightboxEl.classList.toggle('solo', images.length <= 1)
+  lightboxEl.setAttribute('aria-hidden', 'false')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeLightbox() {
+  if (!lightboxEl) return
+  lightboxEl.classList.remove('open')
+  lightboxEl.setAttribute('aria-hidden', 'true')
+  // restore overflow only if no other overlay needs it
+  if (!detailPage.classList.contains('open') && !projectView.classList.contains('open')) {
+    document.body.style.overflow = ''
+  }
+}
+
+function renderLightbox() {
+  if (!lightboxImg || !lightboxImages.length) return
+  const src = lightboxImages[lightboxIdx]
+  lightboxImg.src = src
+  lightboxImg.alt = `Project image ${lightboxIdx + 1} of ${lightboxImages.length}`
+  if (lightboxCounter) {
+    lightboxCounter.textContent = `${lightboxIdx + 1} / ${lightboxImages.length}`
+  }
+}
+
+function lightboxPrev() {
+  if (lightboxImages.length < 2) return
+  lightboxIdx = (lightboxIdx - 1 + lightboxImages.length) % lightboxImages.length
+  renderLightbox()
+}
+function lightboxNext() {
+  if (lightboxImages.length < 2) return
+  lightboxIdx = (lightboxIdx + 1) % lightboxImages.length
+  renderLightbox()
+}
+
+if (lightboxEl) {
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox)
+  document.getElementById('lightbox-prev').addEventListener('click', lightboxPrev)
+  document.getElementById('lightbox-next').addEventListener('click', lightboxNext)
+  // click image OR backdrop = close
+  lightboxEl.addEventListener('click', (e) => {
+    if (e.target === lightboxEl || e.target === lightboxImg) closeLightbox()
+  })
+}
+
+// Delegate clicks on project gallery images to open the lightbox.
+projectViewInner.addEventListener('click', (e) => {
+  const item = e.target.closest('.project-gallery .g-item:not(.g-video) img')
+  if (!item) return
+  // collect ALL images in the gallery (high-res variants for lightbox)
+  const all = Array.from(projectViewInner.querySelectorAll('.project-gallery .g-item:not(.g-video) img'))
+  const srcs = all.map((img) => img.dataset.full || img.src)
+  const idx = all.indexOf(item)
+  openLightbox(srcs, idx)
+})
 
 function renderGalleryItem(item, gi) {
   if (item._type === 'videoItem' && item.playbackId) {
@@ -597,6 +706,9 @@ function buildProject(works, idx, sectionId) {
       <div class="pn-block">
         <div class="pn-label">${nextLabel}</div>
         <div class="pn-title" id="pn-title">${next.title} →</div>
+        <div class="pn-kbd-hint" aria-hidden="true">
+          <kbd>←</kbd><kbd>→</kbd> to navigate · <kbd>esc</kbd> to close
+        </div>
       </div>
       <div class="pn-arrow" id="pn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
     </div>
@@ -619,6 +731,7 @@ function openProjectDOM(works, idx, sectionId) {
   projectView.setAttribute('aria-hidden', 'false')
   projectView.dataset.sectionId = sectionId
   projectView.scrollTo(0, 0)
+  if (projectProgressUpdate) projectProgressUpdate()
 }
 function closeProjectDOM() {
   projectView.classList.remove('open')
@@ -644,9 +757,35 @@ detailInner.addEventListener('click', (e) => {
   navigate({view: 'project', id, projectSlug: slug})
 })
 
+/* Helper: find the previous project in global ALL_PROJECTS order
+   (mirror of findNextProject — used for ← arrow nav in project view). */
+function findPrevProject(sectionId, projectSlug) {
+  if (!ALL_PROJECTS.length) return null
+  const i = ALL_PROJECTS.findIndex((e) => e.sectionId === sectionId && e.work.slug === projectSlug)
+  if (i < 0) return null
+  return ALL_PROJECTS[(i - 1 + ALL_PROJECTS.length) % ALL_PROJECTS.length]
+}
+
+/* Helper: parse current project from project-view DOM state. */
+function currentProjectRef() {
+  if (!projectView.classList.contains('open')) return null
+  const sectionId = projectView.dataset.sectionId
+  // Pull the slug out of the URL — already authoritative since router synced.
+  const segs = location.pathname.split('/').filter(Boolean)
+  const slug = segs[1] ? decodeURIComponent(segs[1]) : null
+  if (!sectionId || !slug) return null
+  return {sectionId, projectSlug: slug}
+}
+
 document.addEventListener('keydown', (e) => {
+  // ESC handling — order: 404 → project → detail
   if (e.key === 'Escape') {
     const notFound = document.getElementById('not-found')
+    const lightbox = document.getElementById('lightbox')
+    if (lightbox && lightbox.classList.contains('open')) {
+      closeLightbox()
+      return
+    }
     if (notFound && notFound.classList.contains('open')) {
       navigate({view: 'landing'})
     } else if (projectView.classList.contains('open')) {
@@ -655,6 +794,34 @@ document.addEventListener('keydown', (e) => {
       else history.back()
     } else if (detailPage.classList.contains('open')) {
       navigate({view: 'landing'})
+    }
+    return
+  }
+
+  // ← / → arrow keys: prev/next image in lightbox, OR prev/next project.
+  if (
+    (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+    !e.metaKey && !e.ctrlKey && !e.altKey
+  ) {
+    const target = e.target
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
+    // Lightbox takes priority over project nav
+    if (lightboxEl && lightboxEl.classList.contains('open')) {
+      e.preventDefault()
+      if (e.key === 'ArrowLeft') lightboxPrev()
+      else lightboxNext()
+      return
+    }
+    if (projectView.classList.contains('open')) {
+      const cur = currentProjectRef()
+      if (!cur) return
+      const ref = e.key === 'ArrowRight'
+        ? findNextProject(cur.sectionId, cur.projectSlug)
+        : findPrevProject(cur.sectionId, cur.projectSlug)
+      if (ref) {
+        e.preventDefault()
+        navigate({view: 'project', id: ref.sectionId, projectSlug: ref.work.slug})
+      }
     }
   }
 })

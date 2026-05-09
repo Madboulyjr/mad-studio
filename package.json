@@ -11,7 +11,8 @@
     "studio:build": "cd sanity && npm run build",
     "studio:deploy": "cd sanity && npm run deploy",
     "seed": "node sanity/scripts/seed.mjs",
-    "optimize-avatars": "node scripts/optimize-avatars.mjs"
+    "optimize-avatars": "node scripts/optimize-avatars.mjs",
+    "brand-assets": "node scripts/generate-brand-assets.mjs"
   },
   "dependencies": {
     "@mux/mux-player": "^3.2.0",

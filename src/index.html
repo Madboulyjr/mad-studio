@@ -33,6 +33,8 @@
 <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
 <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<!-- iOS home-screen pinning (180×180 PNG, iOS auto-rounds corners) -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1210,6 +1212,107 @@ body{
 /* hide legacy header / footer-info / carousel-dots in new layout */
 .header, .footer-info, .carousel-dots[hidden]{display:none !important}
 
+/* ─── SCROLL PROGRESS BAR — top edge of detail + project pages ─── */
+.scroll-progress{
+  position:absolute;top:0;left:0;right:0;height:0.18rem;
+  background:rgba(245, 240, 225, 0.06);
+  z-index:50;pointer-events:none;
+}
+.scroll-progress-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg, var(--cta) 0%, var(--accent) 100%);
+  transform-origin:left center;
+  transition:width 0.06s linear;
+  will-change:width;
+}
+@media (prefers-reduced-motion: reduce){
+  .scroll-progress-fill{transition:none}
+}
+
+/* ─── LIGHTBOX — full-screen image viewer ─── */
+.lightbox{
+  position:fixed;inset:0;z-index:300;
+  display:none;
+  background:rgba(10, 10, 10, 0.96);
+  -webkit-backdrop-filter:blur(40px);
+  backdrop-filter:blur(40px);
+  align-items:center;justify-content:center;
+  padding:4rem 6rem;
+}
+.lightbox.open{display:flex;animation:lbFadeIn 0.25s ease}
+@keyframes lbFadeIn{from{opacity:0}to{opacity:1}}
+.lightbox-img{
+  max-width:100%;max-height:100%;
+  object-fit:contain;
+  cursor:zoom-out;
+  border-radius:0.4rem;
+  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  user-select:none;
+  animation:lbImgIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes lbImgIn{
+  from{opacity:0;transform:scale(0.96)}
+  to{opacity:1;transform:scale(1)}
+}
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next{
+  position:fixed;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(245, 240, 225, 0.06);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+  color:var(--accent);
+  border:0.06rem solid rgba(245, 240, 225, 0.12);
+  border-radius:50%;
+  width:3rem;height:3rem;
+  cursor:pointer;
+  transition:background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.lightbox-close{top:1.5rem;right:1.5rem}
+.lightbox-prev{left:1.5rem;top:50%;transform:translateY(-50%)}
+.lightbox-next{right:1.5rem;top:50%;transform:translateY(-50%)}
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover{
+  background:var(--cta);color:#1A1815;border-color:transparent;
+}
+.lightbox-prev:hover{transform:translateY(-50%) translateX(-2px)}
+.lightbox-next:hover{transform:translateY(-50%) translateX(2px)}
+.lightbox-close:focus-visible,
+.lightbox-prev:focus-visible,
+.lightbox-next:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
+.lightbox-close svg,
+.lightbox-prev svg,
+.lightbox-next svg{width:1.2rem;height:1.2rem}
+.lightbox-counter{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.65;
+  background:rgba(245, 240, 225, 0.06);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+  border:0.06rem solid rgba(245, 240, 225, 0.12);
+  padding:0.5rem 1rem;border-radius:999px;
+  pointer-events:none;
+}
+/* hide nav arrows when only 1 image */
+.lightbox.solo .lightbox-prev,
+.lightbox.solo .lightbox-next,
+.lightbox.solo .lightbox-counter{display:none}
+
+/* mobile: smaller padding, smaller buttons */
+@media (max-width: 768px){
+  .lightbox{padding:5rem 1rem 5rem 1rem}
+  .lightbox-close{top:1rem;right:1rem;width:2.4rem;height:2.4rem}
+  .lightbox-prev{left:0.75rem;width:2.4rem;height:2.4rem}
+  .lightbox-next{right:0.75rem;width:2.4rem;height:2.4rem}
+  .lightbox-counter{bottom:1rem;font-size:0.75rem}
+}
+
+/* tap on gallery images opens lightbox */
+.project-gallery .g-item:not(.g-video){cursor:zoom-in}
+
 /* ─── 404 PAGE — full-viewport editorial brutalist ─── */
 .not-found{
   position:fixed;inset:0;z-index:200;
@@ -1654,6 +1757,32 @@ body{
 .project-nav-next.is-cross-section .pn-label{
   color:var(--cta);opacity:1;
 }
+/* Keyboard hint */
+.pn-kbd-hint{
+  display:flex;align-items:center;gap:0.5rem;
+  margin-top:1.4rem;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--accent-soft);opacity:0.65;
+}
+.pn-kbd-hint kbd{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:1.65rem;height:1.65rem;
+  padding:0 0.45rem;
+  background:#1A1815;color:var(--accent);
+  border:0.06rem solid var(--line);border-radius:0.3rem;
+  font-family:'IBM Plex Mono',monospace;font-size:0.85rem;
+  letter-spacing:0;text-transform:none;
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+.pn-kbd-hint kbd + kbd{margin-left:-0.3rem}
+@media (max-width: 768px){
+  .pn-kbd-hint{display:none}
+}
+/* Hide the kbd hint on devices without a keyboard */
+@media (hover: none){
+  .pn-kbd-hint{display:none}
+}
 
 /* cursor — keep but in cream */
 .cursor-ring{background:var(--accent) !important}
@@ -1773,6 +1902,21 @@ body{
   <span class="enter-pill-arrow" aria-hidden="true">↗</span>
 </button>
 
+<!-- LIGHTBOX — full-screen image zoom for project gallery -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Image viewer">
+  <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close (Esc)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <button class="lightbox-prev" id="lightbox-prev" type="button" aria-label="Previous image (Left arrow)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+  </button>
+  <img class="lightbox-img" id="lightbox-img" alt="">
+  <button class="lightbox-next" id="lightbox-next" type="button" aria-label="Next image (Right arrow)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </button>
+  <div class="lightbox-counter" id="lightbox-counter">1 / 1</div>
+</div>
+
 <!-- 404 PAGE — full-viewport brutalist editorial, shown for unknown URLs (/foo, /madplus/notarealproject, etc.) -->
 <section class="not-found" id="not-found" aria-hidden="true">
   <!-- topbar: same back-pill + MAD logo treatment as /detail pages -->
@@ -1819,6 +1963,10 @@ body{
 
 <!-- DETAIL PAGE OVERLAY -->
 <section class="detail-page" id="detail-page" aria-hidden="true">
+  <!-- Scroll progress bar (top edge, fills as user scrolls the works list) -->
+  <div class="scroll-progress" id="detail-scroll-progress" aria-hidden="true">
+    <div class="scroll-progress-fill" id="detail-scroll-progress-fill"></div>
+  </div>
   <div class="detail-topbar">
     <button class="detail-back" id="detail-back" aria-label="Back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -1838,6 +1986,10 @@ body{
 
 <!-- PROJECT VIEW (inside a single work) -->
 <section class="project-view" id="project-view" aria-hidden="true">
+  <!-- Scroll progress bar (top edge, fills as user scrolls the gallery) -->
+  <div class="scroll-progress" id="project-scroll-progress" aria-hidden="true">
+    <div class="scroll-progress-fill" id="project-scroll-progress-fill"></div>
+  </div>
   <div class="detail-topbar">
     <button class="detail-back" id="project-back" aria-label="Back to works">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
