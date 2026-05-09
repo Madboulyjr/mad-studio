@@ -993,6 +993,9 @@ function bindMadplusStage(scopeEl) {
       _audioState.currentSrc = null
     }
     setPlayState('paused')
+    // Reset progress fill when switching cards
+    const fill = stage.querySelector('#mp-progress-fill')
+    if (fill) fill.style.width = '0%'
   }
 
   function setPlayState(state) {
@@ -1038,6 +1041,17 @@ function bindMadplusStage(scopeEl) {
     else if (e.key === 'ArrowRight') { e.preventDefault(); next() }
   })
 
+  /* Progress line under the now-playing pod — animated as audio advances. */
+  const progressFill = stage.querySelector('#mp-progress-fill')
+  function updateProgress() {
+    if (!progressFill) return
+    const a = _audioState.audio
+    const isOurs = a && _audioState.currentSrc === playerBar.dataset.previewUrl
+    const dur = isOurs && isFinite(a.duration) ? a.duration : 0
+    const pct = isOurs && dur > 0 ? (a.currentTime / dur) * 100 : 0
+    progressFill.style.width = pct.toFixed(2) + '%'
+  }
+
   /* Play/pause logic */
   function toggleActivePlayback() {
     const previewUrl = playerBar.dataset.previewUrl || ''
@@ -1063,8 +1077,11 @@ function bindMadplusStage(scopeEl) {
       a.addEventListener('ended', () => {
         a.currentTime = 0
         setPlayState('paused')
+        updateProgress()
       })
       a.addEventListener('error', () => setPlayState('paused'))
+      a.addEventListener('timeupdate', updateProgress)
+      a.addEventListener('loadedmetadata', updateProgress)
       // Apply current mute setting if user toggled it earlier
       if (muteBtn && muteBtn.dataset.muted === 'true') a.muted = true
     }
@@ -1077,6 +1094,17 @@ function bindMadplusStage(scopeEl) {
   }
 
   if (playBtn) playBtn.addEventListener('click', toggleActivePlayback)
+
+  /* Right-side ancillary buttons */
+  const queueBtn = stage.querySelector('.mp-queue')
+  if (queueBtn) {
+    queueBtn.addEventListener('click', () => {
+      // Scroll to the platform pills row — gives a "see all releases / open
+      // on your platform" affordance without leaving the page
+      const target = stage.querySelector('.madplus-platforms-wrap')
+      if (target) target.scrollIntoView({behavior: 'smooth', block: 'center'})
+    })
+  }
 
   /* Mute toggle — purely visual; affects the global Audio element */
   if (muteBtn) {
@@ -1319,11 +1347,14 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         ${deck[0].subtitle ? `<div class="madplus-now-subtitle" id="madplus-now-subtitle">${escMusic(deck[0].subtitle)}</div>` : '<div class="madplus-now-subtitle" id="madplus-now-subtitle"></div>'}
       </div>
 
-      <!-- Glass player bar -->
-      <div class="madplus-player-bar" id="madplus-player-bar"
+      <!-- Glass player bar — Apple-Music-mini-player layout:
+           left transport controls / center pod (cover + meta + mini
+           icons + progress line) / right ancillary icons. -->
+      <div class="madplus-player-bar" id="madplus-player-bar" data-state="paused"
            data-preview-url="${escMusic(deck[0].previewUrl || '')}"
            data-listen-url="${escMusic(deck[0].listenUrl || '')}">
-        <div class="mp-controls">
+        <!-- LEFT: prev / play / next -->
+        <div class="mp-controls mp-controls-left">
           <button class="mp-btn mp-prev" type="button" aria-label="Previous release">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M6 6h2v12H6zM9.5 12L20 18V6z"/>
@@ -1348,23 +1379,42 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
           </button>
         </div>
 
-        <div class="mp-now">
+        <!-- CENTER: cover + title/artist + mini icons + progress line -->
+        <div class="mp-center">
           <div class="mp-now-cover" id="mp-now-cover">${coverImg(deck[0].coverUrl, deck[0].title)}</div>
           <div class="mp-now-text">
             <span class="mp-now-title" id="mp-now-title">${escMusic(deck[0].title)}</span>
-            <span class="mp-now-sub" id="mp-now-sub">${escMusic(deck[0].subtitle || '')}</span>
+            <span class="mp-now-sub" id="mp-now-sub">${escMusic(deck[0].subtitle || 'by MAD')}</span>
           </div>
-          <div class="mp-eq" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
+          <div class="mp-mini-icons" aria-hidden="true">
+            <span class="mp-eq" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </span>
+            <button class="mp-mini-btn mp-more" type="button" aria-label="More about this release">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/>
+              </svg>
+            </button>
+          </div>
+          <!-- Thin progress line under the center pod, full width -->
+          <div class="mp-progress" role="presentation">
+            <div class="mp-progress-fill" id="mp-progress-fill"></div>
           </div>
         </div>
 
-        <div class="mp-extras">
+        <!-- RIGHT: lyrics-style listen / queue / mute -->
+        <div class="mp-controls mp-controls-right">
           <a class="mp-btn mp-listen" id="mp-listen-link" href="${escMusic(deck[0].listenUrl || '#')}" target="_blank" rel="noopener" aria-label="Open on Spotify">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M11.999 0C5.371 0 0 5.371 0 12s5.371 12 11.999 12C18.627 24 24 18.629 24 12s-5.373-12-12.001-12zm5.506 17.299a.747.747 0 0 1-1.029.249c-2.819-1.722-6.366-2.111-10.546-1.157a.748.748 0 1 1-.333-1.458c4.572-1.044 8.494-.594 11.658 1.337a.747.747 0 0 1 .25 1.029zm1.469-3.267a.937.937 0 0 1-1.286.308c-3.227-1.984-8.146-2.558-11.962-1.4a.937.937 0 1 1-.543-1.794c4.358-1.323 9.778-.682 13.483 1.6a.937.937 0 0 1 .308 1.286zm.126-3.403C15.244 8.474 8.524 8.272 4.78 9.408a1.124 1.124 0 1 1-.652-2.151c4.297-1.305 11.72-1.054 16.351 1.7a1.123 1.123 0 1 1-1.379 1.672z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
             </svg>
           </a>
+          <button class="mp-btn mp-queue" type="button" aria-label="See all releases">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
           <button class="mp-btn mp-mute" type="button" aria-label="Mute / Unmute" data-muted="false">
             <svg class="mp-icon-volume" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/>
