@@ -54,7 +54,7 @@ const AVATAR_PNG = {
   originals: '/avatars/originals.png',
   bubble: '/avatars/bubble.png',
   music: '/avatars/music.png',
-  // vision: '/avatars/vision.png',
+  vision: '/avatars/vision.png',
 }
 
 function illusMarkup(slug) {
