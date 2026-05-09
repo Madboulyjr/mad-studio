@@ -1058,8 +1058,11 @@ body::after{display:none}
   .logo-svg-d{height:2.2rem}
   .detail-logo .sub{font-size:1.4rem}
 
-  .detail-inner{margin-top:5rem}
-  .detail-hero{min-height:auto;margin:1rem 0 3rem;align-items:flex-start}
+  /* detail-inner had 5rem top margin to clear the FIXED Back button —
+     but on detail pages Back is rendered inline inside the section
+     banner, so that buffer is dead space. Drop to 0.5rem. */
+  .detail-inner{margin-top:0.5rem}
+  .detail-hero{min-height:auto;margin:0 0 3rem;align-items:flex-start}
   .detail-hero .detail-copy{max-width:100%}
   /* Mobile: Back is inline; rule + index don't fit in the cramped row */
   .detail-section-banner{padding-left:0;min-height:auto;flex-wrap:wrap;gap:1rem}
@@ -2288,13 +2291,30 @@ body{
 /* mobile overrides for poch */
 @media (max-width: 768px){
   body{padding-bottom:8rem}
-  .hero{min-height:auto;padding:2rem 1.5rem 6rem;display:block}
-  .hero .illustration{position:relative !important;height:auto !important;width:100% !important;opacity:1;margin:0 0 1.5rem;inset:auto !important;display:flex;justify-content:center}
-  .hero .illustration svg{height:auto !important;max-height:30rem;width:auto;opacity:0.22}
-  .hero .illustration .avatar3d{max-height:34rem;max-width:100%}
+  /* Landing hero — vertical-center the avatar + tagline in the small
+     viewport (100svh accounts for iOS URL-bar collapse) so there's no
+     dead band at the top of the screen and the content block sits in
+     the middle/lower portion of the visible area instead of glued to
+     the status bar. Bottom padding clears the fixed ENTER pill (~5rem)
+     and bottomnav (~5rem) so they don't overlap text. */
+  .hero{
+    min-height:100svh;
+    padding:1.5rem 1.5rem 11rem;
+    display:flex;flex-direction:column;justify-content:center;
+    gap:0.5rem;
+  }
+  .hero .illustration{
+    position:relative !important;
+    height:auto !important;width:100% !important;
+    opacity:1;margin:0;inset:auto !important;
+    display:flex;justify-content:center;flex-shrink:0;
+  }
+  .hero .illustration svg{height:auto !important;max-height:26rem;width:auto;opacity:0.22}
+  .hero .illustration .avatar3d{max-height:30rem;max-width:100%}
+  .hero-copy{margin-top:1.2rem}
   .hero-line{font-size:2.4rem;line-height:1.15}
   .hero-line-sub{font-size:1.2rem}
-  .hero-counter{position:relative;bottom:auto;left:auto;transform:none;margin-top:2rem;display:block}
+  .hero-counter{position:relative;bottom:auto;left:auto;transform:none;margin-top:1.5rem;display:block}
 
   .bottomnav{bottom:1rem;flex-wrap:nowrap;max-width:calc(100% - 2rem);overflow-x:auto;scrollbar-width:none}
   .bottomnav::-webkit-scrollbar{display:none}
