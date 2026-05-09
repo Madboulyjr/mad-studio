@@ -379,19 +379,19 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   font-size:2.2rem;letter-spacing:-0.01em;line-height:1;color:var(--accent);
 }
 .detail-inner{
-  width:100%;margin:2rem 0 0;
+  /* Top margin was 2rem to clear the fixed "Back" pill — but Back is
+     now rendered inline inside the section banner, so this buffer is
+     dead space. Page-level padding-top alone is enough breathing. */
+  width:100%;margin:0;
 }
 
 /* manifesto hero */
 .detail-hero{
   display:block;
-  /* Increased top margin so the section banner clears the fixed
-     "Back" pill button (which sits at top:3rem with ~3.5rem height,
-     bottom ≈ 6.5rem). Banner now starts at ~10rem from page top with
-     comfortable visual separation. */
-  /* Reduced from 7rem after the Back button moved INLINE inside the
-     section banner. Was buffering for fixed top:11rem positioning. */
-  margin:1.5rem 0 4rem;
+  /* Top margin was 1.5rem (legacy buffer for the fixed back button).
+     Now zero — the section banner is the first thing in the inner
+     container, sitting tight against the page padding-top. */
+  margin:0 0 4rem;
 }
 .detail-hero .detail-copy{max-width:130rem}
 
