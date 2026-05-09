@@ -468,37 +468,43 @@ function buildFeaturedReleaseCard(featured) {
   const platformPills = buildPlatformLinks(featured.platforms, null)
 
   // Audio preview block — rendered only when an MP3 is uploaded.
+  // Editorial band layout: hairline rules above/below, kicker + time on
+  // a header row, then [play button + real waveform] on a single row.
   // The waveform itself is generated client-side from the actual audio
-  // bytes (Web Audio API decodeAudioData → peak-sampled into ~80 SVG
-  // bars on first play). Until then we render a placeholder gradient.
+  // bytes (Web Audio API decodeAudioData → peak-sampled into 56 wide
+  // SVG bars on first play). Track title is intentionally NOT repeated
+  // here — the hero's <h2> already displays it directly above.
+  const clipId = `wave-clip-${Math.random().toString(36).slice(2, 8)}`
   const audioBlock = featured.previewAudioUrl
     ? `<div class="release-player" data-audio-src="${escMusic(featured.previewAudioUrl)}" data-state="idle">
-        <button class="release-play" type="button" aria-label="Play preview" data-state="paused">
-          <svg class="release-play-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          <svg class="release-play-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <rect x="6" y="5" width="4" height="14" rx="0.5"/>
-            <rect x="14" y="5" width="4" height="14" rx="0.5"/>
-          </svg>
-          <svg class="release-play-icon-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" stroke-dasharray="14 42" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <div class="release-player-body">
-          <div class="release-player-head">
-            <span class="release-player-track">${escMusic(featured.title || 'Preview')}</span>
-            <span class="release-player-time"><span class="rp-cur">0:00</span><span class="rp-sep"> / </span><span class="rp-dur">0:30</span></span>
-          </div>
+        <div class="release-player-head">
+          <span class="release-player-kicker">— Preview</span>
+          <span class="release-player-time">
+            <span class="rp-cur">0:00</span><span class="rp-sep"> / </span><span class="rp-dur">0:30</span>
+          </span>
+        </div>
+        <div class="release-player-controls">
+          <button class="release-play" type="button" aria-label="Play preview" data-state="paused">
+            <svg class="release-play-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg class="release-play-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14"/>
+              <rect x="14" y="5" width="4" height="14"/>
+            </svg>
+            <svg class="release-play-icon-loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke-dasharray="14 42" stroke-linecap="round"/>
+            </svg>
+          </button>
           <div class="release-scrub" role="slider" aria-label="Seek through preview" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <svg class="release-wave" viewBox="0 0 320 64" preserveAspectRatio="none" aria-hidden="true">
+            <svg class="release-wave" viewBox="0 0 320 80" preserveAspectRatio="none" aria-hidden="true">
               <defs>
-                <clipPath id="wave-clip-${Math.random().toString(36).slice(2, 8)}" class="release-wave-clip">
-                  <rect x="0" y="0" width="0" height="64" class="release-wave-clip-rect"/>
+                <clipPath id="${clipId}" class="release-wave-clip">
+                  <rect x="0" y="0" width="0" height="80" class="release-wave-clip-rect"/>
                 </clipPath>
               </defs>
               <g class="release-wave-bg"></g>
-              <g class="release-wave-fg"></g>
+              <g class="release-wave-fg" clip-path="url(#${clipId})"></g>
             </svg>
             <div class="release-wave-cursor" aria-hidden="true"></div>
           </div>
@@ -611,8 +617,11 @@ function buildMusicEmbed(featuredOrEmbed, releases) {
 
 const _audioState = {audio: null, currentSrc: null}
 const _waveCache = new Map() // src → number[] (in-memory)
-const WAVE_BARS = 80
-const WAVE_LS_PREFIX = 'mad-wave-v1:'
+/* 56 bars in a 320-unit viewBox = ~5.7 units per slot. With 1.5 units
+   of gap between bars that gives ~4.2 unit bar widths — wide enough
+   to read clearly as a poster-style waveform without going chunky. */
+const WAVE_BARS = 56
+const WAVE_LS_PREFIX = 'mad-wave-v2:'
 
 /* Try localStorage so the same MP3 doesn't re-decode on revisit. */
 function readCachedPeaks(src) {
@@ -697,19 +706,18 @@ function renderWaveform(player, peaks) {
   const fgGroup = svg.querySelector('.release-wave-fg')
   if (!bgGroup || !fgGroup) return
 
-  // Clear any prior render
   bgGroup.innerHTML = ''
   fgGroup.innerHTML = ''
 
   const W = 320
-  const H = 64
-  const gap = 2
+  const H = 80
+  const gap = 1.5
   const barWidth = (W - gap * (peaks.length - 1)) / peaks.length
-  const minBarH = 2 // never zero — flat-line moments still register
+  const minBarH = 3 // visual baseline so silent moments still register
   const fragmentBg = document.createDocumentFragment()
   const fragmentFg = document.createDocumentFragment()
   for (let i = 0; i < peaks.length; i++) {
-    const h = Math.max(minBarH, peaks[i] * H)
+    const h = Math.max(minBarH, peaks[i] * H * 0.92) // 92% leaves a hair of breathing
     const x = i * (barWidth + gap)
     const y = (H - h) / 2
     const bgBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
@@ -717,7 +725,6 @@ function renderWaveform(player, peaks) {
     bgBar.setAttribute('y', String(y.toFixed(2)))
     bgBar.setAttribute('width', String(barWidth.toFixed(2)))
     bgBar.setAttribute('height', String(h.toFixed(2)))
-    bgBar.setAttribute('rx', '0.6')
     fragmentBg.appendChild(bgBar)
     const fgBar = bgBar.cloneNode()
     fragmentFg.appendChild(fgBar)
@@ -725,12 +732,8 @@ function renderWaveform(player, peaks) {
   bgGroup.appendChild(fragmentBg)
   fgGroup.appendChild(fragmentFg)
 
-  // Width-clip the fg group to reveal it as playback progresses
+  // Reset progress clip
   const clipRect = svg.querySelector('.release-wave-clip-rect')
-  const clipPath = svg.querySelector('clipPath')
-  if (clipPath && fgGroup) {
-    fgGroup.setAttribute('clip-path', `url(#${clipPath.id})`)
-  }
   if (clipRect) clipRect.setAttribute('width', '0')
 }
 
