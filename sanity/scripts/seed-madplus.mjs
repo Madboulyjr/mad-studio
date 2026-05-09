@@ -54,8 +54,8 @@ const patch = {
     },
   ],
   instagramMusic: {
-    handle: 'madbovlly',
-    url: 'https://instagram.com/madbovlly',
+    handle: 'madplus.ctrl',
+    url: 'https://www.instagram.com/madplus.ctrl/',
   },
 }
 
