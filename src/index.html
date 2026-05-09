@@ -2814,9 +2814,32 @@ body{
 }
 
 @media (max-width: 768px){
-  .enter-pill{right:1rem;bottom:5.5rem;padding:0.65rem 1.1rem}
+  /* Centered above the bottomnav on mobile — thumb-reachable, no
+     left-side MAD logo competing for attention. Override `right` to
+     auto so it doesn't cross-anchor with the desktop position. Uses
+     a separate animation name (`enterPillInCentered`) so the END
+     transform keeps translateX(-50%) — the global enterPillIn keyframe
+     ends at translateY(0) which would un-center the pill via the
+     `animation-fill-mode: forwards` carryover. */
+  .enter-pill{
+    right:auto;
+    left:50%;
+    bottom:5.5rem;
+    transform:translateX(-50%);
+    padding:0.65rem 1.1rem;
+    animation:enterPillInCentered 0.6s ease 0.4s forwards;
+  }
+  /* Hover bump slides upward (no horizontal nudge that'd un-center it) */
+  .enter-pill:hover{transform:translateX(-50%) translateY(-1px)}
   .enter-pill .enter-pill-label{font-size:0.7rem;letter-spacing:0.15em}
   .enter-pill .enter-pill-arrow{font-size:0.95rem}
+}
+/* Centered fade-in keyframes — used only by the mobile rule above.
+   Defined OUTSIDE the @media block so the browser parses it once and
+   the animation-name resolves cleanly. */
+@keyframes enterPillInCentered{
+  from{opacity:0;transform:translateX(-50%) translateY(8px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
 }
 
 /* ─── MANIFESTO PAGE — full-screen editorial takeover with
