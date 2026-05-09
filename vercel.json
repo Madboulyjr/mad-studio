@@ -22,5 +22,13 @@
       "source": "/admin",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/admin/video-finalize.js": {
+      "maxDuration": 60
+    },
+    "api/admin/upload-image.js": {
+      "maxDuration": 30
+    }
+  }
 }

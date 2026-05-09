@@ -18,11 +18,30 @@ const API = {
   projects: '/api/admin/projects',
   sections: '/api/admin/sections',
   upload: '/api/admin/upload-image',
+  videoInit: '/api/admin/video-init',
+  videoFinalize: '/api/admin/video-finalize',
+}
+
+/* PUT a file via XMLHttpRequest so we get progress events (fetch doesn't
+   support upload progress yet in browsers). Used for direct Mux uploads. */
+function xhrUpload(url, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) onProgress((e.loaded / e.total) * 100)
+    }
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)))
+    xhr.onerror = () => reject(new Error('Network error'))
+    xhr.send(file)
+  })
 }
 
 /* In-memory edit-form state for media so changes batch into one PATCH */
 let mediaState = []
-let coverState = null // {assetId, url} or null = unchanged
+let coverState = null // {assetId, url, hotspot?} or {remove: true} or null
+let hotspotState = null // {x, y} (0-1) — applies to current cover (existing or just-uploaded)
 
 let rootEl = null
 let state = {authed: false, view: 'list', sections: [], projects: [], editing: null, busy: false}
@@ -476,7 +495,15 @@ function renderProjectForm(p) {
         <legend>Cover image</legend>
         <div class="adm-cover-zone" data-cover-current="${escapeAttr(p.coverImage?.assetId || '')}">
           ${p.coverImage?.url
-            ? `<img class="adm-cover-preview" src="${escapeAttr(p.coverImage.url)}?w=800&auto=format" alt="Current cover">`
+            ? `<div class="adm-cover-preview-wrap">
+                 <img class="adm-cover-preview" src="${escapeAttr(p.coverImage.url)}?w=800&auto=format" alt="Current cover">
+                 <button type="button" class="adm-cover-hotspot" id="adm-cover-hotspot"
+                   data-x="${p.coverImage.hotspot?.x ?? 0.5}" data-y="${p.coverImage.hotspot?.y ?? 0.5}"
+                   style="left:${(p.coverImage.hotspot?.x ?? 0.5) * 100}%;top:${(p.coverImage.hotspot?.y ?? 0.5) * 100}%"
+                   aria-label="Drag to set focal point"
+                   title="Drag this dot to set the focal point — image stays centered on it when cropped"></button>
+                 <div class="adm-cover-hotspot-hint">⊕ Drag dot to set focal point</div>
+               </div>`
             : '<div class="adm-cover-empty">No cover yet — drop or click to upload</div>'}
           <div class="adm-cover-actions">
             <label class="adm-cover-btn">
@@ -484,6 +511,7 @@ function renderProjectForm(p) {
               <span>${p.coverImage?.url ? 'Replace cover ↑' : 'Upload cover ↑'}</span>
             </label>
             ${p.coverImage?.url ? '<button type="button" class="adm-link adm-cover-remove">Remove</button>' : ''}
+            ${p.coverImage?.url ? '<button type="button" class="adm-link adm-cover-reset-hotspot" id="adm-cover-reset-hotspot">Reset focal point</button>' : ''}
           </div>
           <div class="adm-cover-status" id="adm-cover-status"></div>
         </div>
@@ -492,7 +520,7 @@ function renderProjectForm(p) {
       <fieldset class="adm-fields adm-fields-gallery">
         <legend>Project gallery (${(p.media || []).length} items)</legend>
         <div class="adm-gallery-hint">
-          Drag to reorder · click × to remove · drop new images at the end
+          Drag to reorder · click × to remove · add images or videos at the end
         </div>
         <div class="adm-gallery-grid" id="adm-gallery-grid">
           ${(p.media || []).map((m, i) => renderGalleryThumb(m, i)).join('')}
@@ -501,12 +529,13 @@ function renderProjectForm(p) {
             <span class="adm-gallery-add-icon" aria-hidden="true">+</span>
             <span class="adm-gallery-add-label">Add images</span>
           </label>
+          <label class="adm-gallery-add adm-gallery-add-video">
+            <input type="file" accept="video/mp4,video/quicktime,video/webm,video/mov,video/*" hidden id="adm-gallery-video-input">
+            <span class="adm-gallery-add-icon" aria-hidden="true">▶</span>
+            <span class="adm-gallery-add-label">Add video</span>
+          </label>
         </div>
         <div class="adm-cover-status" id="adm-gallery-status"></div>
-        <div class="adm-gallery-note">
-          <strong>Videos:</strong> upload via <a href="https://madboulyjr-studio.sanity.studio" target="_blank" rel="noopener">Sanity Studio ↗</a> for now
-          (Mux transcoding happens there). They'll appear in the gallery after publishing.
-        </div>
       </fieldset>
 
       <fieldset class="adm-fields">
@@ -564,13 +593,23 @@ function renderSectionForm(s) {
   `
 }
 
-/* COVER IMAGE upload + remove */
+/* COVER IMAGE upload + remove + hotspot drag */
 function bindCoverUpload(projectId) {
   const input = rootEl.querySelector('#adm-cover-input')
   const status = rootEl.querySelector('#adm-cover-status')
   const zone = rootEl.querySelector('.adm-cover-zone')
   const removeBtn = rootEl.querySelector('.adm-cover-remove')
+  const hotspotEl = rootEl.querySelector('#adm-cover-hotspot')
+  const resetHotspotBtn = rootEl.querySelector('#adm-cover-reset-hotspot')
   if (!input || !zone) return
+
+  // Initialise hotspotState from existing cover
+  if (hotspotEl) {
+    const x = parseFloat(hotspotEl.dataset.x) || 0.5
+    const y = parseFloat(hotspotEl.dataset.y) || 0.5
+    hotspotState = {x, y}
+  }
+
   input.addEventListener('change', async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -578,33 +617,107 @@ function bindCoverUpload(projectId) {
     try {
       const asset = await uploadFile(file)
       coverState = {assetId: asset._id, url: asset.url}
-      // Update preview live
-      const preview = zone.querySelector('.adm-cover-preview')
+      hotspotState = {x: 0.5, y: 0.5} // reset to center for new image
+      // Update preview live (rebuild the wrap so hotspot dot reappears)
+      const wrap = zone.querySelector('.adm-cover-preview-wrap')
       const empty = zone.querySelector('.adm-cover-empty')
-      if (preview) preview.src = asset.url + '?w=800&auto=format'
+      const wrapHTML = `<img class="adm-cover-preview" src="${asset.url}?w=800&auto=format" alt="New cover">
+        <button type="button" class="adm-cover-hotspot" id="adm-cover-hotspot"
+          data-x="0.5" data-y="0.5" style="left:50%;top:50%"
+          aria-label="Drag to set focal point"></button>
+        <div class="adm-cover-hotspot-hint">⊕ Drag dot to set focal point</div>`
+      if (wrap) wrap.innerHTML = wrapHTML
       else if (empty) {
-        empty.outerHTML = `<img class="adm-cover-preview" src="${asset.url}?w=800&auto=format" alt="New cover">`
+        const newWrap = document.createElement('div')
+        newWrap.className = 'adm-cover-preview-wrap'
+        newWrap.innerHTML = wrapHTML
+        empty.replaceWith(newWrap)
       }
-      status.textContent = '✓ Uploaded — click "Save changes" to apply'
+      // Re-attach hotspot drag to the freshly inserted dot
+      attachHotspotDrag(zone)
+      status.textContent = '✓ Uploaded — drag dot to set focus, then save'
     } catch (err) {
       status.textContent = '✗ ' + err.message
     }
   })
+
   if (removeBtn) {
     removeBtn.addEventListener('click', () => {
       coverState = {remove: true}
-      const preview = zone.querySelector('.adm-cover-preview')
-      if (preview) preview.replaceWith(Object.assign(document.createElement('div'), {className: 'adm-cover-empty', textContent: 'Cover removed (will save when you click "Save changes")'}))
+      hotspotState = null
+      const wrap = zone.querySelector('.adm-cover-preview-wrap')
+      if (wrap) wrap.replaceWith(Object.assign(document.createElement('div'), {className: 'adm-cover-empty', textContent: 'Cover removed (will save when you click "Save changes")'}))
       removeBtn.remove()
+      const reset = rootEl.querySelector('#adm-cover-reset-hotspot')
+      if (reset) reset.remove()
       status.textContent = 'Cover marked for removal'
     })
   }
+
+  if (resetHotspotBtn) {
+    resetHotspotBtn.addEventListener('click', () => {
+      hotspotState = {x: 0.5, y: 0.5}
+      const dot = zone.querySelector('.adm-cover-hotspot')
+      if (dot) {
+        dot.style.left = '50%'
+        dot.style.top = '50%'
+        dot.dataset.x = 0.5
+        dot.dataset.y = 0.5
+      }
+      status.textContent = 'Focal point reset — click Save to apply'
+    })
+  }
+
+  attachHotspotDrag(zone)
 }
 
-/* GALLERY — add/remove/reorder */
+/* Hotspot drag — bound to whatever .adm-cover-hotspot is currently in zone */
+function attachHotspotDrag(zone) {
+  const dot = zone.querySelector('.adm-cover-hotspot')
+  const wrap = zone.querySelector('.adm-cover-preview-wrap')
+  const status = rootEl.querySelector('#adm-cover-status')
+  if (!dot || !wrap) return
+  let dragging = false
+  const onMove = (e) => {
+    if (!dragging) return
+    e.preventDefault()
+    const rect = wrap.getBoundingClientRect()
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
+    dot.style.left = (x * 100) + '%'
+    dot.style.top = (y * 100) + '%'
+    dot.dataset.x = x.toFixed(4)
+    dot.dataset.y = y.toFixed(4)
+    hotspotState = {x, y}
+  }
+  const stop = () => {
+    if (!dragging) return
+    dragging = false
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('touchmove', onMove)
+    document.removeEventListener('mouseup', stop)
+    document.removeEventListener('touchend', stop)
+    if (status) status.textContent = `Focal point: ${(hotspotState.x * 100).toFixed(0)}%, ${(hotspotState.y * 100).toFixed(0)}% — click Save to apply`
+  }
+  const start = (e) => {
+    dragging = true
+    e.preventDefault()
+    document.addEventListener('mousemove', onMove, {passive: false})
+    document.addEventListener('touchmove', onMove, {passive: false})
+    document.addEventListener('mouseup', stop)
+    document.addEventListener('touchend', stop)
+  }
+  dot.addEventListener('mousedown', start)
+  dot.addEventListener('touchstart', start, {passive: false})
+}
+
+/* GALLERY — add/remove/reorder + video upload via Mux */
 function bindGallery(projectId) {
   const grid = rootEl.querySelector('#adm-gallery-grid')
   const input = rootEl.querySelector('#adm-gallery-input')
+  const videoInput = rootEl.querySelector('#adm-gallery-video-input')
   const status = rootEl.querySelector('#adm-gallery-status')
   if (!grid) return
 
@@ -630,6 +743,53 @@ function bindGallery(projectId) {
       status.textContent = `✓ Added ${files.length} image${files.length > 1 ? 's' : ''} — click "Save changes" to apply`
       reRenderGallery()
       input.value = '' // reset so same file can be re-added
+    })
+  }
+
+  // Add new video via Mux direct upload
+  if (videoInput) {
+    videoInput.addEventListener('change', async (e) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      status.textContent = `Preparing upload for ${file.name}…`
+      try {
+        // Step 1: get Mux upload URL
+        const initR = await fetch(API.videoInit, {method: 'POST', credentials: 'same-origin'})
+        const init = await initR.json()
+        if (!initR.ok || !init.ok) throw new Error(init.error || 'Mux init failed')
+
+        // Step 2: PUT the file to Mux directly
+        status.textContent = `Uploading ${file.name} to Mux…`
+        await xhrUpload(init.uploadUrl, file, (pct) => {
+          status.textContent = `Uploading ${file.name}: ${Math.round(pct)}%`
+        })
+
+        // Step 3: poll for processing + Sanity wrapping
+        status.textContent = `Mux is transcoding ${file.name} (~30s)…`
+        const finR = await fetch(`${API.videoFinalize}?uploadId=${encodeURIComponent(init.uploadId)}`, {
+          method: 'POST',
+          credentials: 'same-origin',
+        })
+        const fin = await finR.json()
+        if (!finR.ok || !fin.ok) throw new Error(fin.error || 'Mux finalize failed')
+
+        // Add as videoItem to mediaState
+        mediaState.push({
+          _type: 'videoItem',
+          _key: fin._key,
+          video: {
+            _type: 'mux.video',
+            asset: {_type: 'reference', _ref: fin.videoAsset._id},
+          },
+          caption: '',
+          autoplay: true,
+        })
+        status.textContent = `✓ Video processed — click "Save changes" to apply`
+        reRenderGallery()
+      } catch (err) {
+        status.textContent = '✗ Video upload failed: ' + err.message
+      }
+      videoInput.value = ''
     })
   }
 
@@ -777,11 +937,22 @@ function collectProjectPayload(data, form) {
       outcome,
     },
   }
-  // Cover image — only include if user uploaded a new one or removed it
-  if (coverState && coverState.assetId) {
-    payload.coverImage = {assetId: coverState.assetId}
-  } else if (coverState && coverState.remove) {
+  // Cover image — include if user uploaded a new one OR moved hotspot OR removed it
+  if (coverState && coverState.remove) {
     payload.coverImage = null // PATCH set null clears the field
+  } else if (coverState && coverState.assetId) {
+    // New cover uploaded this session — include hotspot
+    payload.coverImage = {
+      assetId: coverState.assetId,
+      ...(hotspotState ? {hotspot: hotspotState} : {}),
+    }
+  } else if (hotspotState) {
+    // Hotspot moved on existing cover — re-send the existing assetId + new hotspot.
+    // Server keeps both: assetId from current doc, hotspot from us.
+    const currentAssetId = rootEl.querySelector('.adm-cover-zone')?.dataset.coverCurrent
+    if (currentAssetId) {
+      payload.coverImage = {assetId: currentAssetId, hotspot: hotspotState}
+    }
   }
   // Media gallery — always send the current ordered list (additions,
   // removals, reorders are all reflected in mediaState)
@@ -1210,13 +1381,49 @@ function injectStyles() {
 .adm-cover-zone{
   display:flex;flex-direction:column;gap:0.8rem;
 }
-.adm-cover-preview{
+.adm-cover-preview-wrap{
+  position:relative;display:inline-block;
   width:100%;max-width:36rem;
+  border-radius:0.6rem;overflow:hidden;
+  border:0.08rem solid rgba(245,240,225,0.1);
+}
+.adm-cover-preview{
+  width:100%;
   aspect-ratio:16/10;
   object-fit:cover;
   background:#0A0A0A;
-  border-radius:0.6rem;
-  border:0.08rem solid rgba(245,240,225,0.1);
+  display:block;
+  user-select:none;
+}
+/* Focal point dot — draggable */
+.adm-cover-hotspot{
+  position:absolute;
+  width:2rem;height:2rem;
+  margin-left:-1rem;margin-top:-1rem;
+  border-radius:50%;
+  background:#D0FA51;
+  border:0.18rem solid #0A0A0A;
+  box-shadow:0 0 0 0.06rem #D0FA51, 0 0.4rem 1rem rgba(0,0,0,0.6);
+  cursor:grab;
+  z-index:5;
+  padding:0;
+  transition:transform 0.15s ease;
+}
+.adm-cover-hotspot::after{
+  content:'';position:absolute;inset:0;
+  margin:0.4rem;border-radius:50%;
+  background:#0A0A0A;
+}
+.adm-cover-hotspot:hover{transform:scale(1.15)}
+.adm-cover-hotspot:active{cursor:grabbing;transform:scale(1.05)}
+.adm-cover-hotspot-hint{
+  position:absolute;left:0.6rem;bottom:0.6rem;
+  background:rgba(0,0,0,0.7);
+  color:#F5F0E1;
+  padding:0.3rem 0.7rem;border-radius:999px;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+  pointer-events:none;
 }
 .adm-cover-empty{
   width:100%;max-width:36rem;
@@ -1314,6 +1521,9 @@ function injectStyles() {
 }
 .adm-gallery-add:hover{
   border-color:#D0FA51;opacity:1;color:#D0FA51;
+}
+.adm-gallery-add-video:hover{
+  border-color:#FF5577;color:#FF5577;
 }
 .adm-gallery-add-icon{font-size:1.6rem;margin-bottom:0.2rem;opacity:0.7}
 .adm-gallery-note{
