@@ -741,11 +741,20 @@ function rafCursor() {
   requestAnimationFrame(rafCursor)
 }
 
-/* ─── 3D AVATAR PARALLAX (fake 3D: tilt + translation + floor shift) ─── */
+/* ─── 3D AVATAR PARALLAX (fake 3D: tilt + translation + floor shift) ───
+   Respects prefers-reduced-motion: skips entirely if user prefers reduced. */
+const reduceMotion = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null
+let prefersReducedMotion = !!(reduceMotion && reduceMotion.matches)
+if (reduceMotion && reduceMotion.addEventListener) {
+  reduceMotion.addEventListener('change', (e) => {
+    prefersReducedMotion = e.matches
+  })
+}
 let avatarRotX = 0, avatarRotY = 0
 let avatarTx = 0, avatarTy = 0
 let shadowShift = 0
 function updateAvatarParallax(mx, my) {
+  if (prefersReducedMotion) return
   const illus = document.getElementById('illustration')
   if (!illus) return
   const stage = illus.querySelector('.avatar-stage')

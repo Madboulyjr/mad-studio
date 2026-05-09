@@ -1618,6 +1618,28 @@ body{
 </head>
 <body class="loading">
 
+<noscript>
+  <style>
+    .splash{display:none !important}
+    body{
+      background:#0A0A0A;color:#F5F0E1;
+      font-family:'Hanken Grotesk',system-ui,sans-serif;
+      display:flex !important;flex-direction:column;
+      align-items:center;justify-content:center;
+      min-height:100vh;padding:2rem;text-align:center;
+    }
+    .nojs{max-width:36rem;line-height:1.5}
+    .nojs h1{font-size:2.4rem;font-weight:600;letter-spacing:-0.02em;margin:0 0 1.2rem}
+    .nojs p{font-size:1.1rem;opacity:0.85;margin:0 0 1.6rem}
+    .nojs a{color:#D0FA51;text-decoration:underline}
+  </style>
+  <div class="nojs">
+    <h1>MAD Studio</h1>
+    <p>This site needs JavaScript to render. Please enable JS, or get in touch directly:</p>
+    <p><a href="mailto:hi@beingmad.co">hi@beingmad.co</a> · <a href="https://beingmad.co">beingmad.co</a></p>
+  </div>
+</noscript>
+
 <!-- LOADING SPLASH — minimal poch-style: just MAD logo on black, clean fade -->
 <div id="splash" class="splash" aria-hidden="true">
   <svg class="splash-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -1642,7 +1664,7 @@ body{
 
 <!-- HERO — centered conversational, illustration as backdrop -->
 <main class="hero">
-  <div class="illustration" id="illustration"></div>
+  <div class="illustration" id="illustration" role="img" aria-label="Section avatar — click to enter"></div>
   <div class="hero-copy">
     <h1 class="hero-line" id="headline"></h1>
     <p class="hero-line-sub" id="subtitle"></p>
@@ -1654,7 +1676,7 @@ body{
     <div class="orb3d-ring orb3d-ring-3"></div>
     <div class="orb3d-glow"></div>
   </div>
-  <span class="hero-counter" id="counter"></span>
+  <span class="hero-counter" id="counter" aria-live="polite" aria-atomic="true"></span>
 </main>
 
 <!-- FLOATING BOTTOM PILL NAVBAR -->
