@@ -706,6 +706,158 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   .release-tile[href]:hover .release-tile-cover img,
   .release-tile[href]:hover{transform:none}
 }
+
+/* ─── MADPLUS · SPOTIFY TRACKS BLOCK (auto-pulled) ───
+   Editorial track list — number, cover thumb, title/year/length,
+   inline mini-player (when Spotify provides a 30s preview), and
+   a "Listen ↗" pill. */
+.madplus-spotify-tracks{margin:0 0 4rem}
+.madplus-spotify-tracks[data-state="loading"] .section-title{opacity:0.5}
+.madplus-spotify-skeleton{
+  display:flex;flex-direction:column;gap:0.6rem;
+  margin-top:1.4rem;
+}
+.madplus-track-skel{
+  height:5rem;border-radius:0.6rem;
+  background:linear-gradient(90deg, #1A1815 0%, #23201B 50%, #1A1815 100%);
+  background-size:200% 100%;
+  animation:madplusSkel 1.4s ease-in-out infinite;
+}
+@keyframes madplusSkel{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+.madplus-tracks-list{
+  display:flex;flex-direction:column;
+  border-top:0.08rem solid var(--line, rgba(245,240,225,0.1));
+}
+.madplus-track-row{
+  display:grid;
+  grid-template-columns:2.4rem 4rem minmax(0, 1fr) minmax(14rem, 24rem) auto;
+  gap:1.2rem;align-items:center;
+  padding:1rem 0.4rem;
+  border-bottom:0.08rem solid var(--line, rgba(245,240,225,0.1));
+  transition:background 0.2s ease;
+}
+.madplus-track-row:hover{background:rgba(255,49,59,0.04)}
+.madplus-track-num{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.8rem;letter-spacing:0.14em;
+  color:var(--accent);opacity:0.45;
+  font-variant-numeric:tabular-nums;
+}
+.madplus-track-cover{
+  width:4rem;height:4rem;
+  object-fit:cover;border-radius:0.3rem;
+  background:#1A1815;
+  display:block;
+}
+.madplus-track-cover-empty{
+  background:#1A1815;
+}
+.madplus-track-meta{
+  min-width:0;
+  display:flex;flex-direction:column;gap:0.2rem;
+}
+.madplus-track-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1.1rem;line-height:1.2;letter-spacing:-0.01em;
+  color:var(--accent);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.madplus-track-explicit{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:1.05rem;height:1.05rem;
+  background:rgba(245,240,225,0.15);
+  color:var(--accent);
+  font-family:'IBM Plex Mono',monospace;font-weight:600;
+  font-size:0.62rem;letter-spacing:0;
+  border-radius:0.18rem;
+  margin-left:0.4rem;vertical-align:middle;
+  text-transform:none;
+}
+.madplus-track-sub{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent);opacity:0.5;
+  font-variant-numeric:tabular-nums;
+}
+/* Override the boxed full-width player chrome inside the row */
+.madplus-track-player.release-player{
+  background:none;border:none;padding:0;margin:0;
+  grid-template-columns:auto 1fr auto;
+  gap:0.6rem;
+  align-items:center;
+}
+.madplus-track-player .release-play{
+  width:2.4rem;height:2.4rem;
+  box-shadow:0 4px 10px rgba(255,49,59,0.3);
+}
+.madplus-track-player .release-play svg{width:1rem;height:1rem}
+.madplus-track-player .release-scrub{height:1rem}
+.madplus-track-player .rs-bar{height:calc(35% + (var(--i) * 8%) % 55%)}
+.madplus-track-player .release-player-time{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.05em;
+  color:var(--accent);opacity:0.55;
+  font-variant-numeric:tabular-nums;
+  min-width:2.4rem;text-align:right;
+}
+.madplus-track-no-preview{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--accent);opacity:0.35;
+  text-align:center;
+}
+.madplus-track-listen{
+  display:inline-flex;align-items:center;gap:0.5rem;
+  padding:0.55rem 0.95rem;
+  background:#1A1815;border:0.08rem solid var(--line, rgba(245,240,225,0.1));
+  border-radius:999px;
+  color:var(--accent);
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;
+  text-decoration:none;
+  transition:background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  flex-shrink:0;
+}
+.madplus-track-listen:hover{
+  background:#23201B;border-color:#1DB954;transform:translateY(-1px);
+}
+.madplus-track-listen svg{width:1rem;height:1rem;color:#1DB954;flex-shrink:0}
+
+.madplus-spotify-empty{
+  padding:3rem 1rem;text-align:center;
+  border-top:0.08rem solid var(--line);
+  border-bottom:0.08rem solid var(--line);
+  margin:1.4rem 0 4rem;
+}
+.madplus-spotify-empty code{
+  font-family:'IBM Plex Mono',monospace;
+  background:#1A1815;padding:0.15rem 0.4rem;border-radius:0.2rem;
+  font-size:0.85em;
+}
+
+@media (max-width: 768px){
+  .madplus-track-row{
+    grid-template-columns:1.8rem 3rem minmax(0, 1fr) auto;
+    gap:0.8rem;
+    padding:0.85rem 0;
+  }
+  /* Mini-player drops to its own line under the meta on mobile */
+  .madplus-track-player{
+    grid-column:1 / -1;
+    margin-top:0.2rem;
+  }
+  .madplus-track-listen{
+    grid-row:1;
+    padding:0.4rem 0.7rem;font-size:0.65rem;letter-spacing:0.12em;
+  }
+  .madplus-track-listen span{display:none}
+  .madplus-track-cover{width:3rem;height:3rem}
+  .madplus-track-title{font-size:0.95rem}
+  .madplus-track-sub{font-size:0.65rem}
+}
 .music-platforms{
   margin:0 0 5rem;
 }
