@@ -992,10 +992,11 @@ body{
   position:relative;z-index:2;
   filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55));
   transform:
-    translate3d(var(--avatar-tx, 0px), var(--avatar-ty, 0px), 0)
+    translate3d(var(--avatar-tx, 0px), calc(var(--avatar-ty, 0px) + var(--avatar-base-y, 0px)), 0)
     rotateX(var(--avatar-rx, 0deg))
     rotateY(var(--avatar-ry, 0deg))
     scale(var(--avatar-scale, 1));
+  transform-origin:center bottom;
   transform-style:preserve-3d;
   transition:transform 0.06s linear, filter 0.4s ease;
   user-select:none;-webkit-user-drag:none;
@@ -1020,11 +1021,19 @@ body{
 .hero .illustration:hover .avatar3d{--avatar-scale:calc(var(--avatar-base-scale, 1) * 1.04)}
 .hero .illustration:hover .avatar-light{opacity:1.2}
 
-/* Per-section scale corrections so all avatars look the same visual size as MAD+ */
-.illustration[data-id="originals"] .avatar3d{--avatar-base-scale:1.18;--avatar-scale:1.18}
-.illustration[data-id="bubble"] .avatar3d{--avatar-base-scale:1.18;--avatar-scale:1.18}
-.illustration[data-id="music"] .avatar3d{--avatar-base-scale:1;--avatar-scale:1}
-.illustration[data-id="vision"] .avatar3d{--avatar-base-scale:1.15;--avatar-scale:1.15}
+/* Per-section scale + vertical offset so all avatars match MAD+'s size & placement */
+.illustration[data-id="originals"] .avatar3d{
+  --avatar-base-scale:1.18;--avatar-scale:1.18;--avatar-base-y:0px;
+}
+.illustration[data-id="bubble"] .avatar3d{
+  --avatar-base-scale:1.18;--avatar-scale:1.18;--avatar-base-y:0px;
+}
+.illustration[data-id="music"] .avatar3d{
+  --avatar-base-scale:1;--avatar-scale:1;--avatar-base-y:0px;
+}
+.illustration[data-id="vision"] .avatar3d{
+  --avatar-base-scale:1.15;--avatar-scale:1.15;--avatar-base-y:0px;
+}
 
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
 .speech-bubble{
