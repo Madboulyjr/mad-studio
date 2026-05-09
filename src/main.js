@@ -322,9 +322,20 @@ function switchTo(i) {
     sub.classList.remove('fading')
     illus.classList.remove('fading')
     startSpeechRotation(s.id)
+    syncEnterPill(s)
   }, 180)
 
   applyCardStyles(i)
+}
+
+/* ─── ENTER PILL — section-aware doorway ─────────── */
+function syncEnterPill(s) {
+  const pill = document.getElementById('enter-pill')
+  if (!pill) return
+  const label = document.getElementById('enter-pill-label')
+  if (label) label.textContent = `Enter ${s.cTitle}`
+  pill.dataset.id = s.id
+  pill.setAttribute('aria-label', `Enter ${s.cTitle} section`)
 }
 
 /* Init landing */
@@ -338,6 +349,18 @@ if (s0) {
   document.getElementById('illustration').dataset.id = s0.id
   applyCardStyles(0)
   startSpeechRotation(s0.id)
+  syncEnterPill(s0)
+}
+
+/* Enter-pill click → navigate to current section's detail */
+{
+  const pill = document.getElementById('enter-pill')
+  if (pill) {
+    pill.addEventListener('click', () => {
+      const id = pill.dataset.id || (SECTIONS[current] && SECTIONS[current].id)
+      if (id) navigate({view: 'detail', id})
+    })
+  }
 }
 
 /* ─── DETAIL PAGE ────────────────────────────────── */
@@ -436,6 +459,13 @@ function buildDetail(id) {
   `
 }
 
+function setEnterPillVisible(show) {
+  const pill = document.getElementById('enter-pill')
+  if (!pill) return
+  if (show) pill.removeAttribute('hidden')
+  else pill.setAttribute('hidden', '')
+}
+
 function openDetailDOM(id) {
   // sync landing's selected section to match (so closing detail returns to the right one)
   const idx = SECTIONS.findIndex((s) => s.id === id)
@@ -453,12 +483,14 @@ function openDetailDOM(id) {
   detailPage.setAttribute('aria-hidden', 'false')
   detailPage.dataset.sectionId = id
   document.body.style.overflow = 'hidden'
+  setEnterPillVisible(false)
 }
 function closeDetailDOM() {
   detailPage.classList.remove('open')
   detailPage.setAttribute('aria-hidden', 'true')
   delete detailPage.dataset.sectionId
   document.body.style.overflow = ''
+  setEnterPillVisible(true)
 }
 detailBack.addEventListener('click', () => navigate({view: 'landing'}))
 
