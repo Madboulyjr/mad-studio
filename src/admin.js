@@ -1528,21 +1528,106 @@ function fileToBase64(file) {
   })
 }
 
+/**
+ * Resize + re-encode a browser-supported image to keep it under
+ * Vercel's 4.5MB function body limit. Defaults to 1800px max dim and
+ * 88% JPEG quality — produces ~400KB-1MB JPGs from typical phone
+ * camera shots / Spotify high-res covers.
+ *
+ * Browsers can decode jpeg/png/webp/avif/gif but NOT heic — heic
+ * files will fail the `img.onload` step; the caller falls back to
+ * uploading the original (which will then fail at the server with a
+ * clearer "Unsupported content type" error).
+ */
+async function compressImage(file, maxDim = 1800, quality = 0.88) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      try {
+        let {width, height} = img
+        const scale = Math.min(1, maxDim / Math.max(width, height))
+        const w = Math.max(1, Math.round(width * scale))
+        const h = Math.max(1, Math.round(height * scale))
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, w, h)
+        canvas.toBlob(
+          (blob) => {
+            URL.revokeObjectURL(url)
+            if (!blob) {
+              reject(new Error('Compression returned empty blob'))
+              return
+            }
+            const compressed = new File(
+              [blob],
+              file.name.replace(/\.[^.]+$/, '.jpg'),
+              {type: 'image/jpeg', lastModified: Date.now()},
+            )
+            resolve(compressed)
+          },
+          'image/jpeg',
+          quality,
+        )
+      } catch (e) {
+        URL.revokeObjectURL(url)
+        reject(e)
+      }
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error(`Cannot decode ${file.type || 'this image'} in the browser. Convert to JPEG/PNG first (iPhone HEIC: Photos app → Share → "Save as JPEG").`))
+    }
+    img.src = url
+  })
+}
+
 async function uploadFile(file) {
-  const base64 = await fileToBase64(file)
+  // Pre-flight: resize + JPEG-encode any image to keep payloads under
+  // Vercel's 4.5MB body limit. Skip compression for tiny files where
+  // it'd just waste cycles. SVG/etc. (vector) goes through as-is.
+  let toUpload = file
+  const isRasterImage = /^image\/(jpeg|png|webp|gif|avif|heic|heif)$/i.test(file.type || '')
+  if (isRasterImage && file.size > 600_000) {
+    try {
+      toUpload = await compressImage(file)
+    } catch (e) {
+      console.error('[upload] compression failed, sending original:', e)
+      // Compression failed (most likely HEIC) — propagate the friendly
+      // error instead of letting the API return cryptic 415/500
+      if (file.type === 'image/heic' || file.type === 'image/heif') {
+        throw e
+      }
+      // Other formats: try the original, server will validate
+      toUpload = file
+    }
+  }
+
+  const base64 = await fileToBase64(toUpload)
   const r = await fetch(API.upload, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({filename: file.name, contentType: file.type, base64}),
+    body: JSON.stringify({filename: toUpload.name, contentType: toUpload.type, base64}),
   })
   const j = await r.json().catch(() => ({}))
-  if (!r.ok || !j.ok) throw new Error(j.error || 'Upload failed')
+  if (!r.ok || !j.ok) {
+    const detail = j.error || `${r.status} ${r.statusText}`
+    console.error('[upload] failed:', detail, j)
+    throw new Error(detail)
+  }
   return j.asset
 }
 
 /* Audio (or other non-image) file upload — uses /api/admin/upload-file. */
 async function uploadAudioFile(file) {
+  // 30s preview MP3s are usually <500KB so no compression — but warn
+  // if the user picked a full-track file that'll hit Vercel's limit.
+  if (file.size > 4_300_000) {
+    throw new Error(`Audio file is ${(file.size / 1024 / 1024).toFixed(1)}MB. Vercel's upload limit is 4.5MB — trim to a 10–30s preview clip first (e.g. via QuickTime → Export As → Audio Only).`)
+  }
   const base64 = await fileToBase64(file)
   const r = await fetch('/api/admin/upload-file', {
     method: 'POST',
