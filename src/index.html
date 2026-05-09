@@ -1210,54 +1210,169 @@ body{
 /* hide legacy header / footer-info / carousel-dots in new layout */
 .header, .footer-info, .carousel-dots[hidden]{display:none !important}
 
-/* ─── 404 OVERLAY — brutalist editorial, full-viewport ─── */
+/* ─── 404 PAGE — full-viewport editorial brutalist ─── */
 .not-found{
   position:fixed;inset:0;z-index:200;
   display:none;
   background:var(--bg);
-  padding:2.5rem 2.4rem;
-  align-items:center;justify-content:center;
-  text-align:center;
+  padding:2.5rem 2.4rem 4rem;
+  overflow-y:auto;
 }
-.not-found.open{display:flex;animation:fadeIn 0.35s ease}
-.not-found[aria-hidden="false"]{display:flex}
-.not-found-inner{max-width:48rem}
-.not-found-num{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
-  font-weight:700;font-size:9rem;line-height:0.9;
-  letter-spacing:-0.05em;color:var(--cta);
-  margin-bottom:1.5rem;
+.not-found.open{display:block;animation:fadeIn 0.35s ease}
+.not-found[aria-hidden="false"]{display:block}
+
+.not-found-inner{
+  max-width:88rem;margin:0 auto;
+  padding-top:7rem;
 }
-.not-found-title{
+
+/* terminal-style stamp line */
+.nf-stamp{
+  display:flex;align-items:center;gap:1rem;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent-soft);
+  padding-bottom:1.2rem;border-bottom:0.08rem solid var(--line);
+  margin-bottom:3rem;
+}
+.nf-stamp .nf-status{color:var(--cta)}
+.nf-stamp .nf-path{
+  color:var(--accent);opacity:0.85;
+  letter-spacing:0.08em;text-transform:none;
+  font-size:0.9rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:60vw;
+}
+
+/* the giant 404 — display-scale brutalist */
+.nf-num{
   font-family:'Hanken Grotesk',system-ui,sans-serif;
-  font-weight:500;font-size:4.5rem;line-height:1.05;
+  font-weight:700;font-size:clamp(10rem, 24vw, 22rem);line-height:0.85;
+  letter-spacing:-0.06em;color:var(--cta);
+  margin:0 0 0.4rem;
+  text-wrap:balance;
+}
+
+/* headline — Hanken/Newsreader split */
+.nf-title{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-weight:500;font-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
   letter-spacing:-0.025em;color:var(--accent);
-  margin:0 0 1.5rem;
+  margin:0 0 1.8rem;
+  max-width:48rem;text-wrap:balance;
 }
-.not-found-title em{
+.nf-title em{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   letter-spacing:-0.01em;color:var(--cta);
 }
-.not-found-lead{
+
+/* lead with inline path chip */
+.nf-lead{
   font-family:'Newsreader',serif;font-weight:400;font-style:normal;
   font-size:1.4rem;line-height:1.55;color:var(--accent);
-  opacity:0.85;margin:0 0 2.5rem;
+  opacity:0.85;margin:0 0 4rem;max-width:48rem;
 }
-.not-found-back{
+.nf-path-inline{
+  display:inline-block;
+  font-family:'IBM Plex Mono',monospace;font-style:normal;font-weight:500;
+  font-size:0.95em;letter-spacing:0;
+  background:#1A1815;color:var(--accent);
+  padding:0.15rem 0.6rem;border-radius:0.4rem;
+  border:0.08rem solid var(--line);
+}
+
+/* recovery grid: 4 section cards */
+.nf-recovery{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:0.8rem;
+  margin-bottom:4rem;
+}
+.nf-card{
+  display:flex;flex-direction:column;justify-content:space-between;
+  background:#1A1815;
+  color:var(--accent);
+  border:0.08rem solid var(--line);
+  border-radius:1rem;
+  padding:2rem 1.6rem 1.6rem;
+  cursor:pointer;
+  text-align:left;
+  font-family:inherit;
+  transition:background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  min-height:11rem;
+  text-decoration:none;
+}
+.nf-card:hover{
+  background:#23201B;
+  border-color:rgba(245,240,225,0.3);
+  transform:translateY(-2px);
+}
+.nf-card:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
+.nf-card-num{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent-soft);
+  margin-bottom:1.2rem;
+}
+.nf-card-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:1.6rem;letter-spacing:-0.015em;
+  color:var(--accent);
+  margin:0 0 0.3rem;line-height:1.1;
+}
+.nf-card-sub{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-size:1rem;line-height:1.4;color:var(--accent);opacity:0.7;
+  margin:0;
+}
+.nf-card-arrow{
+  align-self:flex-end;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1.2rem;color:var(--cta);
+  margin-top:1rem;
+  transition:transform 0.2s ease;
+}
+.nf-card:hover .nf-card-arrow{transform:translate(3px,-3px)}
+
+/* footer row */
+.nf-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:2rem;border-top:0.08rem solid var(--line);
+  gap:2rem;flex-wrap:wrap;
+}
+.nf-home{
   background:var(--cta);color:#1A1815;
   font-family:'Hanken Grotesk',sans-serif;font-weight:600;
   font-size:1rem;letter-spacing:0;
   padding:1rem 2rem;border-radius:999px;border:0;cursor:pointer;
   transition:background 0.2s ease, transform 0.2s ease;
 }
-.not-found-back:hover{background:#fff;transform:translateY(-1px)}
-.not-found-back:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.nf-home:hover{background:#fff;transform:translateY(-1px)}
+.nf-home:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.nf-email{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1rem;color:var(--accent);text-decoration:none;
+  opacity:0.75;transition:opacity 0.2s ease, color 0.2s ease;
+}
+.nf-email:hover{opacity:1;color:var(--cta)}
+
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* mobile */
 @media (max-width: 768px){
-  .not-found{padding:2rem 1.5rem}
-  .not-found-num{font-size:6rem}
-  .not-found-title{font-size:3rem}
-  .not-found-lead{font-size:1.2rem}
+  .not-found{padding:1.5rem 1.25rem 6rem}
+  .not-found-inner{padding-top:5.5rem}
+  .nf-stamp{font-size:0.72rem;gap:0.6rem;flex-wrap:wrap;margin-bottom:2rem}
+  .nf-stamp .nf-path{max-width:100%;font-size:0.78rem}
+  .nf-num{font-size:7rem;line-height:0.9}
+  .nf-title{font-size:2.4rem;margin-bottom:1.2rem}
+  .nf-lead{font-size:1.15rem;margin-bottom:2.5rem}
+  .nf-recovery{grid-template-columns:repeat(2, 1fr);margin-bottom:2.5rem}
+  .nf-card{min-height:8.5rem;padding:1.4rem 1.2rem 1.2rem}
+  .nf-card-title{font-size:1.3rem}
+  .nf-card-sub{font-size:0.9rem}
+  .nf-footer{flex-direction:column;align-items:stretch;gap:1.2rem;text-align:center}
+  .nf-email{font-size:0.9rem}
 }
 
 /* ─── ENTER PILL — glass doorway, bottom-right ─── */
@@ -1658,13 +1773,47 @@ body{
   <span class="enter-pill-arrow" aria-hidden="true">↗</span>
 </button>
 
-<!-- 404 OVERLAY — shown for unknown URLs (e.g. /foo) -->
+<!-- 404 PAGE — full-viewport brutalist editorial, shown for unknown URLs (/foo, /madplus/notarealproject, etc.) -->
 <section class="not-found" id="not-found" aria-hidden="true">
+  <!-- topbar: same back-pill + MAD logo treatment as /detail pages -->
+  <div class="detail-topbar">
+    <button class="detail-back" id="not-found-back" type="button" aria-label="Back to home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>Back to home</span>
+    </button>
+    <div class="detail-logo">
+      <svg class="logo-svg-d" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+        <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+        <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+      </svg>
+      <span class="sub">404</span>
+    </div>
+  </div>
+
   <div class="not-found-inner">
-    <div class="not-found-num">404</div>
-    <h1 class="not-found-title">Page <em>not found.</em></h1>
-    <p class="not-found-lead">This URL doesn't lead anywhere. Maybe it moved, maybe it never existed.</p>
-    <button class="not-found-back" id="not-found-back" type="button">← Back to home</button>
+    <!-- meta line: a typed-out terminal-style stamp with the URL the user tried -->
+    <div class="nf-stamp">
+      <span class="nf-status">Error · 404</span>
+      <span class="nf-path" id="nf-path-display">/</span>
+    </div>
+
+    <!-- giant 404 + headline -->
+    <h1 class="nf-num" aria-hidden="true">404</h1>
+    <h2 class="nf-title">This page <em>got lost in the chaos.</em></h2>
+    <p class="nf-lead">
+      The URL <span class="nf-path-inline" id="nf-path-inline">/</span> doesn't lead anywhere on our map.
+      Maybe it moved, maybe it never existed — either way, here's where you can go from here:
+    </p>
+
+    <!-- recovery grid: 4 sections as cards, click to enter -->
+    <div class="nf-recovery" id="nf-recovery"></div>
+
+    <!-- footer line: home pill + email -->
+    <div class="nf-footer">
+      <button class="nf-home" id="nf-home-btn" type="button">← Back to home</button>
+      <a class="nf-email" href="mailto:hi@beingmad.co">Or just say hi → hi@beingmad.co</a>
+    </div>
   </div>
 </section>
 

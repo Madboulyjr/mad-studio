@@ -706,14 +706,44 @@ function titleForRoute(r) {
   return `${w ? w.title : r.projectSlug} — ${secTitle} — MAD Studio`
 }
 
-function setNotFoundVisible(show) {
+function setNotFoundVisible(show, path) {
   const el = document.getElementById('not-found')
   if (!el) return
   if (show) {
+    // Populate the displayed path (the URL the user actually typed)
+    const safePath = path || location.pathname || '/'
+    const displayEl = document.getElementById('nf-path-display')
+    const inlineEl = document.getElementById('nf-path-inline')
+    if (displayEl) displayEl.textContent = safePath
+    if (inlineEl) inlineEl.textContent = safePath
+    // Build the recovery section grid (one card per top-level section)
+    const grid = document.getElementById('nf-recovery')
+    if (grid && !grid.dataset.built) {
+      grid.innerHTML = SECTIONS.map(
+        (s, i) => `
+          <button class="nf-card" type="button" data-id="${s.id}" data-idx="${i}">
+            <div>
+              <div class="nf-card-num">${String(i + 1).padStart(2, '0')} / 0${SECTIONS.length}</div>
+              <h3 class="nf-card-title">${s.cTitle}</h3>
+              <p class="nf-card-sub">${(s.cSub || '').replace(/\.$/, '')}</p>
+            </div>
+            <span class="nf-card-arrow" aria-hidden="true">↗</span>
+          </button>
+        `,
+      ).join('')
+      grid.addEventListener('click', (e) => {
+        const card = e.target.closest('.nf-card')
+        if (!card) return
+        const id = card.dataset.id
+        if (id) navigate({view: 'detail', id})
+      })
+      grid.dataset.built = '1'
+    }
     el.classList.add('open')
     el.setAttribute('aria-hidden', 'false')
     document.body.style.overflow = 'hidden'
     setEnterPillVisible(false)
+    el.scrollTo(0, 0)
   } else {
     el.classList.remove('open')
     el.setAttribute('aria-hidden', 'true')
@@ -725,7 +755,7 @@ function applyRoute(r) {
   if (r.view === 'notfound') {
     if (projectView.classList.contains('open')) closeProjectDOM()
     if (detailPage.classList.contains('open')) closeDetailDOM()
-    setNotFoundVisible(true)
+    setNotFoundVisible(true, r.path)
     return
   }
   // any non-404 route: hide the 404 overlay if it was up
@@ -772,12 +802,13 @@ window.addEventListener('popstate', (e) => {
   applyRoute(r)
 })
 
-// 404 splash → back-home button + ESC dismissal
+// 404 page → topbar back button + footer home button (both → landing)
 {
+  const goHome = () => navigate({view: 'landing'})
   const backBtn = document.getElementById('not-found-back')
-  if (backBtn) {
-    backBtn.addEventListener('click', () => navigate({view: 'landing'}))
-  }
+  if (backBtn) backBtn.addEventListener('click', goHome)
+  const footerHome = document.getElementById('nf-home-btn')
+  if (footerHome) footerHome.addEventListener('click', goHome)
 }
 
 // Initial route — handle deep links and refresh-mid-flow
