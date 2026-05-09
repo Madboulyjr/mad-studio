@@ -605,9 +605,23 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .project-hero .p-tags span{border:0.1rem solid var(--accent);padding:0.55rem 1.1rem;border-radius:1.4rem;opacity:0.85}
 
-.project-gallery{display:flex;flex-direction:column;gap:2rem;margin-top:2rem}
-.project-gallery .g-item{width:100%;background:#1a1a1a;overflow:hidden;border:0.1rem solid rgba(255,49,59,0.2)}
-.project-gallery .g-item img{width:100%;height:auto;display:block}
+/* Aspect-aware editorial gallery — 2-col grid where:
+   - .g-wide spans both columns (landscape + video)
+   - .g-tall + .g-square take one column (portraits/squares pair naturally)
+   - Mobile stacks all to single column. */
+.project-gallery{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:1.5rem;
+  margin-top:2rem;
+}
+.project-gallery .g-item{
+  width:100%;background:#1a1a1a;overflow:hidden;
+  border:0.1rem solid rgba(255,49,59,0.2);
+  position:relative;
+}
+.project-gallery .g-item.g-wide{grid-column:1 / -1}
+.project-gallery .g-item img{width:100%;height:auto;display:block;object-fit:cover}
 .project-nav-next{
   margin:10rem 0 0;padding:5rem 0 6rem;
   display:flex;justify-content:space-between;align-items:center;
@@ -628,6 +642,16 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 
 /* project view entrance animations */
 @keyframes projFadeUp{from{opacity:0;transform:translateY(2rem)}to{opacity:1;transform:translateY(0)}}
+/* Smooth fade-out used when switching project→project (next-project nav).
+   Sits at the .project-view-inner level so the fixed Back button + topbar
+   stay visible during the transition. */
+#project-view-inner{
+  transition:opacity 0.18s cubic-bezier(.2,.7,.2,1);
+}
+#project-view-inner.is-fading{opacity:0}
+@media (prefers-reduced-motion: reduce){
+  #project-view-inner{transition:none}
+}
 .project-view.open .p-top{animation:projFadeUp 0.5s 0.15s cubic-bezier(.2,.7,.2,1) both}
 .project-view.open .p-title{animation:detailGlitchIn 0.8s 0.2s cubic-bezier(.2,.7,.2,1) both}
 .project-view.open .p-meta-row{animation:projFadeUp 0.55s 0.45s cubic-bezier(.2,.7,.2,1) both}
@@ -1037,7 +1061,10 @@ body::after{display:none}
   .project-hero .p-tags{justify-content:flex-start;font-size:0.85rem;gap:0.5rem}
   .project-hero .p-tags span{padding:0.4rem 0.8rem;font-size:0.75rem}
 
-  .project-gallery{gap:1.2rem;margin-top:1rem}
+  .project-gallery{
+    grid-template-columns:1fr;gap:1.2rem;margin-top:1rem;
+  }
+  .project-gallery .g-item.g-wide{grid-column:1}
 
   .project-nav-next{
     margin-top:6rem;padding:3rem 0 4rem;

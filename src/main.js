@@ -873,7 +873,7 @@ projectViewInner.addEventListener('click', (e) => {
 function renderGalleryItem(item, gi) {
   if (item._type === 'videoItem' && item.playbackId) {
     const autoplay = item.autoplay !== false
-    return `<div class="g-item g-video" style="--gi:${gi}">
+    return `<div class="g-item g-video g-wide" style="--gi:${gi}">
       <mux-player
         playback-id="${item.playbackId}"
         stream-type="on-demand"
@@ -886,7 +886,19 @@ function renderGalleryItem(item, gi) {
     // a11y: prefer item.alt, fall back to item.caption, then a generic
     // "Project image" + index so we never ship empty alt= attrs
     const alt = item.alt || item.caption || `Project image ${gi + 1}`
-    return `<div class="g-item" style="--gi:${gi}">
+    // Aspect-aware classification for editorial 2-col grid:
+    //   wide (>1.3)   → full width (spans both columns)
+    //   tall (<0.85)  → half width (portraits naturally pair)
+    //   square        → half width
+    const aspect = item.asset?.metadata?.dimensions?.aspectRatio
+    const cls = !aspect ? 'g-wide' :
+                aspect > 1.3 ? 'g-wide' :
+                aspect < 0.85 ? 'g-tall' :
+                'g-square'
+    // Inline aspect-ratio so the box reserves space before the image loads
+    // (prevents layout shift, satisfies CLS metric)
+    const styleAr = aspect ? `aspect-ratio:${aspect.toFixed(4)};` : ''
+    return `<div class="g-item ${cls}" style="--gi:${gi};${styleAr}">
       <img src="${mediaImageUrl(item)}" alt="${alt.replace(/"/g, '&quot;')}" loading="lazy" decoding="async">
     </div>`
   }
@@ -996,12 +1008,28 @@ function openProjectDOM(works, idx, sectionId) {
   const w = works[idx]
   const hasVideo = (w && (w.media || []).some((m) => m._type === 'videoItem' && m.playbackId))
   if (hasVideo) ensureMux()
-  buildProject(works, idx, sectionId)
-  projectView.classList.add('open')
-  projectView.setAttribute('aria-hidden', 'false')
-  projectView.dataset.sectionId = sectionId
-  projectView.scrollTo(0, 0)
-  if (projectProgressUpdate) projectProgressUpdate()
+
+  // Smooth project→project transition: if we're already in a project view
+  // and switching to a different one, fade the inner content out first
+  // before swapping. Hard-swaps feel jarring; this gives a 180ms
+  // editorial cross-fade. Skipped under reduced-motion.
+  const wasOpen = projectView.classList.contains('open')
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const doSwap = () => {
+    buildProject(works, idx, sectionId)
+    projectView.classList.add('open')
+    projectView.setAttribute('aria-hidden', 'false')
+    projectView.dataset.sectionId = sectionId
+    projectView.scrollTo(0, 0)
+    projectViewInner.classList.remove('is-fading')
+    if (projectProgressUpdate) projectProgressUpdate()
+  }
+  if (wasOpen && !reduced) {
+    projectViewInner.classList.add('is-fading')
+    setTimeout(doSwap, 180)
+  } else {
+    doSwap()
+  }
 }
 function closeProjectDOM() {
   projectView.classList.remove('open')
