@@ -106,9 +106,13 @@ const SPEECH = {
 }
 
 const SPEECH_POSITIONS = [
-  // left/right side variations only — no center, no forehead/eye area
-  'side-left-upper', 'left-middle', 'cheek-left', 'side-left-lower',
-  'side-right-upper', 'right-middle', 'cheek-right', 'side-right-lower',
+  // sides only, AVOID eye-level zone (rough top 18%-50% area)
+  // upper sides (above the eyes, by the temples)
+  'side-left-upper', 'side-right-upper',
+  // lower sides (cheek/jaw, below the eyes)
+  'side-left-lower', 'side-right-lower',
+  // very-lower (chin level)
+  'side-left-bottom', 'side-right-bottom',
 ]
 let speechTimer = null
 let speechIdx = 0

@@ -1046,16 +1046,16 @@ body{
   border:0.08rem solid rgba(245, 240, 225, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants — LEFT and RIGHT side only, never over eyes/face ─── */
-.speech-bubble[data-pos="side-left-upper"]{top:18%;left:-3%;right:auto}
-.speech-bubble[data-pos="left-middle"]{top:38%;left:-3%;right:auto}
-.speech-bubble[data-pos="cheek-left"]{top:55%;left:-2%;right:auto}
-.speech-bubble[data-pos="side-left-lower"]{top:auto;bottom:18%;left:-3%;right:auto}
-
-.speech-bubble[data-pos="side-right-upper"]{top:18%;right:-3%;left:auto}
-.speech-bubble[data-pos="right-middle"]{top:38%;right:-3%;left:auto}
-.speech-bubble[data-pos="cheek-right"]{top:55%;right:-2%;left:auto}
-.speech-bubble[data-pos="side-right-lower"]{top:auto;bottom:18%;right:-3%;left:auto}
+/* ─── Position variants — sides only, AVOIDING eye-level zone (top 18-50%) ─── */
+/* UPPER SIDES — beside the temples/upper head, above the eyes */
+.speech-bubble[data-pos="side-left-upper"]{top:6%;left:-2%;right:auto}
+.speech-bubble[data-pos="side-right-upper"]{top:6%;right:-2%;left:auto}
+/* LOWER SIDES — beside the cheek/jaw, below the eyes */
+.speech-bubble[data-pos="side-left-lower"]{top:58%;left:-2%;right:auto}
+.speech-bubble[data-pos="side-right-lower"]{top:58%;right:-2%;left:auto}
+/* BOTTOM SIDES — at chin/jaw bottom edge */
+.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:14%;left:-2%;right:auto}
+.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:14%;right:-2%;left:auto}
 
 .speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
