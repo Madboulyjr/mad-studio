@@ -10,6 +10,19 @@ export default defineConfig(({mode}) => {
       outDir: resolve(__dirname, 'dist'),
       emptyOutDir: true,
       target: 'esnext',
+      // Split heavy vendor deps into their own chunks so the browser can
+      // parallel-fetch them and cache them independently from app code.
+      // @mux/mux-player is dynamic-imported in main.js → Rollup will
+      // automatically code-split it; we still hint manualChunks so the
+      // chunk file name is predictable.
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            sanity: ['@sanity/client', '@sanity/image-url'],
+          },
+        },
+      },
+      chunkSizeWarningLimit: 800,
     },
     esbuild: {
       supported: {'top-level-await': true},

@@ -1,5 +1,12 @@
 import {fetchContent, urlFor} from './sanity-client.js'
-import '@mux/mux-player'
+
+/* Lazy-load @mux/mux-player only when a video is actually rendered.
+   Saves ~85KB gzip on first paint (most landing visits never need it). */
+let muxLoaded = null
+function ensureMux() {
+  if (!muxLoaded) muxLoaded = import('@mux/mux-player')
+  return muxLoaded
+}
 
 /* ─── NAV CARD ICONS (not yet in Sanity, kept inline) ──────────────────────── */
 const ICONS = {
@@ -557,6 +564,12 @@ function buildProject(works, idx, sectionId) {
 }
 
 function openProjectDOM(works, idx, sectionId) {
+  // If this project has video media, kick off the Mux loader.
+  // We render immediately so the UI feels instant — once the player
+  // module is registered, any <mux-player> tags in the DOM upgrade.
+  const w = works[idx]
+  const hasVideo = (w && (w.media || []).some((m) => m._type === 'videoItem' && m.playbackId))
+  if (hasVideo) ensureMux()
   buildProject(works, idx, sectionId)
   projectView.classList.add('open')
   projectView.setAttribute('aria-hidden', 'false')
