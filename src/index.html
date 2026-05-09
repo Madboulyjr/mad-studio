@@ -1605,9 +1605,11 @@ body{
 }
 .work-row{
   display:grid;
-  grid-template-columns:5rem 1.5fr 1.4fr 1.6fr;
-  grid-template-rows:auto auto;
-  gap:0 2.5rem;
+  /* 3 columns now (was 4): TITLE block | PREVIEW (largest) | DESCRIPTION
+     The "01-21" index sits ABOVE the title as an inline editorial mark,
+     not as its own column — gave the original 4-col layout a squashed feel. */
+  grid-template-columns:1.2fr 2fr 1.5fr;
+  gap:0 2.8rem;
   padding:3rem 0 2.5rem;
   border-bottom:0.08rem solid var(--line);
   cursor:pointer;position:relative;
@@ -1665,22 +1667,23 @@ body{
 }
 .work-row:hover .work-see-full::after{transform:translate(2px,-2px)}
 
-/* row 2: NUMBER (col 1) | TITLE (col 2) | PREVIEW (col 3) | DESC (col 4) */
-.work-row .work-num{
-  grid-column:1;display:block;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:300;
-  font-size:2rem;line-height:0.95;letter-spacing:-0.02em;
-  color:var(--accent);opacity:0.4;
-  font-feature-settings:'tnum';
-  transition:opacity 0.3s ease, color 0.3s ease;
-  align-self:start;padding-top:0.35rem;
-}
-.work-row:hover .work-num{opacity:0.95;color:var(--cta)}
-
+/* row 2: TITLE (col 1) | PREVIEW (col 2) | DESC (col 3) */
 .work-row .work-mid{
-  grid-column:2;display:block;padding-right:0.5rem;
+  grid-column:1;display:flex;flex-direction:column;
+  padding-right:0.5rem;
   align-self:start;
 }
+/* Index number — small mono mark ABOVE the title, editorial style */
+.work-row .work-num{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+  margin-bottom:0.9rem;
+  transition:opacity 0.3s ease, color 0.3s ease;
+}
+.work-row .work-num::before{content:'— '}
+.work-row:hover .work-num{opacity:1;color:var(--cta)}
 .work-row .work-title{
   font-family:'Hanken Grotesk',sans-serif;font-weight:600;
   font-size:2.2rem;line-height:1.1;letter-spacing:-0.025em;
@@ -1699,8 +1702,8 @@ body{
 
 /* preview thumbnail — bigger, with hover overlay */
 .work-row .work-preview{
-  grid-column:3;position:relative;
-  aspect-ratio:4/3;width:100%;
+  grid-column:2;position:relative;
+  aspect-ratio:16/10;width:100%;
   background:#161310;border:0;border-radius:0.6rem;overflow:hidden;
 }
 .work-row .work-preview img{
@@ -1734,11 +1737,11 @@ body{
 .work-row:hover .work-preview::after{opacity:1;transform:translateY(0)}
 
 .work-row .work-desc{
-  grid-column:4;
-  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
+  grid-column:3;
+  display:flex;flex-direction:column;gap:1rem;
   font-family:'Hanken Grotesk',sans-serif;font-weight:400;
   font-size:0.95rem;line-height:1.55;color:var(--accent);
-  align-self:start;
+  align-self:start;padding-top:0.2rem;
 }
 .work-row .work-desc p{margin:0;opacity:0.92}
 .work-row .work-meta{display:none}
@@ -2021,7 +2024,7 @@ body{
     margin-bottom:1rem;flex-wrap:wrap;gap:0.6rem;
   }
   .work-row .work-num{
-    grid-column:1;font-size:1.3rem;opacity:0.5;padding:0;
+    font-size:0.75rem;letter-spacing:0.16em;
     margin-bottom:0.5rem;
   }
   .work-row .work-mid,
