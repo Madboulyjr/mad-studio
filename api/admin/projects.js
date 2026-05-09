@@ -11,7 +11,7 @@
  */
 import {requireAuth, sanityClient, readJsonBody, jsonResponse} from './_lib.js'
 
-const ALLOWED_TOP = ['title', 'year', 'caption', 'tags', 'published']
+const ALLOWED_TOP = ['title', 'year', 'caption', 'tags', 'published', 'coverImage', 'media']
 const ALLOWED_CS = [
   'role',
   'client',
@@ -22,6 +22,71 @@ const ALLOWED_CS = [
   'awards',
   'externalUrl',
 ]
+
+/* Sanity-shape validators — clients can pass simplified shapes which we
+   normalise so we always write valid Sanity image / media items. */
+function normaliseImage(img) {
+  if (!img || typeof img !== 'object') return null
+  // Accept either {assetId} OR {asset:{_ref}} OR {asset:{_id}}
+  const assetId = img.assetId || img.asset?._ref || img.asset?._id
+  if (!assetId) return null
+  const out = {
+    _type: 'image',
+    asset: {_type: 'reference', _ref: assetId},
+  }
+  if (img.hotspot && typeof img.hotspot === 'object') {
+    out.hotspot = {
+      _type: 'sanity.imageHotspot',
+      x: clamp01(img.hotspot.x),
+      y: clamp01(img.hotspot.y),
+      height: clamp01(img.hotspot.height ?? 1),
+      width: clamp01(img.hotspot.width ?? 1),
+    }
+  }
+  if (img.crop && typeof img.crop === 'object') {
+    out.crop = {
+      _type: 'sanity.imageCrop',
+      top: clamp01(img.crop.top ?? 0),
+      bottom: clamp01(img.crop.bottom ?? 0),
+      left: clamp01(img.crop.left ?? 0),
+      right: clamp01(img.crop.right ?? 0),
+    }
+  }
+  return out
+}
+function normaliseMediaItem(item) {
+  if (!item || typeof item !== 'object') return null
+  // Image item
+  if (item._type === 'image' || item.assetId || item.asset) {
+    const img = normaliseImage(item)
+    if (!img) return null
+    if (item._key) img._key = item._key
+    if (item.alt) img.alt = String(item.alt).slice(0, 200)
+    if (item.caption) img.caption = String(item.caption).slice(0, 300)
+    return img
+  }
+  // Video item — keep existing video reference if provided as-is (we
+  // don't yet support uploading video via /admin; user does that in
+  // Sanity Studio). Allow PATCH to keep / reorder existing items.
+  if (item._type === 'videoItem') {
+    return {
+      _type: 'videoItem',
+      _key: item._key || cryptoRandom(),
+      video: item.video || null,
+      caption: item.caption ? String(item.caption).slice(0, 300) : '',
+      autoplay: item.autoplay !== false,
+    }
+  }
+  return null
+}
+function clamp01(n) {
+  const x = Number(n)
+  if (!Number.isFinite(x)) return 0
+  return Math.max(0, Math.min(1, x))
+}
+function cryptoRandom() {
+  return Math.random().toString(36).slice(2, 12)
+}
 
 function pick(obj, keys) {
   const out = {}
@@ -42,7 +107,20 @@ export default async function handler(req, res) {
           _id, title, "slug": slug.current,
           "sectionSlug": section->slug.current,
           year, caption, tags, published,
-          caseStudy
+          caseStudy,
+          coverImage{
+            ...,
+            "assetId": asset._ref,
+            "url": asset->url,
+            "metadata": asset->metadata{dimensions}
+          },
+          media[]{
+            ...,
+            _type, _key,
+            "assetId": asset._ref,
+            "url": asset->url,
+            "playbackId": video.asset->playbackId
+          }
         }`,
         {id},
       )
@@ -72,6 +150,21 @@ export default async function handler(req, res) {
     const cs = pick(body.caseStudy || {}, ALLOWED_CS)
     const set = {...top}
     if (Object.keys(cs).length) set.caseStudy = cs
+
+    // Normalise any image / media shapes the client sent
+    if ('coverImage' in set) {
+      const img = normaliseImage(set.coverImage)
+      if (img) set.coverImage = img
+      else delete set.coverImage
+    }
+    if ('media' in set) {
+      if (Array.isArray(set.media)) {
+        set.media = set.media.map(normaliseMediaItem).filter(Boolean)
+      } else {
+        delete set.media
+      }
+    }
+
     if (!Object.keys(set).length) return jsonResponse(res, 400, {error: 'No allowed fields in body'})
 
     const client = sanityClient()

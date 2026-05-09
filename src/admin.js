@@ -17,7 +17,12 @@ const API = {
   logout: '/api/admin/logout',
   projects: '/api/admin/projects',
   sections: '/api/admin/sections',
+  upload: '/api/admin/upload-image',
 }
+
+/* In-memory edit-form state for media so changes batch into one PATCH */
+let mediaState = []
+let coverState = null // {assetId, url} or null = unchanged
 
 let rootEl = null
 let state = {authed: false, view: 'list', sections: [], projects: [], editing: null, busy: false}
@@ -299,6 +304,43 @@ function renderProjectForm(p) {
         <label class="adm-checkbox"><input type="checkbox" name="published" ${p.published !== false ? 'checked' : ''}> Published</label>
       </fieldset>
 
+      <fieldset class="adm-fields adm-fields-image">
+        <legend>Cover image</legend>
+        <div class="adm-cover-zone" data-cover-current="${escapeAttr(p.coverImage?.assetId || '')}">
+          ${p.coverImage?.url
+            ? `<img class="adm-cover-preview" src="${escapeAttr(p.coverImage.url)}?w=800&auto=format" alt="Current cover">`
+            : '<div class="adm-cover-empty">No cover yet — drop or click to upload</div>'}
+          <div class="adm-cover-actions">
+            <label class="adm-cover-btn">
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden id="adm-cover-input">
+              <span>${p.coverImage?.url ? 'Replace cover ↑' : 'Upload cover ↑'}</span>
+            </label>
+            ${p.coverImage?.url ? '<button type="button" class="adm-link adm-cover-remove">Remove</button>' : ''}
+          </div>
+          <div class="adm-cover-status" id="adm-cover-status"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="adm-fields adm-fields-gallery">
+        <legend>Project gallery (${(p.media || []).length} items)</legend>
+        <div class="adm-gallery-hint">
+          Drag to reorder · click × to remove · drop new images at the end
+        </div>
+        <div class="adm-gallery-grid" id="adm-gallery-grid">
+          ${(p.media || []).map((m, i) => renderGalleryThumb(m, i)).join('')}
+          <label class="adm-gallery-add">
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden id="adm-gallery-input" multiple>
+            <span class="adm-gallery-add-icon" aria-hidden="true">+</span>
+            <span class="adm-gallery-add-label">Add images</span>
+          </label>
+        </div>
+        <div class="adm-cover-status" id="adm-gallery-status"></div>
+        <div class="adm-gallery-note">
+          <strong>Videos:</strong> upload via <a href="https://madboulyjr-studio.sanity.studio" target="_blank" rel="noopener">Sanity Studio ↗</a> for now
+          (Mux transcoding happens there). They'll appear in the gallery after publishing.
+        </div>
+      </fieldset>
+
       <fieldset class="adm-fields">
         <legend>Case study</legend>
         <label>Role <input class="adm-input" name="cs-role" value="${escapeAttr(cs.role || '')}" placeholder="e.g. Art Direction · Creative Direction"></label>
@@ -354,9 +396,140 @@ function renderSectionForm(s) {
   `
 }
 
+/* COVER IMAGE upload + remove */
+function bindCoverUpload(projectId) {
+  const input = rootEl.querySelector('#adm-cover-input')
+  const status = rootEl.querySelector('#adm-cover-status')
+  const zone = rootEl.querySelector('.adm-cover-zone')
+  const removeBtn = rootEl.querySelector('.adm-cover-remove')
+  if (!input || !zone) return
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    status.textContent = `Uploading ${file.name}…`
+    try {
+      const asset = await uploadFile(file)
+      coverState = {assetId: asset._id, url: asset.url}
+      // Update preview live
+      const preview = zone.querySelector('.adm-cover-preview')
+      const empty = zone.querySelector('.adm-cover-empty')
+      if (preview) preview.src = asset.url + '?w=800&auto=format'
+      else if (empty) {
+        empty.outerHTML = `<img class="adm-cover-preview" src="${asset.url}?w=800&auto=format" alt="New cover">`
+      }
+      status.textContent = '✓ Uploaded — click "Save changes" to apply'
+    } catch (err) {
+      status.textContent = '✗ ' + err.message
+    }
+  })
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      coverState = {remove: true}
+      const preview = zone.querySelector('.adm-cover-preview')
+      if (preview) preview.replaceWith(Object.assign(document.createElement('div'), {className: 'adm-cover-empty', textContent: 'Cover removed (will save when you click "Save changes")'}))
+      removeBtn.remove()
+      status.textContent = 'Cover marked for removal'
+    })
+  }
+}
+
+/* GALLERY — add/remove/reorder */
+function bindGallery(projectId) {
+  const grid = rootEl.querySelector('#adm-gallery-grid')
+  const input = rootEl.querySelector('#adm-gallery-input')
+  const status = rootEl.querySelector('#adm-gallery-status')
+  if (!grid) return
+
+  // Add new images via input
+  if (input) {
+    input.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || [])
+      if (!files.length) return
+      for (const file of files) {
+        status.textContent = `Uploading ${file.name}…`
+        try {
+          const asset = await uploadFile(file)
+          mediaState.push({
+            _type: 'image',
+            _key: Math.random().toString(36).slice(2, 12),
+            assetId: asset._id,
+            url: asset.url,
+          })
+        } catch (err) {
+          status.textContent = '✗ ' + err.message
+        }
+      }
+      status.textContent = `✓ Added ${files.length} image${files.length > 1 ? 's' : ''} — click "Save changes" to apply`
+      reRenderGallery()
+      input.value = '' // reset so same file can be re-added
+    })
+  }
+
+  // Remove (delegated)
+  grid.addEventListener('click', (e) => {
+    const btn = e.target.closest('.adm-thumb-remove')
+    if (!btn) return
+    const i = parseInt(btn.dataset.i, 10)
+    if (Number.isFinite(i)) {
+      mediaState.splice(i, 1)
+      status.textContent = 'Item removed — click "Save changes" to apply'
+      reRenderGallery()
+    }
+  })
+
+  // Drag-and-drop reorder
+  let draggedIdx = null
+  grid.addEventListener('dragstart', (e) => {
+    const thumb = e.target.closest('.adm-gallery-thumb')
+    if (!thumb) return
+    draggedIdx = parseInt(thumb.dataset.i, 10)
+    e.dataTransfer.effectAllowed = 'move'
+    thumb.classList.add('adm-thumb-dragging')
+  })
+  grid.addEventListener('dragend', () => {
+    grid.querySelectorAll('.adm-thumb-dragging').forEach((el) => el.classList.remove('adm-thumb-dragging'))
+    draggedIdx = null
+  })
+  grid.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  })
+  grid.addEventListener('drop', (e) => {
+    e.preventDefault()
+    const target = e.target.closest('.adm-gallery-thumb')
+    if (!target || draggedIdx === null) return
+    const dropIdx = parseInt(target.dataset.i, 10)
+    if (dropIdx === draggedIdx) return
+    const item = mediaState.splice(draggedIdx, 1)[0]
+    mediaState.splice(dropIdx, 0, item)
+    status.textContent = 'Reordered — click "Save changes" to apply'
+    reRenderGallery()
+  })
+}
+
+function reRenderGallery() {
+  const grid = rootEl.querySelector('#adm-gallery-grid')
+  if (!grid) return
+  // Save the +Add label (persistent file input listener), rebuild thumbs,
+  // re-append the label. Listeners on the grid container (delegated click,
+  // dragover, drop) survive innerHTML changes — no rebind needed.
+  const addLabel = grid.querySelector('.adm-gallery-add')
+  grid.innerHTML = mediaState.map((m, i) => renderGalleryThumb(m, i)).join('')
+  if (addLabel) grid.appendChild(addLabel)
+}
+
 function bindEditFormHandlers(kind, id) {
   const form = rootEl.querySelector('#adm-form')
   if (!form) return
+
+  // Reset edit-form state for fresh media tracking
+  if (kind === 'project' && state.editing?.doc) {
+    mediaState = (state.editing.doc.media || []).map((m) => ({...m}))
+    coverState = null
+    bindCoverUpload(id)
+    bindGallery(id)
+  }
+
   // Outcome row add/remove
   const outcomeAdd = rootEl.querySelector('#adm-outcome-add')
   if (outcomeAdd) {
@@ -413,7 +586,7 @@ function collectProjectPayload(data, form) {
     const label = (data.get(`outcome-label-${i}`) || '').toString().trim()
     if (metric || label) outcome.push({metric, label})
   })
-  return {
+  const payload = {
     title: data.get('title') || '',
     year: data.get('year') || '',
     caption: data.get('caption') || '',
@@ -430,6 +603,21 @@ function collectProjectPayload(data, form) {
       outcome,
     },
   }
+  // Cover image — only include if user uploaded a new one or removed it
+  if (coverState && coverState.assetId) {
+    payload.coverImage = {assetId: coverState.assetId}
+  } else if (coverState && coverState.remove) {
+    payload.coverImage = null // PATCH set null clears the field
+  }
+  // Media gallery — always send the current ordered list (additions,
+  // removals, reorders are all reflected in mediaState)
+  payload.media = mediaState.map((m) => {
+    if (m._type === 'videoItem') {
+      return {_type: 'videoItem', _key: m._key, video: m.video, caption: m.caption, autoplay: m.autoplay}
+    }
+    return {_type: 'image', _key: m._key, assetId: m.assetId || m.asset?._ref}
+  })
+  return payload
 }
 
 function collectSectionPayload(data) {
@@ -450,6 +638,47 @@ function collectSectionPayload(data) {
     worksLabel: data.get('worksLabel') || '',
     worksTitle: data.get('worksTitle') || '',
   }
+}
+
+/* ─── Gallery helpers ──────────────────────────────────────── */
+function renderGalleryThumb(m, i) {
+  const isVideo = m._type === 'videoItem'
+  const url = m.url || (m.asset?.url) || ''
+  const assetId = m.assetId || m.asset?._ref || ''
+  return `
+    <div class="adm-gallery-thumb${isVideo ? ' is-video' : ''}" data-i="${i}" data-asset-id="${escapeAttr(assetId)}" data-type="${isVideo ? 'video' : 'image'}" draggable="true">
+      ${isVideo
+        ? `<div class="adm-thumb-video" aria-hidden="true">▶</div>
+           <div class="adm-thumb-label">Video · edit in Studio</div>`
+        : url
+          ? `<img src="${escapeAttr(url)}?w=300&auto=format" alt="Gallery image ${i + 1}" loading="lazy">`
+          : `<div class="adm-thumb-empty">image</div>`}
+      <button type="button" class="adm-thumb-remove" aria-label="Remove" data-i="${i}">×</button>
+    </div>
+  `
+}
+
+/* File → base64 (for upload-image API) */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.split(',')[1] || '')
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+async function uploadFile(file) {
+  const base64 = await fileToBase64(file)
+  const r = await fetch(API.upload, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({filename: file.name, contentType: file.type, base64}),
+  })
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.ok) throw new Error(j.error || 'Upload failed')
+  return j.asset
 }
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -699,6 +928,123 @@ function injectStyles() {
   font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;
   opacity:0.7;
 }
+
+/* ─── COVER IMAGE UPLOAD ─── */
+.adm-fields-image legend, .adm-fields-gallery legend{color:#D0FA51}
+.adm-cover-zone{
+  display:flex;flex-direction:column;gap:0.8rem;
+}
+.adm-cover-preview{
+  width:100%;max-width:36rem;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  background:#0A0A0A;
+  border-radius:0.6rem;
+  border:0.08rem solid rgba(245,240,225,0.1);
+}
+.adm-cover-empty{
+  width:100%;max-width:36rem;
+  aspect-ratio:16/10;
+  display:flex;align-items:center;justify-content:center;
+  background:#0A0A0A;
+  border:0.08rem dashed rgba(245,240,225,0.18);
+  border-radius:0.6rem;
+  color:#F5F0E1;opacity:0.5;
+  font-family:'Newsreader',serif;font-style:italic;
+}
+.adm-cover-actions{display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap}
+.adm-cover-btn{
+  display:inline-flex;align-items:center;
+  padding:0.55rem 1.1rem;border-radius:999px;
+  background:#D0FA51;color:#1A1815;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:0.9rem;
+  cursor:pointer;
+  transition:background 0.2s ease, transform 0.2s ease;
+}
+.adm-cover-btn:hover{background:#fff;transform:translateY(-1px)}
+.adm-cover-status{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
+  opacity:0.7;min-height:1rem;
+}
+
+/* ─── GALLERY GRID ─── */
+.adm-gallery-hint{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
+  opacity:0.5;margin-bottom:0.2rem;
+}
+.adm-gallery-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(8rem, 1fr));
+  gap:0.6rem;
+}
+.adm-gallery-thumb{
+  position:relative;
+  aspect-ratio:1;
+  background:#0A0A0A;
+  border-radius:0.5rem;
+  overflow:hidden;
+  cursor:grab;
+  border:0.08rem solid rgba(245,240,225,0.08);
+  transition:border-color 0.2s ease, transform 0.2s ease;
+}
+.adm-gallery-thumb:active{cursor:grabbing}
+.adm-gallery-thumb:hover{border-color:rgba(245,240,225,0.25)}
+.adm-gallery-thumb img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  pointer-events:none; /* drag goes to .adm-gallery-thumb */
+}
+.adm-thumb-empty{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  font-family:'IBM Plex Mono',monospace;font-size:0.7rem;
+  text-transform:uppercase;letter-spacing:0.14em;opacity:0.4;
+}
+.adm-thumb-video{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  background:linear-gradient(135deg, #1A1815, #0A0A0A);
+  font-size:1.6rem;color:#D0FA51;
+}
+.adm-thumb-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,0.7);
+  padding:0.3rem 0.5rem;
+  font-family:'IBM Plex Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;opacity:0.85;
+}
+.adm-thumb-remove{
+  position:absolute;top:0.4rem;right:0.4rem;
+  width:1.5rem;height:1.5rem;border-radius:50%;
+  background:rgba(0,0,0,0.7);color:#F5F0E1;
+  border:0;cursor:pointer;
+  font-size:1rem;font-weight:500;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.2s ease, background 0.2s ease;
+}
+.adm-gallery-thumb:hover .adm-thumb-remove{opacity:1}
+.adm-thumb-remove:hover{background:#FF5577}
+.adm-thumb-dragging{opacity:0.4;transform:scale(0.95)}
+.adm-gallery-add{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  aspect-ratio:1;
+  border:0.08rem dashed rgba(245,240,225,0.2);border-radius:0.5rem;
+  cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:#F5F0E1;opacity:0.65;
+  transition:border-color 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+}
+.adm-gallery-add:hover{
+  border-color:#D0FA51;opacity:1;color:#D0FA51;
+}
+.adm-gallery-add-icon{font-size:1.6rem;margin-bottom:0.2rem;opacity:0.7}
+.adm-gallery-note{
+  font-family:'Newsreader',serif;font-style:italic;font-size:0.85rem;
+  opacity:0.7;margin-top:0.5rem;
+}
+.adm-gallery-note a{color:#D0FA51}
 
 @media (max-width: 768px){
   .adm-shell{padding:1rem 1.25rem 5rem}
