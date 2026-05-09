@@ -936,9 +936,6 @@ function bindMadplusStage(scopeEl) {
   const nowCoverEl = stage.querySelector('#mp-now-cover')
   const nowTitleEl = stage.querySelector('#mp-now-title')
   const nowSubEl = stage.querySelector('#mp-now-sub')
-  const stageTitleEl = stage.querySelector('#madplus-now-title')
-  const stageSubEl = stage.querySelector('#madplus-now-subtitle')
-
   let activeIdx = 0
 
   /* Re-position every card based on its offset from the active index.
@@ -967,9 +964,6 @@ function bindMadplusStage(scopeEl) {
     const listenUrl = card.dataset.listenUrl || ''
     const previewUrl = card.dataset.previewUrl || ''
     const coverImg = card.querySelector('.madplus-card-cover img')
-
-    if (stageTitleEl) stageTitleEl.textContent = title
-    if (stageSubEl) stageSubEl.textContent = subtitle
 
     if (nowTitleEl) nowTitleEl.textContent = title
     if (nowSubEl) nowSubEl.textContent = subtitle
@@ -1115,6 +1109,33 @@ function bindMadplusStage(scopeEl) {
       muteBtn.setAttribute('aria-label', next ? 'Unmute' : 'Mute')
       if (_audioState.audio) _audioState.audio.muted = next
     })
+  }
+
+  /* Touch swipe — left/right swipe on the carousel changes the active card.
+     Threshold 40px horizontal, < 60px vertical so vertical scrolling
+     doesn't accidentally trigger a track change. */
+  const carouselEl = stage.querySelector('.madplus-carousel')
+  if (carouselEl) {
+    let touchStart = null
+    carouselEl.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return
+      const t = e.touches[0]
+      touchStart = {x: t.clientX, y: t.clientY, time: Date.now()}
+    }, {passive: true})
+    carouselEl.addEventListener('touchend', (e) => {
+      if (!touchStart) return
+      const start = touchStart
+      touchStart = null
+      if (!e.changedTouches.length) return
+      const t = e.changedTouches[0]
+      const dx = t.clientX - start.x
+      const dy = t.clientY - start.y
+      if (Math.abs(dx) < 40 || Math.abs(dy) > 60) return
+      if (Date.now() - start.time > 600) return // ignore slow drags
+      // swipe LEFT → next card, swipe RIGHT → prev card
+      if (dx < 0) next()
+      else prev()
+    }, {passive: true})
   }
 
   /* Initial deck layout */
@@ -1295,6 +1316,13 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
             data-subtitle="${escMusic(d.subtitle)}"
             aria-label="${escMusic(d.title)}">
       <div class="madplus-card-cover">${coverImg(d.coverUrl, d.title)}</div>
+      <!-- Glass overlay at the bottom of each card with track title +
+           artist (like Apple Music carousel cards). Visible on all
+           cards but dimmer on side cards via parent state. -->
+      <div class="madplus-card-meta" aria-hidden="true">
+        <span class="madplus-card-title">${escMusic(d.title)}</span>
+        <span class="madplus-card-sub">${escMusic(d.subtitle || 'by MAD')}</span>
+      </div>
     </button>
   `).join('')
 
@@ -1339,12 +1367,6 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         <div class="madplus-cards" id="madplus-cards" data-deck-size="${deck.length}">
           ${cards}
         </div>
-      </div>
-
-      <!-- Active track meta — title + subtitle below the carousel -->
-      <div class="madplus-now-meta" id="madplus-now-meta">
-        <div class="madplus-now-title" id="madplus-now-title">${escMusic(deck[0].title)}</div>
-        ${deck[0].subtitle ? `<div class="madplus-now-subtitle" id="madplus-now-subtitle">${escMusic(deck[0].subtitle)}</div>` : '<div class="madplus-now-subtitle" id="madplus-now-subtitle"></div>'}
       </div>
 
       <!-- Glass player bar — Apple-Music-mini-player layout:

@@ -684,26 +684,28 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 
 /* Position stack: each card placed in 3D using data-pos attribute.
-   data-pos="0" = active center; ±1 = adjacent; ±2 = far back. */
+   data-pos="0" = active center; ±1 = adjacent; ±2 = far back.
+   Tighter X offsets (was 15rem/26rem → 10rem/20rem) so the cards
+   visually overlap like the Apple Music carousel reference. */
 .madplus-card[data-pos="0"]{
-  transform:translate(-50%, -50%) translateZ(50px) rotateY(0deg);
+  transform:translate(-50%, -50%) translateZ(60px) rotateY(0deg);
   z-index:5;opacity:1;
 }
 .madplus-card[data-pos="-1"]{
-  transform:translate(-50%, -50%) translateX(-15rem) translateZ(-40px) rotateY(28deg);
-  z-index:4;opacity:0.85;filter:brightness(0.85);
+  transform:translate(-50%, -50%) translateX(-10rem) translateZ(-30px) rotateY(22deg);
+  z-index:4;opacity:0.95;filter:brightness(0.78);
 }
 .madplus-card[data-pos="1"]{
-  transform:translate(-50%, -50%) translateX(15rem) translateZ(-40px) rotateY(-28deg);
-  z-index:4;opacity:0.85;filter:brightness(0.85);
+  transform:translate(-50%, -50%) translateX(10rem) translateZ(-30px) rotateY(-22deg);
+  z-index:4;opacity:0.95;filter:brightness(0.78);
 }
 .madplus-card[data-pos="-2"]{
-  transform:translate(-50%, -50%) translateX(-26rem) translateZ(-120px) rotateY(40deg);
-  z-index:3;opacity:0.55;filter:brightness(0.6) blur(1px);
+  transform:translate(-50%, -50%) translateX(-20rem) translateZ(-110px) rotateY(34deg);
+  z-index:3;opacity:0.7;filter:brightness(0.55) blur(0.5px);
 }
 .madplus-card[data-pos="2"]{
-  transform:translate(-50%, -50%) translateX(26rem) translateZ(-120px) rotateY(-40deg);
-  z-index:3;opacity:0.55;filter:brightness(0.6) blur(1px);
+  transform:translate(-50%, -50%) translateX(20rem) translateZ(-110px) rotateY(-34deg);
+  z-index:3;opacity:0.7;filter:brightness(0.55) blur(0.5px);
 }
 /* Anything farther → off-stage */
 .madplus-card:not([data-pos="0"]):not([data-pos="-1"]):not([data-pos="1"]):not([data-pos="-2"]):not([data-pos="2"]){
@@ -723,22 +725,50 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .madplus-card.is-active{cursor:pointer}
 
-/* Title/subtitle below carousel */
-.madplus-now-meta{
+/* Card meta overlay — title + subtitle inside a glass plate at the
+   bottom of each card. Visible on every card (active and side) like
+   the Apple Music carousel reference. The glass uses the same blur
+   recipe as the player bar so the language stays consistent. */
+.madplus-card-meta{
+  position:absolute;
+  left:0.7rem;right:0.7rem;bottom:0.7rem;
+  padding:0.7rem 0.9rem 0.75rem;
+  display:flex;flex-direction:column;align-items:center;gap:0.15rem;
   text-align:center;
-  margin:0 0 2.5rem;
-  color:#F5F0E1;
-  min-height:4rem;
+  background:rgba(20,18,15,0.55);
+  -webkit-backdrop-filter:blur(20px) saturate(160%) brightness(110%);
+  backdrop-filter:blur(20px) saturate(160%) brightness(110%);
+  border:0.06rem solid rgba(255,255,255,0.14);
+  border-radius:0.85rem;
+  box-shadow:
+    0 6px 14px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.14);
+  pointer-events:none;
+  z-index:2;
 }
-.madplus-now-title{
+.madplus-card-title{
   font-family:'Hanken Grotesk',sans-serif;font-weight:600;
-  font-size:2rem;letter-spacing:-0.01em;line-height:1.1;
-  margin-bottom:0.4rem;
+  font-size:1rem;line-height:1.15;letter-spacing:-0.01em;
+  color:#F5F0E1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;
 }
-.madplus-now-subtitle{
-  font-family:'Newsreader',Georgia,serif;font-style:italic;
-  font-size:1.1rem;color:#F5F0E1;opacity:0.65;
+.madplus-card-sub{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-size:0.8rem;line-height:1.2;
+  color:#F5F0E1;opacity:0.65;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:100%;
 }
+/* Side-card overlays sit a bit dimmer so the active card pops */
+.madplus-card[data-pos="-1"] .madplus-card-meta,
+.madplus-card[data-pos="1"] .madplus-card-meta{opacity:0.85}
+.madplus-card[data-pos="-2"] .madplus-card-meta,
+.madplus-card[data-pos="2"] .madplus-card-meta{opacity:0.65}
+
+/* Carousel margin-bottom tightened since we removed the separate
+   title/subtitle row — the player bar follows directly */
+.madplus-carousel{margin-bottom:1.5rem}
 
 /* GLASS PLAYER BAR — Apple-Music-mini-player style ────────────────────
    Wide rounded pill with strong saturated backdrop blur. Three sections:
@@ -989,16 +1019,17 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 
   .madplus-collab{padding:3rem 0;margin-top:1rem}
 
-  .madplus-carousel{height:24rem;margin-bottom:1.4rem}
-  .madplus-card{width:17rem}
+  .madplus-carousel{height:22rem;margin-bottom:1.4rem;touch-action:pan-y}
+  .madplus-card{width:16rem}
   /* Tighter fan on mobile so side cards still fit */
-  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-9rem) translateZ(-40px) rotateY(22deg)}
-  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(9rem) translateZ(-40px) rotateY(-22deg)}
-  .madplus-card[data-pos="-2"]{transform:translate(-50%, -50%) translateX(-15rem) translateZ(-100px) rotateY(35deg)}
-  .madplus-card[data-pos="2"]{transform:translate(-50%, -50%) translateX(15rem) translateZ(-100px) rotateY(-35deg)}
-
-  .madplus-now-title{font-size:1.5rem}
-  .madplus-now-subtitle{font-size:0.95rem}
+  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-7rem) translateZ(-30px) rotateY(20deg)}
+  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(7rem) translateZ(-30px) rotateY(-20deg)}
+  .madplus-card[data-pos="-2"]{transform:translate(-50%, -50%) translateX(-13rem) translateZ(-100px) rotateY(32deg)}
+  .madplus-card[data-pos="2"]{transform:translate(-50%, -50%) translateX(13rem) translateZ(-100px) rotateY(-32deg)}
+  /* Card meta overlay smaller on mobile */
+  .madplus-card-meta{padding:0.55rem 0.7rem 0.6rem;left:0.5rem;right:0.5rem;bottom:0.5rem}
+  .madplus-card-title{font-size:0.85rem}
+  .madplus-card-sub{font-size:0.7rem}
 
   .madplus-player-bar{
     grid-template-columns:auto 1fr auto;
@@ -1017,13 +1048,15 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 
 @media (max-width: 480px){
-  .madplus-carousel{height:20rem}
-  .madplus-card{width:14rem}
-  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-7rem) translateZ(-30px) rotateY(20deg);opacity:0.6}
-  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(7rem) translateZ(-30px) rotateY(-20deg);opacity:0.6}
+  .madplus-carousel{height:18rem}
+  .madplus-card{width:13rem}
+  .madplus-card[data-pos="-1"]{transform:translate(-50%, -50%) translateX(-5.5rem) translateZ(-30px) rotateY(18deg);opacity:0.6}
+  .madplus-card[data-pos="1"]{transform:translate(-50%, -50%) translateX(5.5rem) translateZ(-30px) rotateY(-18deg);opacity:0.6}
   .madplus-card[data-pos="-2"],
   .madplus-card[data-pos="2"]{opacity:0;pointer-events:none}
-  .madplus-now-title{font-size:1.25rem}
+  .madplus-card-meta{padding:0.45rem 0.55rem 0.5rem}
+  .madplus-card-title{font-size:0.78rem}
+  .madplus-card-sub{font-size:0.65rem}
   /* Drop the queue + listen icons to keep the bar compact */
   .mp-controls-right .mp-queue,
   .mp-controls-right .mp-listen{display:none}
