@@ -429,10 +429,22 @@ function buildDetail(id) {
   `
     : ''
   const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+  // Resolve section's display name (e.g. "Originals", "Bubble", "MAD+", "Vision")
+  const sec = SECTIONS.find((s) => s.id === id)
+  const secLabel = sec ? sec.cTitle : id
   detailInner.innerHTML = `
     <div class="detail-hero">
       <div class="detail-copy">
-        <div class="detail-kicker">${p.kicker}</div>
+        <!-- Section banner: MAD logo + section name, always above the kicker -->
+        <div class="detail-section-banner" aria-label="MAD ${secLabel}">
+          <svg class="detail-banner-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+            <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+            <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+          </svg>
+          <span class="detail-banner-name">${secLabel}</span>
+        </div>
+        ${p.kicker ? `<div class="detail-kicker">${p.kicker}</div>` : ''}
         <h1 class="manifesto">${p.manifesto}</h1>
         <p class="detail-lead">${p.lead}</p>
       </div>

@@ -276,7 +276,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .detail-topbar{position:relative;height:0;pointer-events:none}
 .detail-topbar > *{pointer-events:auto}
 .detail-topbar .detail-back{position:fixed;top:3rem;left:4.29rem;z-index:30}
-.detail-topbar .detail-logo{position:absolute;top:3rem;right:0}
+/* Hide the small top-right MAD logo — replaced by the bigger
+   .detail-section-banner that sits inside the hero above the kicker */
+.detail-topbar .detail-logo{display:none}
 .detail-back{
   display:inline-flex;align-items:center;gap:0.8rem;
   background:var(--bg);border:0.15rem solid var(--accent);
@@ -304,14 +306,35 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 
 /* manifesto hero */
 .detail-hero{
-  display:block;margin:4rem 0 8rem;min-height:40rem;
-  display:flex;align-items:center;min-height:48rem;
+  display:block;
+  margin:3rem 0 5rem;
+  /* (was min-height:48rem — that's what created the giant empty
+     gap between the lead paragraph and "— IN COLLABORATION WITH"
+     when the lead content was shorter than 48rem) */
 }
 .detail-hero .detail-copy{max-width:130rem}
+
+/* SECTION BANNER — MAD logo + section name, sits above the kicker */
+.detail-section-banner{
+  display:flex;align-items:center;gap:1.2rem;
+  margin-bottom:2.5rem;
+  color:var(--accent);
+}
+.detail-section-banner .detail-banner-logo{
+  height:2.6rem;width:auto;color:var(--accent);
+  flex-shrink:0;
+}
+.detail-section-banner .detail-banner-name{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  font-size:1.8rem;letter-spacing:-0.01em;line-height:1;
+  color:var(--accent);
+}
+
 .detail-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
-  font-size:1.3rem;letter-spacing:0.3em;text-transform:uppercase;
-  margin-bottom:3rem;opacity:0.7;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.3em;text-transform:uppercase;
+  margin-bottom:1.8rem;opacity:0.55;
+  color:var(--accent);
 }
 .detail-kicker::before{content:'— '}
 .manifesto{
@@ -326,6 +349,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .detail-lead{
   font-family:'Roboto',sans-serif;font-weight:300;
   font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.92;
+  margin-bottom:0;
 }
 .detail-lead strong{font-weight:700;font-style:normal}
 /* editorial drop cap — first letter of lead paragraph */
@@ -339,7 +363,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 
 /* agencies strip */
 .agencies{
-  display:flex;gap:0;margin:0 0 10rem;
+  display:flex;gap:0;margin:0 0 6rem;
   border-top:0.12rem solid var(--accent);border-bottom:0.12rem solid var(--accent);
   overflow:hidden;white-space:nowrap;
 }
