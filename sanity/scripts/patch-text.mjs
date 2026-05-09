@@ -42,6 +42,8 @@ async function patchSections() {
         kicker: s.kicker,
         worksLabel: s.worksLabel,
         worksTitle: s.worksTitle,
+        description: s.description,
+        subtitle: s.subtitle,
       })
       .commit()
     console.log(`  ✓ ${s.slug}`)

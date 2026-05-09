@@ -49,7 +49,7 @@ export const SECTIONS = [
     order: 2,
     title: 'MAD Bubble.',
     subtitle: 'Personal art & experiments.',
-    description: 'Personal art, experiments & side obsessions.',
+    description: 'Personal art & experiments.',
     cardLabel: 'Personal Art · Experimental',
     landingBg: '#D0FA51',
     landingAccent: '#584CF5',

@@ -32,9 +32,9 @@ const SECTIONS = sectionsDocs.map((s, i) => {
     id: s.slug,
     bg: '#0A0A0A',
     accent: '#F5F0E1',
-    // hero copy: "We are MAD Originals, the main studio practice."
-    heroLine: `We are <em>${cleanTitle}</em>, ${description.toLowerCase()}.`,
-    heroSub: cleanSubtitle ? `${cleanSubtitle}.` : '',
+    // hero copy: ALWAYS 2 lines. Line 1: "We are <name>." Line 2: "<description>."
+    heroLine: `We are <em>${cleanTitle}.</em><br>${description}.`,
+    heroSub: '',
     counterPrefix: `${String(s.order).padStart(2, '0')} / ${String(sectionsDocs.length).padStart(2, '0')} — `,
     counterSection: s.counterLabel || cleanTitle,
     cNum: `__${String(s.order).padStart(2, '0')}`,
