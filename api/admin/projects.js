@@ -11,7 +11,7 @@
  */
 import {requireAuth, sanityClient, readJsonBody, jsonResponse} from './_lib.js'
 
-const ALLOWED_TOP = ['title', 'year', 'caption', 'tags', 'published', 'coverImage', 'media']
+const ALLOWED_TOP = ['title', 'year', 'caption', 'tags', 'published', 'coverImage', 'media', 'order']
 const ALLOWED_CS = [
   'role',
   'client',
@@ -136,7 +136,82 @@ export default async function handler(req, res) {
     return jsonResponse(res, 200, {projects: list})
   }
 
-  if (req.method === 'PATCH' || req.method === 'POST') {
+  // POST /api/admin/projects (no id) — CREATE new project
+  // POST /api/admin/projects?action=reorder — bulk reorder ids in section
+  if (req.method === 'POST') {
+    if (!requireAuth(req, res)) return
+    const url = new URL(req.url, 'http://x')
+    const action = url.searchParams.get('action')
+    const id = url.searchParams.get('id')
+
+    let body
+    try {
+      body = await readJsonBody(req)
+    } catch {
+      return jsonResponse(res, 400, {error: 'Invalid JSON'})
+    }
+
+    // Bulk reorder
+    if (action === 'reorder') {
+      const ids = Array.isArray(body.ids) ? body.ids : null
+      if (!ids || !ids.length) return jsonResponse(res, 400, {error: 'Missing ids[]'})
+      const client = sanityClient()
+      try {
+        const tx = client.transaction()
+        ids.forEach((projId, i) => {
+          tx.patch(projId, {set: {order: i + 1}})
+        })
+        await tx.commit()
+        return jsonResponse(res, 200, {ok: true, count: ids.length})
+      } catch (e) {
+        return jsonResponse(res, 500, {error: e.message || 'Reorder failed'})
+      }
+    }
+
+    // Update existing (alias for PATCH; some callers use POST)
+    if (id) {
+      return updateProject(req, res, id, body)
+    }
+
+    // Create new
+    const sectionSlug = String(body.sectionSlug || '').trim()
+    const title = String(body.title || 'Untitled').trim().slice(0, 120)
+    const slug = String(body.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')).slice(0, 60)
+    if (!sectionSlug || !slug) {
+      return jsonResponse(res, 400, {error: 'sectionSlug and slug (or title) required'})
+    }
+    const client = sanityClient()
+    try {
+      // Look up section _id
+      const section = await client.fetch(
+        `*[_type == "section" && slug.current == $slug][0]{_id, "maxOrder": coalesce(max(*[_type == "project" && section._ref == ^._id].order), 0)}`,
+        {slug: sectionSlug},
+      )
+      if (!section) return jsonResponse(res, 404, {error: `Section "${sectionSlug}" not found`})
+      // Check slug not taken
+      const existing = await client.fetch(
+        `*[_type == "project" && slug.current == $slug][0]{_id}`,
+        {slug},
+      )
+      if (existing) return jsonResponse(res, 409, {error: `A project with slug "${slug}" already exists`})
+      // Create
+      const doc = {
+        _type: 'project',
+        _id: `project-${slug}`,
+        title,
+        slug: {_type: 'slug', current: slug},
+        section: {_type: 'reference', _ref: section._id},
+        order: (section.maxOrder || 0) + 1,
+        published: false, // start as draft so user can review before going live
+      }
+      await client.create(doc)
+      return jsonResponse(res, 200, {ok: true, project: doc})
+    } catch (e) {
+      return jsonResponse(res, 500, {error: e.message || 'Create failed'})
+    }
+  }
+
+  if (req.method === 'PATCH') {
     if (!requireAuth(req, res)) return
     const id = req.url && new URL(req.url, 'http://x').searchParams.get('id')
     if (!id) return jsonResponse(res, 400, {error: 'Missing ?id'})
@@ -146,36 +221,54 @@ export default async function handler(req, res) {
     } catch {
       return jsonResponse(res, 400, {error: 'Invalid JSON'})
     }
-    const top = pick(body, ALLOWED_TOP)
-    const cs = pick(body.caseStudy || {}, ALLOWED_CS)
-    const set = {...top}
-    if (Object.keys(cs).length) set.caseStudy = cs
+    return updateProject(req, res, id, body)
+  }
 
-    // Normalise any image / media shapes the client sent
-    if ('coverImage' in set) {
-      const img = normaliseImage(set.coverImage)
-      if (img) set.coverImage = img
-      else delete set.coverImage
-    }
-    if ('media' in set) {
-      if (Array.isArray(set.media)) {
-        set.media = set.media.map(normaliseMediaItem).filter(Boolean)
-      } else {
-        delete set.media
-      }
-    }
-
-    if (!Object.keys(set).length) return jsonResponse(res, 400, {error: 'No allowed fields in body'})
-
+  if (req.method === 'DELETE') {
+    if (!requireAuth(req, res)) return
+    const id = req.url && new URL(req.url, 'http://x').searchParams.get('id')
+    if (!id) return jsonResponse(res, 400, {error: 'Missing ?id'})
     const client = sanityClient()
     try {
-      await client.patch(id).set(set).commit()
-      const doc = await client.fetch(`*[_id == $id][0]`, {id})
-      return jsonResponse(res, 200, {ok: true, project: doc})
+      await client.delete(id)
+      return jsonResponse(res, 200, {ok: true, deleted: id})
     } catch (e) {
-      return jsonResponse(res, 500, {error: e.message || 'Patch failed'})
+      return jsonResponse(res, 500, {error: e.message || 'Delete failed'})
     }
   }
 
   return jsonResponse(res, 405, {error: 'Method not allowed'})
+}
+
+/* Shared update helper used by both PATCH /projects?id= and POST /projects?id= */
+async function updateProject(req, res, id, body) {
+  const top = pick(body, ALLOWED_TOP)
+  const cs = pick(body.caseStudy || {}, ALLOWED_CS)
+  const set = {...top}
+  if (Object.keys(cs).length) set.caseStudy = cs
+
+  // Normalise any image / media shapes the client sent
+  if ('coverImage' in set) {
+    const img = normaliseImage(set.coverImage)
+    if (img) set.coverImage = img
+    else delete set.coverImage
+  }
+  if ('media' in set) {
+    if (Array.isArray(set.media)) {
+      set.media = set.media.map(normaliseMediaItem).filter(Boolean)
+    } else {
+      delete set.media
+    }
+  }
+
+  if (!Object.keys(set).length) return jsonResponse(res, 400, {error: 'No allowed fields in body'})
+
+  const client = sanityClient()
+  try {
+    await client.patch(id).set(set).commit()
+    const doc = await client.fetch(`*[_id == $id][0]`, {id})
+    return jsonResponse(res, 200, {ok: true, project: doc})
+  } catch (e) {
+    return jsonResponse(res, 500, {error: e.message || 'Patch failed'})
+  }
 }

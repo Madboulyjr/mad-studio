@@ -113,6 +113,40 @@ async function loadDoc(kind, id) {
   return j.project || j.section
 }
 
+async function createProject({sectionSlug, title}) {
+  const r = await fetch(API.projects, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({sectionSlug, title}),
+  })
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.ok) throw new Error(j.error || 'Create failed')
+  return j.project
+}
+
+async function deleteProject(id) {
+  const r = await fetch(`${API.projects}?id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    credentials: 'same-origin',
+  })
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.ok) throw new Error(j.error || 'Delete failed')
+  return true
+}
+
+async function reorderProjects(ids) {
+  const r = await fetch(`${API.projects}?action=reorder`, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids}),
+  })
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.ok) throw new Error(j.error || 'Reorder failed')
+  return true
+}
+
 async function saveDoc(kind, id, payload) {
   const url = (kind === 'project' ? API.projects : API.sections) + `?id=${encodeURIComponent(id)}`
   const r = await fetch(url, {
@@ -213,24 +247,31 @@ function renderDashboard() {
           .map((s) => {
             const list = projectsBySection[s.slug] || []
             return `
-          <div class="adm-section-block">
-            <div class="adm-dash-kicker">— ${escapeHtml(s.title || s.slug)} · ${list.length} projects</div>
+          <div class="adm-section-block" data-section-slug="${escapeAttr(s.slug)}">
+            <div class="adm-section-head">
+              <div class="adm-dash-kicker">— ${escapeHtml(s.title || s.slug)} · ${list.length} project${list.length === 1 ? '' : 's'}</div>
+              <button class="adm-link adm-add-project" data-section-slug="${escapeAttr(s.slug)}">+ Add project</button>
+            </div>
             ${list.length
-              ? `<div class="adm-list">${list
+              ? `<div class="adm-list" data-section-slug="${escapeAttr(s.slug)}">${list
                   .map(
                     (p) => `
-                <button class="adm-row" data-kind="project" data-id="${p._id}">
-                  <span class="adm-row-title">${escapeHtml(p.title)}${p.year ? ` · ${escapeHtml(p.year)}` : ''}</span>
-                  <span class="adm-row-meta">
-                    ${p.published ? '' : '<span class="adm-tag adm-tag-warn">draft</span>'}
-                    ${(p.tags || []).slice(0, 2).map((t) => `<span class="adm-tag">${escapeHtml(t)}</span>`).join('')}
-                  </span>
-                  <span class="adm-row-edit">Edit ↗</span>
-                </button>
+                <div class="adm-row" data-id="${p._id}" data-slug="${escapeAttr(p.slug)}" data-section-slug="${escapeAttr(s.slug)}" draggable="true">
+                  <span class="adm-row-handle" aria-label="Drag to reorder" title="Drag to reorder">⠿</span>
+                  <button class="adm-row-main" data-action="edit" data-id="${p._id}">
+                    <span class="adm-row-title">${escapeHtml(p.title)}${p.year ? ` · ${escapeHtml(p.year)}` : ''}</span>
+                    <span class="adm-row-meta">
+                      ${p.published ? '' : '<span class="adm-tag adm-tag-warn">draft</span>'}
+                      ${(p.tags || []).slice(0, 2).map((t) => `<span class="adm-tag">${escapeHtml(t)}</span>`).join('')}
+                    </span>
+                  </button>
+                  <button class="adm-row-action adm-row-edit-btn" data-action="edit" data-id="${p._id}" title="Edit">Edit ↗</button>
+                  <button class="adm-row-action adm-row-delete-btn" data-action="delete" data-id="${p._id}" data-title="${escapeAttr(p.title)}" title="Delete">×</button>
+                </div>
               `,
                   )
                   .join('')}</div>`
-              : '<div class="adm-empty">No projects in this section yet. Add one via Sanity Studio.</div>'}
+              : `<div class="adm-empty">No projects yet. Click "+ Add project" above to create one.</div>`}
           </div>`
           })
           .join('')}
@@ -238,24 +279,122 @@ function renderDashboard() {
     </div>
   `
   rootEl.querySelector('#adm-logout').addEventListener('click', logout)
-  rootEl.querySelectorAll('[data-kind]').forEach((el) => {
-    el.addEventListener('click', async () => {
-      const kind = el.dataset.kind
+
+  // Section card click → edit section
+  rootEl.querySelectorAll('.adm-card[data-kind]').forEach((el) => {
+    el.addEventListener('click', () => openEdit(el.dataset.kind, el.dataset.id))
+  })
+
+  // Project row actions: edit, delete
+  rootEl.querySelectorAll('.adm-row-main, .adm-row-action').forEach((el) => {
+    el.addEventListener('click', async (e) => {
+      e.stopPropagation()
+      const action = el.dataset.action
       const id = el.dataset.id
-      state.busy = true
-      render()
-      const doc = await loadDoc(kind, id)
-      state.editing = {kind, id, doc}
-      state.busy = false
-      render()
+      if (action === 'edit') openEdit('project', id)
+      else if (action === 'delete') {
+        const title = el.dataset.title || 'this project'
+        if (!confirm(`Delete "${title}"?\n\nThis permanently removes it from Sanity. This can't be undone via /admin (you'd have to re-add it from Studio history).`)) return
+        try {
+          await deleteProject(id)
+          await refreshLists()
+          render()
+        } catch (err) {
+          alert('Delete failed: ' + err.message)
+        }
+      }
     })
+  })
+
+  // "+ Add project" buttons
+  rootEl.querySelectorAll('.adm-add-project').forEach((el) => {
+    el.addEventListener('click', async () => {
+      const sectionSlug = el.dataset.sectionSlug
+      const title = prompt(`New project title in "${sectionSlug}" section:`)
+      if (!title) return
+      try {
+        const newProject = await createProject({sectionSlug, title})
+        await refreshLists()
+        // Open the edit view for the freshly created project
+        openEdit('project', newProject._id)
+      } catch (err) {
+        alert('Create failed: ' + err.message)
+      }
+    })
+  })
+
+  // Drag-and-drop reorder per section
+  rootEl.querySelectorAll('.adm-list[data-section-slug]').forEach(setupReorder)
+}
+
+async function openEdit(kind, id) {
+  state.busy = true
+  render()
+  const doc = await loadDoc(kind, id)
+  state.editing = {kind, id, doc}
+  state.busy = false
+  render()
+}
+
+/* Drag-reorder for project lists. On drop, syncs new order to Sanity. */
+function setupReorder(list) {
+  const sectionSlug = list.dataset.sectionSlug
+  let dragging = null
+  list.addEventListener('dragstart', (e) => {
+    const row = e.target.closest('.adm-row')
+    if (!row) return
+    dragging = row
+    row.classList.add('adm-row-dragging')
+    e.dataTransfer.effectAllowed = 'move'
+  })
+  list.addEventListener('dragend', () => {
+    if (dragging) dragging.classList.remove('adm-row-dragging')
+    dragging = null
+  })
+  list.addEventListener('dragover', (e) => {
+    e.preventDefault()
+    if (!dragging) return
+    const target = e.target.closest('.adm-row')
+    if (!target || target === dragging) return
+    const rect = target.getBoundingClientRect()
+    const after = (e.clientY - rect.top) > rect.height / 2
+    target.parentNode.insertBefore(dragging, after ? target.nextSibling : target)
+  })
+  list.addEventListener('drop', async (e) => {
+    e.preventDefault()
+    if (!dragging) return
+    const ids = Array.from(list.querySelectorAll('.adm-row')).map((r) => r.dataset.id)
+    try {
+      await reorderProjects(ids)
+      // Update local state silently
+      const projectsBySection = {}
+      for (const p of state.projects) {
+        const k = p.sectionSlug || 'unassigned'
+        if (!projectsBySection[k]) projectsBySection[k] = []
+        projectsBySection[k].push(p)
+      }
+      // Re-fetch lists after reorder
+      await refreshLists()
+    } catch (err) {
+      alert('Reorder failed: ' + err.message + '\nReload and try again.')
+    }
   })
 }
 
 function renderEdit() {
   const {kind, doc} = state.editing
+  const isProject = kind === 'project'
+  // Project page URL for live preview iframe (/<section-public-slug>/<project-slug>)
+  // Map music → madplus per the public URL scheme
+  const PUBLIC_SECTION = {music: 'madplus', originals: 'originals', bubble: 'bubble', vision: 'vision'}
+  const previewUrl = isProject && doc.slug && doc.sectionSlug
+    ? `/${PUBLIC_SECTION[doc.sectionSlug] || doc.sectionSlug}/${doc.slug}`
+    : doc.slug
+      ? `/${PUBLIC_SECTION[doc.slug?.current || doc.slug] || doc.slug?.current || doc.slug}`
+      : '/'
+
   rootEl.innerHTML = `
-    <div class="adm-shell">
+    <div class="adm-shell adm-shell-edit">
       <header class="adm-topbar">
         <button class="adm-link" id="adm-back">← Back</button>
         <a class="adm-brand" href="/">
@@ -266,10 +405,32 @@ function renderEdit() {
           </svg>
           <span>Studio · Admin · Edit</span>
         </a>
-        <div class="adm-topbar-actions"></div>
+        <div class="adm-topbar-actions">
+          <button class="adm-link" id="adm-preview-reload" title="Reload preview">⟳ Reload preview</button>
+          <a class="adm-link" href="${previewUrl}" target="_blank" rel="noopener">Open in new tab ↗</a>
+        </div>
       </header>
-      <div class="adm-edit">
-        ${kind === 'project' ? renderProjectForm(doc) : renderSectionForm(doc)}
+      <div class="adm-split">
+        <div class="adm-split-form">
+          ${isProject ? renderProjectForm(doc) : renderSectionForm(doc)}
+        </div>
+        <div class="adm-split-preview">
+          <div class="adm-preview-bar">
+            <span class="adm-preview-label">LIVE PREVIEW</span>
+            <span class="adm-preview-url">${escapeHtml(previewUrl)}</span>
+          </div>
+          <iframe
+            class="adm-preview-frame"
+            id="adm-preview-frame"
+            src="${escapeAttr(previewUrl)}"
+            title="Live preview"
+            loading="lazy"
+            allow="autoplay">
+          </iframe>
+          <div class="adm-preview-hint">
+            Save changes → preview reloads. Live data via Sanity CDN cache (~60s).
+          </div>
+        </div>
       </div>
     </div>
   `
@@ -277,6 +438,13 @@ function renderEdit() {
     state.editing = null
     render()
   })
+  const reloadBtn = rootEl.querySelector('#adm-preview-reload')
+  if (reloadBtn) {
+    reloadBtn.addEventListener('click', () => {
+      const f = rootEl.querySelector('#adm-preview-frame')
+      if (f) f.src = f.src // force reload
+    })
+  }
   bindEditFormHandlers(kind, doc._id)
 }
 
@@ -563,9 +731,15 @@ function bindEditFormHandlers(kind, id) {
     try {
       const payload = kind === 'project' ? collectProjectPayload(data, form) : collectSectionPayload(data)
       await saveDoc(kind, id, payload)
-      status.textContent = '✓ Saved. Live changes will appear in ~60s.'
-      // Refresh dashboard data so list re-renders fresh
+      status.textContent = '✓ Saved — reloading preview…'
       await refreshLists()
+      // Reload the preview iframe so user sees new content immediately
+      // (small delay to give Sanity CDN a moment to invalidate)
+      setTimeout(() => {
+        const f = rootEl.querySelector('#adm-preview-frame')
+        if (f) f.src = f.src
+        status.textContent = '✓ Saved. Preview reloaded.'
+      }, 800)
     } catch (err) {
       status.textContent = '✗ ' + (err.message || 'Save failed')
     }
@@ -823,24 +997,63 @@ function injectStyles() {
 .adm-card:hover .adm-card-edit{opacity:1;color:#D0FA51}
 
 .adm-section-block{margin-bottom:2rem}
+.adm-section-head{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1.2rem;
+}
+.adm-add-project{
+  background:transparent;border:0.08rem solid rgba(245,240,225,0.2) !important;
+  padding:0.4rem 0.95rem !important;border-radius:999px;
+  font-size:0.7rem !important;
+  transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.adm-add-project:hover{
+  background:#D0FA51 !important;color:#1A1815 !important;
+  border-color:transparent !important;opacity:1 !important;
+}
+
 .adm-list{display:flex;flex-direction:column;gap:0.4rem}
 .adm-row{
-  display:flex;justify-content:space-between;align-items:center;gap:1rem;
-  padding:1rem 1.4rem;
+  display:flex;align-items:center;gap:0.6rem;
+  padding:0.85rem 1rem;
   background:#161310;border:0.08rem solid rgba(245,240,225,0.08);
-  border-radius:0.6rem;cursor:pointer;
+  border-radius:0.6rem;
   font-family:inherit;color:#F5F0E1;text-align:left;
-  transition:background 0.2s ease, border-color 0.2s ease;
+  transition:background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 .adm-row:hover{background:#23201B;border-color:rgba(245,240,225,0.18)}
-.adm-row-title{font-weight:500;font-size:1rem;letter-spacing:-0.01em;flex:1;min-width:0}
+.adm-row-handle{
+  cursor:grab;opacity:0.4;
+  font-size:1.1rem;line-height:1;
+  padding:0 0.4rem;user-select:none;
+  transition:opacity 0.2s ease;
+}
+.adm-row:hover .adm-row-handle{opacity:0.8}
+.adm-row-handle:active{cursor:grabbing}
+.adm-row-dragging{opacity:0.5;border-color:#D0FA51 !important;transform:scale(0.98)}
+
+.adm-row-main{
+  flex:1;min-width:0;
+  display:flex;justify-content:space-between;align-items:center;gap:0.8rem;
+  background:transparent;border:0;cursor:pointer;
+  font-family:inherit;color:inherit;text-align:left;
+  padding:0.2rem 0;
+}
+.adm-row-title{font-weight:500;font-size:1rem;letter-spacing:-0.01em;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adm-row-meta{display:flex;gap:0.4rem;align-items:center;flex-shrink:0}
-.adm-row-edit{
+.adm-row-action{
+  background:transparent;border:0;cursor:pointer;
+  color:#F5F0E1;flex-shrink:0;
+  padding:0.4rem 0.7rem;border-radius:0.4rem;
   font-family:'IBM Plex Mono',monospace;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
-  opacity:0.55;flex-shrink:0;
+  opacity:0.55;
+  transition:opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
-.adm-row:hover .adm-row-edit{opacity:1;color:#D0FA51}
+.adm-row:hover .adm-row-action{opacity:0.85}
+.adm-row-edit-btn:hover{color:#D0FA51;opacity:1 !important}
+.adm-row-delete-btn{font-size:1.1rem !important;letter-spacing:0 !important;padding:0.2rem 0.55rem !important;line-height:1 !important}
+.adm-row-delete-btn:hover{background:#FF5577;color:#fff;opacity:1 !important}
 .adm-tag{
   background:rgba(245,240,225,0.06);
   padding:0.18rem 0.55rem;border-radius:999px;
@@ -853,6 +1066,69 @@ function injectStyles() {
   border-radius:0.6rem;
   font-family:'Newsreader',serif;font-style:italic;
   font-size:0.95rem;opacity:0.6;
+}
+
+/* SPLIT PANE — edit form left, live iframe preview right */
+.adm-shell-edit{max-width:none;padding:1.2rem 1.5rem 0;height:100vh;display:flex;flex-direction:column}
+.adm-split{
+  display:grid;
+  grid-template-columns:minmax(28rem, 38%) 1fr;
+  gap:1.2rem;
+  flex:1;min-height:0;
+  margin-bottom:1.5rem;
+}
+.adm-split-form{
+  overflow-y:auto;
+  padding-right:0.5rem;
+  /* hide native scrollbar but keep functional */
+  scrollbar-width:thin;
+}
+.adm-split-form::-webkit-scrollbar{width:6px}
+.adm-split-form::-webkit-scrollbar-thumb{background:rgba(245,240,225,0.15);border-radius:3px}
+.adm-split-preview{
+  display:flex;flex-direction:column;
+  background:#0A0A0A;
+  border:0.08rem solid rgba(245,240,225,0.1);
+  border-radius:0.8rem;
+  overflow:hidden;
+  min-height:0;
+}
+.adm-preview-bar{
+  display:flex;align-items:center;gap:0.8rem;
+  padding:0.7rem 1rem;
+  background:#161310;
+  border-bottom:0.08rem solid rgba(245,240,225,0.08);
+}
+.adm-preview-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:#D0FA51;
+}
+.adm-preview-url{
+  font-family:'IBM Plex Mono',monospace;font-weight:400;
+  font-size:0.78rem;
+  color:#F5F0E1;opacity:0.6;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.adm-preview-frame{
+  flex:1;width:100%;border:0;
+  background:#0A0A0A;
+  min-height:0;
+}
+.adm-preview-hint{
+  padding:0.6rem 1rem;
+  background:#161310;
+  border-top:0.08rem solid rgba(245,240,225,0.06);
+  font-family:'Newsreader',serif;font-style:italic;
+  font-size:0.78rem;opacity:0.55;
+}
+
+/* Stack on narrow widths */
+@media (max-width: 1100px){
+  .adm-shell-edit{height:auto;padding:1rem 1.25rem 5rem}
+  .adm-split{grid-template-columns:1fr;gap:1.5rem}
+  .adm-split-form{overflow:visible;padding-right:0}
+  .adm-split-preview{height:60vh}
 }
 
 /* EDIT FORM */
