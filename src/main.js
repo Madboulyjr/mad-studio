@@ -435,6 +435,21 @@ if (s0) {
   }
 }
 
+/* Manifesto CTA in the bottomnav — intercept click so we route via the
+   SPA (no full page reload). The href="/manifesto" still works for
+   right-click → "Open in new tab" / middle-click. */
+{
+  const cta = document.getElementById('manifesto-cta')
+  if (cta) {
+    cta.addEventListener('click', (e) => {
+      // Allow modifier-clicks / middle-click to behave normally
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1) return
+      e.preventDefault()
+      navigate({view: 'manifesto'})
+    })
+  }
+}
+
 /* ─── DETAIL PAGE ────────────────────────────────── */
 const detailPage = document.getElementById('detail-page')
 const detailInner = document.getElementById('detail-inner')
@@ -2252,6 +2267,199 @@ function flashAvatarBurst() {
   setTimeout(() => illus.classList.remove('avatar-burst'), 900)
 }
 
+/* ─── MANIFESTO PAGE — full-screen editorial takeover with philosophy +
+ * awards + shortlist + press. Driven by siteSettings fields in Sanity:
+ *   manifestoTitle / manifestoBody / manifestoStats /
+ *   awardsWon / awardsShortlisted / pressFeatures
+ * Triggered from the bottomnav primary CTA ("Manifesto" pill) or by
+ * navigating to /manifesto directly. */
+
+function escMani(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function buildManifestoMarkup() {
+  const title =
+    SITE.manifestoTitle ||
+    'Creativity is <em>madness</em><br>with a deadline.'
+  const body =
+    SITE.manifestoBody ||
+    'Nine years building loud worlds for clients across the region — launching Google Arabia, Vodafone RED, Mazda re-launches, Mondelez packaging.\n\n<strong>The work doesn\'t whisper.</strong> It picks a fight with the scroll, makes the brief feel small, and earns its place in the feed by being the thing nobody saw coming.\n\nTrained at AKQA, FP7, Acquaint and Socialeyez. Now operating on my own terms — running MAD Studio across Originals, Bubble, MAD+ music and Vision film.'
+  const stats = Array.isArray(SITE.manifestoStats) ? SITE.manifestoStats : []
+  const won = Array.isArray(SITE.awardsWon) ? SITE.awardsWon : []
+  const shortlisted = Array.isArray(SITE.awardsShortlisted) ? SITE.awardsShortlisted : []
+  const press = Array.isArray(SITE.pressFeatures) ? SITE.pressFeatures : []
+  const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+
+  const paragraphs = body
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => `<p class="mani-p">${p.replace(/\n/g, '<br>')}</p>`)
+    .join('')
+
+  const statsRow = stats.length
+    ? `<div class="mani-stats">
+        ${stats
+          .map(
+            (s) => `
+          <div class="mani-stat">
+            <div class="mani-stat-num">${escMani(s.value || '')}</div>
+            <div class="mani-stat-label">${escMani(s.label || '')}</div>
+          </div>`,
+          )
+          .join('')}
+      </div>`
+    : ''
+
+  const awardItem = (a) => {
+    const meta = [a.organization, a.year].filter(Boolean).map(escMani).join(' · ')
+    const titleCell = a.link
+      ? `<a class="mani-award-title-link" href="${escMani(a.link)}" target="_blank" rel="noopener">${escMani(a.title || 'Untitled')} <span aria-hidden="true">↗</span></a>`
+      : escMani(a.title || 'Untitled')
+    return `
+      <li class="mani-award">
+        <span class="mani-award-year">${escMani(a.year || '—')}</span>
+        <span class="mani-award-title">${titleCell}</span>
+        <span class="mani-award-meta">${escMani(a.organization || '')}${a.project ? ` · ${escMani(a.project)}` : ''}</span>
+      </li>
+    `
+  }
+
+  const wonBlock = won.length
+    ? `
+      <section class="mani-section" aria-labelledby="mani-won-h">
+        <div class="mani-section-head">
+          <span class="mani-section-kicker">— Won</span>
+          <h2 class="mani-section-title" id="mani-won-h">Awards.</h2>
+          <span class="mani-section-count">${String(won.length).padStart(2, '0')}</span>
+        </div>
+        <ul class="mani-award-list">${won.map(awardItem).join('')}</ul>
+      </section>
+    `
+    : ''
+
+  const shortlistedBlock = shortlisted.length
+    ? `
+      <section class="mani-section" aria-labelledby="mani-short-h">
+        <div class="mani-section-head">
+          <span class="mani-section-kicker">— Shortlisted</span>
+          <h2 class="mani-section-title" id="mani-short-h">Almost there.</h2>
+          <span class="mani-section-count">${String(shortlisted.length).padStart(2, '0')}</span>
+        </div>
+        <ul class="mani-award-list">${shortlisted.map(awardItem).join('')}</ul>
+      </section>
+    `
+    : ''
+
+  const pressBlock = press.length
+    ? `
+      <section class="mani-section" aria-labelledby="mani-press-h">
+        <div class="mani-section-head">
+          <span class="mani-section-kicker">— Press</span>
+          <h2 class="mani-section-title" id="mani-press-h">Featured in.</h2>
+          <span class="mani-section-count">${String(press.length).padStart(2, '0')}</span>
+        </div>
+        <ul class="mani-press-list">
+          ${press
+            .map(
+              (p) => `
+            <li class="mani-press-item">
+              ${p.link
+                ? `<a class="mani-press-link" href="${escMani(p.link)}" target="_blank" rel="noopener">${escMani(p.outlet || 'Press')} <span aria-hidden="true">↗</span></a>`
+                : `<span>${escMani(p.outlet || 'Press')}</span>`}
+              ${p.title ? `<span class="mani-press-meta">${escMani(p.title)}</span>` : ''}
+              <span class="mani-press-year">${escMani(p.year || '')}</span>
+            </li>`,
+            )
+            .join('')}
+        </ul>
+      </section>
+    `
+    : ''
+
+  // Empty-state message when none of the lists are populated yet
+  const emptyAll = !won.length && !shortlisted.length && !press.length
+  const emptyHint = emptyAll
+    ? `<div class="mani-empty">
+         <span class="mani-empty-kicker">— Awards & Press</span>
+         <p>Add wins, shortlists and press features in <a href="/admin">/admin → Site Settings</a>. They'll show up here in editorial list form.</p>
+       </div>`
+    : ''
+
+  return `
+    <section class="manifesto-page" id="manifesto-page" aria-hidden="true">
+      <div class="mani-shell">
+        <!-- Editorial header strip — Back pill + MAD logo + "Manifesto" -->
+        <div class="mani-banner" aria-label="Manifesto">
+          <button class="detail-back detail-back-inline mani-back" type="button" aria-label="Back to home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back</span>
+          </button>
+          <svg class="detail-banner-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+            <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+            <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+          </svg>
+          <span class="detail-banner-name">Manifesto</span>
+          <span class="detail-banner-rule" aria-hidden="true"></span>
+          <span class="detail-banner-index">— ETHOS</span>
+        </div>
+
+        <!-- Hero — big italic headline + philosophy -->
+        <div class="mani-hero">
+          <div class="mani-kicker">— The Studio</div>
+          <h1 class="mani-title">${title}</h1>
+          <div class="mani-body">${paragraphs}</div>
+        </div>
+
+        ${statsRow}
+        ${wonBlock}
+        ${shortlistedBlock}
+        ${pressBlock}
+        ${emptyHint}
+
+        <!-- Closing CTA — same pattern as other pages -->
+        <div class="collab-cta mani-collab">
+          <div class="collab-kicker">Got a brief?</div>
+          <h2 class="collab-title">Make it <em>loud.</em></h2>
+          <p class="collab-lead">Brand, campaign, music, or film — if it deserves to pick a fight with the scroll, drop a line.</p>
+          <a class="collab-btn" href="mailto:${escMani(contactEmail)}">Get in touch →</a>
+        </div>
+      </div>
+    </section>
+  `
+}
+
+let _manifestoEl = null
+function openManifestoDOM() {
+  if (!_manifestoEl) {
+    const wrap = document.createElement('div')
+    wrap.innerHTML = buildManifestoMarkup()
+    _manifestoEl = wrap.firstElementChild
+    document.body.appendChild(_manifestoEl)
+    // Inline back button → navigate to landing
+    const backBtn = _manifestoEl.querySelector('.mani-back')
+    if (backBtn) backBtn.addEventListener('click', () => navigate({view: 'landing'}))
+  }
+  _manifestoEl.classList.add('open')
+  _manifestoEl.setAttribute('aria-hidden', 'false')
+  _manifestoEl.scrollTo(0, 0)
+  document.body.style.overflow = 'hidden'
+  setEnterPillVisible(false)
+}
+function closeManifestoDOM() {
+  if (!_manifestoEl) return
+  _manifestoEl.classList.remove('open')
+  _manifestoEl.setAttribute('aria-hidden', 'true')
+  document.body.style.overflow = ''
+  setEnterPillVisible(true)
+}
+
 /* ─── ROUTER (URL ↔ view state) ──────────────────────────────────────────
    Public URLs:  /                        → landing
                  /originals               → Originals detail
@@ -2271,6 +2479,8 @@ function parseRoute(pathname) {
   if (segs[0].toLowerCase() === 'admin') {
     return {view: 'admin', sub: segs.slice(1).join('/') || ''}
   }
+  // Manifesto page — full-screen takeover with philosophy + awards + press
+  if (segs[0].toLowerCase() === 'manifesto') return {view: 'manifesto'}
   const id = URL_TO_ID[segs[0].toLowerCase()]
   if (!id) return {view: 'notfound', path: pathname || location.pathname}
   if (segs.length === 1) return {view: 'detail', id}
@@ -2280,6 +2490,7 @@ function parseRoute(pathname) {
 function urlForRoute(r) {
   if (r.view === 'landing') return '/'
   if (r.view === 'admin') return r.sub ? `/admin/${r.sub}` : '/admin'
+  if (r.view === 'manifesto') return '/manifesto'
   if (r.view === 'notfound') return r.path || '/404'
   const seg = ID_TO_URL[r.id] || r.id
   if (r.view === 'project') return `/${seg}/${encodeURIComponent(r.projectSlug)}`
@@ -2291,6 +2502,7 @@ function titleForRoute(r) {
   const base = `MAD Studio — ${tagline}`
   if (r.view === 'landing') return base
   if (r.view === 'admin') return `Admin · MAD Studio`
+  if (r.view === 'manifesto') return `Manifesto · MAD Studio`
   if (r.view === 'notfound') return `404 — Page not found · MAD Studio`
   const sec = SECTIONS.find((s) => s.id === r.id)
   const secTitle = sec ? sec.cTitle : r.id
@@ -2363,6 +2575,14 @@ function applyRoute(r) {
   }
   // Hide admin overlay if leaving it
   closeAdmin()
+  // Manifesto page
+  if (r.view === 'manifesto') {
+    if (projectView.classList.contains('open')) closeProjectDOM()
+    if (detailPage.classList.contains('open')) closeDetailDOM()
+    openManifestoDOM()
+    return
+  }
+  closeManifestoDOM()
   if (r.view === 'landing') {
     if (projectView.classList.contains('open')) closeProjectDOM()
     if (detailPage.classList.contains('open')) closeDetailDOM()

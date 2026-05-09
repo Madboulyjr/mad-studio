@@ -466,11 +466,13 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   color:var(--accent);opacity:0.5;
   flex-shrink:0;
 }
-.detail-section-banner .detail-banner-logo{
+.detail-section-banner .detail-banner-logo,
+.mani-banner .detail-banner-logo{
   height:2.6rem;width:auto;color:var(--accent);
   flex-shrink:0;
 }
-.detail-section-banner .detail-banner-name{
+.detail-section-banner .detail-banner-name,
+.mani-banner .detail-banner-name{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   font-size:1.8rem;letter-spacing:-0.01em;line-height:1;
   color:var(--accent);
@@ -2087,8 +2089,10 @@ body::after{display:none}
   .detail-hero{min-height:auto;margin:0 0 3rem;align-items:flex-start}
   .detail-hero .detail-copy{max-width:100%}
   /* Mobile: Back is inline; rule + index don't fit in the cramped row */
-  .detail-section-banner{padding-left:0;min-height:auto;flex-wrap:wrap;gap:1rem}
-  .detail-section-banner .detail-banner-logo{height:2rem}
+  .detail-section-banner,
+  .mani-banner{padding-left:0;min-height:auto;flex-wrap:wrap;gap:1rem}
+  .detail-section-banner .detail-banner-logo,
+  .mani-banner .detail-banner-logo{height:2rem}
   .detail-section-banner .detail-banner-name{font-size:1.4rem}
   .detail-section-banner .detail-banner-rule{display:none}
   .detail-section-banner .detail-banner-index{display:none}
@@ -2815,6 +2819,231 @@ body{
   .enter-pill .enter-pill-arrow{font-size:0.95rem}
 }
 
+/* ─── MANIFESTO PAGE — full-screen editorial takeover with
+   philosophy + awards + shortlist + press. Same overlay pattern as
+   .detail-page (position:fixed inset:0, fade-in transition,
+   overscroll containment) so it scrolls cleanly without leaking the
+   landing through. */
+.manifesto-page{
+  position:fixed;inset:0;
+  background:var(--bg);
+  color:var(--accent);
+  z-index:520; /* just above .detail-page (500), below .project-view (700) */
+  opacity:0;visibility:hidden;
+  pointer-events:none;
+  transition:opacity 0.45s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0.45s;
+  overflow-y:auto;overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:2.5rem 2.4rem 0;
+}
+.manifesto-page.open{
+  opacity:1;visibility:visible;pointer-events:auto;
+  transition:opacity 0.45s cubic-bezier(.2,.7,.2,1), visibility 0s;
+}
+.mani-shell{max-width:120rem;margin:0 auto;padding-bottom:0}
+
+.mani-banner{
+  display:flex;align-items:center;gap:1.6rem;
+  margin:0 0 4rem;
+  color:var(--accent);
+}
+.mani-banner .detail-banner-name,
+.mani-banner .detail-banner-index,
+.mani-banner .detail-banner-rule{color:var(--accent)}
+.mani-banner .detail-banner-rule{background:var(--accent);opacity:0.18}
+
+.mani-hero{margin:0 0 4.5rem;max-width:90rem}
+.mani-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent);opacity:0.5;margin-bottom:1.6rem;
+}
+.mani-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:clamp(3.5rem, 8vw, 8rem);
+  line-height:0.96;letter-spacing:-0.025em;
+  color:var(--accent);
+  margin:0 0 3rem;
+}
+.mani-title em{
+  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;
+}
+.mani-body{
+  max-width:62rem;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-size:1.3rem;line-height:1.55;
+  color:var(--accent);opacity:0.85;
+}
+.mani-body .mani-p + .mani-p{margin-top:1.2rem}
+.mani-body strong{font-weight:600;opacity:1}
+.mani-body em{font-style:italic;opacity:0.95}
+
+/* QUICK STATS row — big numbers on a hairline-bordered grid */
+.mani-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr));
+  gap:0;
+  margin:0 0 5rem;
+  border-top:0.08rem solid rgba(245,240,225,0.18);
+  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+}
+.mani-stat{
+  padding:2rem 1.6rem;
+  border-right:0.08rem solid rgba(245,240,225,0.1);
+}
+.mani-stat:last-child{border-right:none}
+.mani-stat-num{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:3.6rem;line-height:1;letter-spacing:-0.02em;
+  color:var(--accent);margin-bottom:0.6rem;
+}
+.mani-stat-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+}
+
+/* SECTION blocks (Awards Won / Shortlisted / Press) */
+.mani-section{margin:0 0 5rem;max-width:100%}
+.mani-section-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:1.4rem;
+  padding-bottom:1.4rem;
+  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+  margin-bottom:1.6rem;
+}
+.mani-section-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+  flex-shrink:0;
+}
+.mani-section-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:clamp(2rem, 4vw, 3.4rem);letter-spacing:-0.02em;
+  color:var(--accent);margin:0;flex:1;
+}
+.mani-section-count{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.16em;
+  color:var(--accent);opacity:0.5;font-variant-numeric:tabular-nums;
+}
+
+.mani-award-list,
+.mani-press-list{
+  list-style:none;margin:0;padding:0;
+}
+.mani-award{
+  display:grid;
+  grid-template-columns:6rem 1fr minmax(0, 22rem);
+  gap:1.6rem;align-items:baseline;
+  padding:1.2rem 0;
+  border-bottom:0.06rem solid rgba(245,240,225,0.08);
+  transition:background 0.2s ease;
+}
+.mani-award:last-child{border-bottom:none}
+.mani-award:hover{background:rgba(245,240,225,0.025)}
+.mani-award-year{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.12em;
+  color:var(--accent);opacity:0.55;
+  font-variant-numeric:tabular-nums;
+}
+.mani-award-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1.4rem;line-height:1.25;letter-spacing:-0.01em;
+  color:var(--accent);
+}
+.mani-award-title-link{
+  color:inherit;text-decoration:none;border-bottom:0.06rem dotted rgba(245,240,225,0.3);
+  transition:border-color 0.2s ease, color 0.2s ease;
+}
+.mani-award-title-link:hover{border-color:var(--accent);color:var(--cta)}
+.mani-award-meta{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-size:0.95rem;line-height:1.35;
+  color:var(--accent);opacity:0.6;
+  text-align:right;
+}
+
+.mani-press-item{
+  display:grid;
+  grid-template-columns:1fr 1fr 6rem;
+  gap:1.6rem;align-items:baseline;
+  padding:1rem 0;
+  border-bottom:0.06rem solid rgba(245,240,225,0.08);
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:1.15rem;
+  color:var(--accent);
+}
+.mani-press-item:last-child{border-bottom:none}
+.mani-press-link{
+  color:var(--accent);text-decoration:none;
+  border-bottom:0.06rem dotted rgba(245,240,225,0.3);
+  transition:border-color 0.2s ease, color 0.2s ease;
+}
+.mani-press-link:hover{border-color:var(--accent);color:var(--cta)}
+.mani-press-meta{
+  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:400;
+  opacity:0.7;font-size:1rem;
+}
+.mani-press-year{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.12em;
+  opacity:0.55;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
+.mani-empty{
+  margin:0 0 5rem;padding:2.5rem;
+  background:rgba(245,240,225,0.04);
+  border:0.08rem dashed rgba(245,240,225,0.2);
+  border-radius:0.6rem;
+  text-align:center;
+}
+.mani-empty-kicker{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+  margin-bottom:0.8rem;
+}
+.mani-empty p{
+  font-family:'Hanken Grotesk',sans-serif;
+  font-size:1rem;color:var(--accent);opacity:0.7;
+  margin:0;
+}
+.mani-empty a{color:var(--cta);text-decoration:none;border-bottom:0.06rem dotted}
+.mani-empty a:hover{color:var(--accent)}
+
+/* Closing collab CTA — same look as detail-page version */
+.mani-collab{margin:0;padding:5rem 0;border-bottom:none}
+
+@media (max-width: 768px){
+  .manifesto-page{padding:1.5rem 1.25rem 0}
+  .mani-banner{margin-bottom:2.5rem}
+  .mani-banner .detail-banner-rule,
+  .mani-banner .detail-banner-index{display:none}
+  .mani-hero{margin-bottom:3rem}
+  .mani-title{font-size:3.4rem}
+  .mani-body{font-size:1.1rem}
+  .mani-stats{grid-template-columns:repeat(2, 1fr);margin-bottom:3.5rem}
+  .mani-stat{padding:1.4rem 1rem;border-right-width:0;border-bottom:0.08rem solid rgba(245,240,225,0.1)}
+  .mani-stat:nth-child(odd){border-right:0.08rem solid rgba(245,240,225,0.1)}
+  .mani-stat:nth-last-child(-n+2){border-bottom:none}
+  .mani-stat-num{font-size:2.6rem}
+  .mani-section{margin-bottom:3.5rem}
+  .mani-section-head{flex-wrap:wrap;gap:0.6rem 1rem}
+  .mani-section-title{font-size:2.2rem}
+  .mani-award{grid-template-columns:4rem 1fr;gap:0.8rem 1rem;padding:1rem 0}
+  .mani-award-meta{grid-column:1 / -1;text-align:left;opacity:0.5;font-size:0.85rem;margin-top:-0.2rem}
+  .mani-award-title{font-size:1.1rem}
+  .mani-press-item{grid-template-columns:1fr 4rem;gap:0.4rem 1rem;font-size:1rem}
+  .mani-press-meta{grid-column:1 / -1;font-size:0.9rem;opacity:0.6}
+}
+
 /* ─── DETAIL PAGE — adapt to cream palette ─── */
 /* Bottom padding intentionally 0: the page should terminate exactly
    at the .collab-cta hairline border. The CTA already supplies its
@@ -3459,7 +3688,7 @@ body{
     </svg>
   </div>
   <div class="bottomnav-pill bottomnav-links" id="nav-cards"></div>
-  <a class="bottomnav-pill bottomnav-cta" href="mailto:hi@beingmad.co">Get Started</a>
+  <a class="bottomnav-pill bottomnav-cta" href="/manifesto" id="manifesto-cta">Manifesto</a>
 </nav>
 <div class="carousel-dots" id="carousel-dots" aria-hidden="true" hidden></div>
 
