@@ -1038,7 +1038,7 @@ body{
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
 .speech-bubble{
   position:absolute;z-index:50;
-  max-width:9rem;
+  max-width:8rem;
   background:linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
   -webkit-backdrop-filter:blur(36px) saturate(200%) brightness(115%);
   backdrop-filter:blur(36px) saturate(200%) brightness(115%);
@@ -1075,16 +1075,16 @@ body{
   border:0.08rem solid rgba(245, 240, 225, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants — sides only, AVOIDING eye-level zone (top 18-50%) ─── */
+/* ─── Position variants — pushed FAR out beyond avatar bounds so cheek never touches bubble ─── */
 /* UPPER SIDES — beside the temples/upper head, above the eyes */
-.speech-bubble[data-pos="side-left-upper"]{top:6%;left:-2%;right:auto}
-.speech-bubble[data-pos="side-right-upper"]{top:6%;right:-2%;left:auto}
+.speech-bubble[data-pos="side-left-upper"]{top:8%;left:-15%;right:auto}
+.speech-bubble[data-pos="side-right-upper"]{top:8%;right:-15%;left:auto}
 /* LOWER SIDES — beside the cheek/jaw, below the eyes */
-.speech-bubble[data-pos="side-left-lower"]{top:58%;left:-2%;right:auto}
-.speech-bubble[data-pos="side-right-lower"]{top:58%;right:-2%;left:auto}
+.speech-bubble[data-pos="side-left-lower"]{top:60%;left:-15%;right:auto}
+.speech-bubble[data-pos="side-right-lower"]{top:60%;right:-15%;left:auto}
 /* BOTTOM SIDES — at chin/jaw bottom edge */
-.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:14%;left:-2%;right:auto}
-.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:14%;right:-2%;left:auto}
+.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:8%;left:-12%;right:auto}
+.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:8%;right:-12%;left:auto}
 
 .speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
