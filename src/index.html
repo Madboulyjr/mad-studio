@@ -71,10 +71,17 @@ body{
   display:grid;
   grid-template-rows:auto 1fr;
   height:100vh;
-  transition:background var(--dur) cubic-bezier(.4,0,.2,1), opacity 0.3s ease;
+  /* Body fades IN with a 0.3s delay — long enough for the splash to
+     finish its own 0.3s fade-out — so the avatar/landing doesn't show
+     through the splash for a moment. The splash and the body are now
+     sequenced (splash fades first, then body), not overlapping. */
+  opacity:0;
+  transition:background var(--dur) cubic-bezier(.4,0,.2,1),
+             opacity 0.45s ease 0.3s;
 }
-/* loading: keep body invisible, splash overlay handles the visual */
-body.loading{opacity:1}
+body:not(.loading){opacity:1}
+/* While loading, body stays at 0 — splash on top fully covers everything */
+body.loading{opacity:0;transition:none}
 
 /* ─── SKIP LINK — keyboard users skip the bottom navbar tab cycle ─── */
 .skip-link{
@@ -130,7 +137,10 @@ body.loading{opacity:1}
   background:#000;
   pointer-events:auto;
   opacity:1;
-  transition:opacity 0.7s cubic-bezier(.2,.7,.2,1);
+  /* Faster fade (0.7s → 0.3s) so it clears the screen before the body
+     starts its own delayed fade-in — kills the moment where avatar +
+     splash were both visible at the same time. */
+  transition:opacity 0.3s ease;
 }
 body:not(.loading) .splash{opacity:0;pointer-events:none}
 /* Logo zooms in from "far" — starts as a tiny blurred dot in the
@@ -295,7 +305,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .cursor{
   position:fixed;
   top:0;left:0;
-  width:1.65rem;height:1.65rem;
+  /* 20% smaller (was 1.65rem) — the previous dot read a touch loud
+     against the dark backdrop, especially over light cover images */
+  width:1.32rem;height:1.32rem;
   pointer-events:none;
   z-index:9999;
   mix-blend-mode:difference;
