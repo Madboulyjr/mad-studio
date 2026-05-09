@@ -184,10 +184,16 @@ export default async function handler(req, res) {
     try {
       // Look up section _id
       const section = await client.fetch(
-        `*[_type == "section" && slug.current == $slug][0]{_id, "maxOrder": coalesce(max(*[_type == "project" && section._ref == ^._id].order), 0)}`,
+        `*[_type == "section" && slug.current == $slug][0]{_id}`,
         {slug: sectionSlug},
       )
       if (!section) return jsonResponse(res, 404, {error: `Section "${sectionSlug}" not found`})
+      // Find highest order in this section to append at end
+      const orderRows = await client.fetch(
+        `*[_type == "project" && section._ref == $sid] | order(order desc)[0..0]{order}`,
+        {sid: section._id},
+      )
+      section.maxOrder = (orderRows[0]?.order) || 0
       // Check slug not taken
       const existing = await client.fetch(
         `*[_type == "project" && slug.current == $slug][0]{_id}`,
