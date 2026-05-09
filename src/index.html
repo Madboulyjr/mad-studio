@@ -1031,19 +1031,30 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   .madplus-card-title{font-size:0.85rem}
   .madplus-card-sub{font-size:0.7rem}
 
+  /* Player bar locked to FULL viewport width minus stage padding so
+     swiping between tracks (different title lengths) doesn't resize
+     the whole pill. The center pod uses 1fr with min-width:0 so long
+     titles truncate to ellipsis instead of pushing the bar wider. */
   .madplus-player-bar{
     grid-template-columns:auto 1fr auto;
-    gap:0.8rem;padding:0.55rem 0.7rem;
-    max-width:100%;
+    gap:0.7rem;padding:0.5rem 0.6rem;
+    width:100%;max-width:100%;
   }
   .mp-btn{width:2.3rem;height:2.3rem}
   .mp-btn svg{width:1.05rem;height:1.05rem}
   .mp-play{width:2.5rem;height:2.5rem}
   .mp-play svg{width:1.25rem;height:1.25rem}
-  .mp-center{gap:0.6rem;padding-bottom:0.5rem}
+  .mp-center{
+    gap:0.55rem;padding-bottom:0.5rem;
+    /* min-width:0 forces grid track to honor inner ellipsis instead
+       of growing to fit nowrap text */
+    min-width:0;
+  }
   .mp-now-cover{width:2.1rem;height:2.1rem}
+  .mp-now-text{min-width:0} /* allows the title/sub to truncate */
   .mp-now-title{font-size:0.82rem}
   .mp-now-sub{font-size:0.7rem}
+  .mp-mini-icons{flex-shrink:0}
   .mp-mini-icons .mp-eq{display:none} /* tight on mobile — drop the eq dancing bars */
 }
 
