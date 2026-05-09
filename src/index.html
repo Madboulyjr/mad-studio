@@ -123,48 +123,62 @@ body.loading{opacity:1}
   border-radius:inherit;
 }
 
-/* ─── LOADING SPLASH — MAD logo centered on black + thin progress bar ─── */
+/* ─── LOADING SPLASH — MAD wordmark, zoom-in-from-far animation ─── */
 .splash{
   position:fixed;inset:0;z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2.5rem;
+  display:flex;align-items:center;justify-content:center;
   background:#000;
   pointer-events:auto;
   opacity:1;
   transition:opacity 0.7s cubic-bezier(.2,.7,.2,1);
 }
 body:not(.loading) .splash{opacity:0;pointer-events:none}
+/* Logo zooms in from "far" — starts as a tiny blurred dot in the
+   center, expands toward the camera with the blur lifting as it
+   approaches. A small overshoot at ~85% adds a tactile "settle" so
+   it doesn't read as a flat scale. Total ~1.4s with a deceleration
+   curve so most of the motion happens at the start (fast far → slow
+   near).
+   Logo lives at base scale 1 = clamp(7rem, 14vw, 13rem) wide. */
 .splash-logo{
   width:clamp(7rem, 14vw, 13rem);height:auto;
   color:var(--accent);
-  opacity:0.95;
-  animation:splashFadeIn 0.5s ease-out;
+  opacity:0;
+  transform:scale(0.05);
+  filter:blur(20px);
+  animation:splashZoomIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change:transform, opacity, filter;
 }
-/* Indeterminate progress bar — shimmers while we wait for Sanity fetch */
-.splash-progress{
-  width:clamp(8rem, 20vw, 18rem);
-  height:0.18rem;
-  background:rgba(245,240,225,0.1);
-  overflow:hidden;
-  border-radius:999px;
-  position:relative;
-}
-.splash-progress::after{
-  content:'';
-  position:absolute;top:0;left:0;height:100%;width:30%;
-  background:linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
-  animation:splashProgressSlide 1.5s ease-in-out infinite;
-}
-@keyframes splashProgressSlide{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(400%)}
-}
-@keyframes splashFadeIn{
-  from{opacity:0}
-  to{opacity:0.95}
+@keyframes splashZoomIn{
+  0%{
+    opacity:0;
+    transform:scale(0.05);
+    filter:blur(20px);
+  }
+  60%{
+    opacity:1;
+    filter:blur(0);
+  }
+  85%{
+    opacity:1;
+    transform:scale(1.04);
+    filter:blur(0);
+  }
+  100%{
+    opacity:1;
+    transform:scale(1);
+    filter:blur(0);
+  }
 }
 @media (prefers-reduced-motion: reduce){
-  .splash-progress::after{animation:none;width:60%}
+  .splash-logo{
+    transform:none;filter:none;
+    animation:splashFadeIn 0.4s ease-out both;
+  }
+  @keyframes splashFadeIn{
+    from{opacity:0}
+    to{opacity:1}
+  }
 }
 
 /* HEADER */
@@ -3393,14 +3407,15 @@ body{
   </div>
 </noscript>
 
-<!-- LOADING SPLASH — minimal poch-style: just MAD logo on black, clean fade -->
+<!-- LOADING SPLASH — full MAD wordmark, animated zoom-in from far.
+     M / A / D paths in original artwork coords (viewBox covers the full
+     lockup). Animation lives on .splash-logo in CSS. -->
 <div id="splash" class="splash" aria-hidden="true">
   <svg class="splash-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
     <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
     <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
   </svg>
-  <div class="splash-progress" aria-hidden="true"></div>
 </div>
 
 <!-- HERO — centered conversational, illustration as backdrop -->
