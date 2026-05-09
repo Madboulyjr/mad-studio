@@ -12,7 +12,8 @@
     "studio:deploy": "bash sanity/scripts/deploy-studio.sh",
     "seed": "node sanity/scripts/seed.mjs",
     "optimize-avatars": "node scripts/optimize-avatars.mjs",
-    "brand-assets": "node scripts/generate-brand-assets.mjs"
+    "brand-assets": "node scripts/generate-brand-assets.mjs",
+    "og-images": "node scripts/generate-og-images.mjs"
   },
   "dependencies": {
     "@mux/mux-player": "^3.2.0",
