@@ -208,6 +208,103 @@ export const section = {
         {name: 'url', title: 'Full URL (optional, auto-built from handle if blank)', type: 'url'},
       ],
     },
+
+    // ─── FEATURED RELEASE (MAD+ hero card) ──────────────────────────────
+    {
+      name: 'featuredRelease',
+      title: 'Featured Release (MAD+ hero card)',
+      type: 'object',
+      description:
+        'The big "latest drop" card at the top of MAD+. Hero cover + title + meta + listen pills, plus optional MP3 preview that plays in a custom MAD-branded mini-player.',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {name: 'kicker', title: 'Kicker (small label above title)', type: 'string', description: 'e.g. "LATEST DROP", "FEATURED RELEASE"'},
+        {name: 'title', title: 'Title', type: 'string'},
+        {name: 'subtitle', title: 'Subtitle / Artist', type: 'string', description: 'e.g. "Late Night Loops Vol. 2", "by MAD"'},
+        {name: 'year', title: 'Year', type: 'string'},
+        {name: 'label', title: 'Label / Type', type: 'string', description: 'e.g. "Self-released", "Single", "EP"'},
+        {
+          name: 'cover',
+          title: 'Cover artwork',
+          type: 'image',
+          description: 'Square album-art image. 1:1 aspect ratio works best.',
+          options: {hotspot: true},
+        },
+        {
+          name: 'previewAudio',
+          title: 'Audio preview (optional)',
+          type: 'file',
+          description: 'Upload a short MP3 clip (10–30s) for the inline player. Skip if you prefer no inline audio.',
+          options: {accept: 'audio/*'},
+        },
+        {
+          name: 'platforms',
+          title: 'Listen-on platform links',
+          type: 'array',
+          description: 'Pills shown below the title. Spotify, Apple Music, Anghami, etc.',
+          of: [
+            {
+              type: 'object',
+              fields: [
+                {
+                  name: 'platform',
+                  type: 'string',
+                  options: {
+                    list: [
+                      {title: 'Spotify', value: 'spotify'},
+                      {title: 'Apple Music', value: 'apple-music'},
+                      {title: 'YouTube Music', value: 'youtube-music'},
+                      {title: 'YouTube', value: 'youtube'},
+                      {title: 'SoundCloud', value: 'soundcloud'},
+                      {title: 'Tidal', value: 'tidal'},
+                      {title: 'Anghami', value: 'anghami'},
+                      {title: 'Bandcamp', value: 'bandcamp'},
+                      {title: 'Deezer', value: 'deezer'},
+                      {title: 'Amazon Music', value: 'amazon-music'},
+                    ],
+                  },
+                },
+                {name: 'url', type: 'url'},
+                {name: 'label', title: 'Custom label (optional)', type: 'string'},
+              ],
+              preview: {select: {title: 'platform', subtitle: 'url'}},
+            },
+          ],
+        },
+      ],
+    },
+
+    // ─── RELEASES WALL (grid below hero on MAD+) ────────────────────────
+    {
+      name: 'releases',
+      title: 'Releases wall (grid)',
+      type: 'array',
+      description:
+        'Past releases shown as a grid of cover tiles below the featured hero. Click → primary listen link.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {name: 'title', title: 'Title', type: 'string'},
+            {name: 'year', title: 'Year', type: 'string'},
+            {name: 'kind', title: 'Kind', type: 'string', description: 'e.g. Single / EP / Beat-tape / Remix'},
+            {
+              name: 'cover',
+              title: 'Cover artwork',
+              type: 'image',
+              options: {hotspot: true},
+            },
+            {name: 'listenUrl', title: 'Primary listen URL', type: 'url', description: 'Spotify or Apple Music link — opens on tap.'},
+          ],
+          preview: {
+            select: {title: 'title', subtitle: 'year', media: 'cover'},
+            prepare({title, subtitle, media}) {
+              return {title: title || 'Untitled', subtitle, media}
+            },
+          },
+        },
+      ],
+    },
   ],
   orderings: [
     {title: 'Display order', name: 'order', by: [{field: 'order', direction: 'asc'}]},

@@ -677,10 +677,12 @@ function renderProjectForm(p) {
 }
 
 function renderSectionForm(s) {
+  const slug = s.slug?.current || s.slug || ''
+  const isMusic = slug === 'music'
   return `
     <form class="adm-form" id="adm-form" autocomplete="off">
       <h2 class="adm-edit-title">${escapeHtml(s.title || s.slug)}</h2>
-      <div class="adm-edit-meta">section · slug: ${escapeHtml(s.slug?.current || s.slug || '')}</div>
+      <div class="adm-edit-meta">section · slug: ${escapeHtml(slug)}</div>
 
       <fieldset class="adm-fields">
         <legend>Headlines</legend>
@@ -700,11 +702,153 @@ function renderSectionForm(s) {
         <label>Works section title <input class="adm-input" name="worksTitle" value="${escapeAttr(s.worksTitle || '')}"></label>
       </fieldset>
 
+      ${isMusic ? renderMusicFields(s) : ''}
+
       <div class="adm-form-actions">
         <button type="submit" class="adm-save">Save changes</button>
         <span class="adm-form-status" id="adm-form-status"></span>
       </div>
     </form>
+  `
+}
+
+/* ─── MAD+ MUSIC SECTION FIELDS (only shown for slug === "music") ─── */
+function renderMusicFields(s) {
+  const fr = s.featuredRelease || {}
+  const releases = Array.isArray(s.releases) ? s.releases : []
+  const platforms = Array.isArray(fr.platforms) ? fr.platforms : []
+
+  // Resolve URLs from Sanity asset references (already populated when editing).
+  // We rely on _ref + a separate lookup pass on first save — but for now,
+  // GET returns the full object. Show whatever URL we have (or upload-time URL).
+  const coverUrl = fr.cover?.asset?.url || fr._coverUrl || ''
+  const audioUrl = fr.previewAudio?.asset?.url || fr._previewAudioUrl || ''
+
+  return `
+    <fieldset class="adm-fields adm-fields-music">
+      <legend>Featured Release · Hero card</legend>
+      <p class="adm-fields-hint">
+        The big "latest drop" card at the top of /madplus. Replaces the old Spotify iframe.
+        Upload a cover, an optional 10–30s MP3 preview, and listen-on links.
+      </p>
+
+      <label>Kicker <input class="adm-input" name="fr-kicker" value="${escapeAttr(fr.kicker || '')}" placeholder="LATEST DROP"></label>
+      <label>Title <input class="adm-input" name="fr-title" value="${escapeAttr(fr.title || '')}" placeholder="Track or release title"></label>
+      <label>Subtitle / Artist <input class="adm-input" name="fr-subtitle" value="${escapeAttr(fr.subtitle || '')}" placeholder="by MAD"></label>
+      <div class="adm-row-2col">
+        <label>Year <input class="adm-input" name="fr-year" value="${escapeAttr(fr.year || '')}" placeholder="2025"></label>
+        <label>Label / Type <input class="adm-input" name="fr-label" value="${escapeAttr(fr.label || '')}" placeholder="Single · EP · Self-released"></label>
+      </div>
+
+      <div class="adm-music-asset-row">
+        <div class="adm-music-asset" data-asset="cover">
+          <div class="adm-music-asset-label">Cover artwork</div>
+          ${coverUrl
+            ? `<img class="adm-music-asset-preview" src="${escapeAttr(coverUrl)}?w=240&h=240&fit=crop&auto=format" alt="Cover">`
+            : '<div class="adm-music-asset-empty">No cover</div>'}
+          <label class="adm-cover-btn">
+            <input type="file" accept="image/*" hidden id="adm-fr-cover-input">
+            <span>${coverUrl ? 'Replace ↑' : 'Upload ↑'}</span>
+          </label>
+          <input type="hidden" name="fr-cover-asset-id" value="${escapeAttr(fr.cover?.asset?._ref || fr.cover?.asset?._id || '')}">
+          <input type="hidden" name="fr-cover-url" value="${escapeAttr(coverUrl)}">
+          <div class="adm-cover-status" id="adm-fr-cover-status"></div>
+        </div>
+
+        <div class="adm-music-asset" data-asset="audio">
+          <div class="adm-music-asset-label">Audio preview (MP3)</div>
+          ${audioUrl
+            ? `<audio class="adm-music-asset-preview-audio" controls preload="metadata" src="${escapeAttr(audioUrl)}"></audio>`
+            : '<div class="adm-music-asset-empty">No audio</div>'}
+          <label class="adm-cover-btn">
+            <input type="file" accept="audio/*" hidden id="adm-fr-audio-input">
+            <span>${audioUrl ? 'Replace ↑' : 'Upload ↑'}</span>
+          </label>
+          <input type="hidden" name="fr-audio-asset-id" value="${escapeAttr(fr.previewAudio?.asset?._ref || fr.previewAudio?.asset?._id || '')}">
+          <input type="hidden" name="fr-audio-url" value="${escapeAttr(audioUrl)}">
+          <div class="adm-cover-status" id="adm-fr-audio-status"></div>
+        </div>
+      </div>
+
+      <div class="adm-music-platforms" id="adm-fr-platforms">
+        <div class="adm-music-asset-label">Listen-on platform links</div>
+        ${platforms.length
+          ? platforms.map((p, i) => renderPlatformRow(p, i, 'fr-pf')).join('')
+          : '<div class="adm-empty adm-empty-mini">No platforms yet — add Spotify, Apple Music, etc. below.</div>'}
+        <button type="button" class="adm-link adm-add-platform" data-target="fr">+ Add platform</button>
+      </div>
+    </fieldset>
+
+    <fieldset class="adm-fields adm-fields-music">
+      <legend>Releases · Wall</legend>
+      <p class="adm-fields-hint">
+        Past releases shown as a grid of cover tiles below the hero. Each tile clicks through to its primary listen URL.
+      </p>
+      <div class="adm-releases-list" id="adm-releases-list">
+        ${releases.length
+          ? releases.map((r, i) => renderReleaseRow(r, i)).join('')
+          : '<div class="adm-empty adm-empty-mini">No releases yet — add your first below.</div>'}
+      </div>
+      <button type="button" class="adm-link adm-add-release" id="adm-add-release">+ Add release</button>
+    </fieldset>
+  `
+}
+
+const PLATFORM_OPTIONS = [
+  ['spotify', 'Spotify'],
+  ['apple-music', 'Apple Music'],
+  ['youtube-music', 'YouTube Music'],
+  ['youtube', 'YouTube'],
+  ['soundcloud', 'SoundCloud'],
+  ['tidal', 'Tidal'],
+  ['anghami', 'Anghami'],
+  ['bandcamp', 'Bandcamp'],
+  ['deezer', 'Deezer'],
+  ['amazon-music', 'Amazon Music'],
+]
+
+function renderPlatformRow(p, i, prefix) {
+  const opts = PLATFORM_OPTIONS.map(
+    ([v, label]) => `<option value="${v}" ${p.platform === v ? 'selected' : ''}>${label}</option>`,
+  ).join('')
+  return `
+    <div class="adm-platform-row" data-i="${i}" data-prefix="${prefix}">
+      <select class="adm-input" name="${prefix}-platform-${i}">
+        <option value="">— platform —</option>
+        ${opts}
+      </select>
+      <input class="adm-input" name="${prefix}-url-${i}" value="${escapeAttr(p.url || '')}" placeholder="https://…" type="url">
+      <input class="adm-input" name="${prefix}-label-${i}" value="${escapeAttr(p.label || '')}" placeholder="custom label (optional)">
+      <button type="button" class="adm-link adm-platform-remove" data-i="${i}" data-prefix="${prefix}">Remove</button>
+    </div>
+  `
+}
+
+function renderReleaseRow(r, i) {
+  const coverUrl = r.cover?.asset?.url || r._coverUrl || ''
+  return `
+    <div class="adm-release-row" data-i="${i}">
+      <div class="adm-release-cover">
+        ${coverUrl
+          ? `<img src="${escapeAttr(coverUrl)}?w=160&h=160&fit=crop&auto=format" alt="Cover">`
+          : '<div class="adm-music-asset-empty">No cover</div>'}
+        <label class="adm-cover-btn adm-release-upload">
+          <input type="file" accept="image/*" hidden class="adm-release-cover-input" data-i="${i}">
+          <span>${coverUrl ? 'Replace ↑' : 'Upload ↑'}</span>
+        </label>
+        <input type="hidden" name="rl-cover-asset-id-${i}" value="${escapeAttr(r.cover?.asset?._ref || r.cover?.asset?._id || '')}">
+        <input type="hidden" name="rl-cover-url-${i}" value="${escapeAttr(coverUrl)}">
+      </div>
+      <div class="adm-release-fields">
+        <input class="adm-input" name="rl-title-${i}" value="${escapeAttr(r.title || '')}" placeholder="Title" required>
+        <div class="adm-row-2col">
+          <input class="adm-input" name="rl-year-${i}" value="${escapeAttr(r.year || '')}" placeholder="Year">
+          <input class="adm-input" name="rl-kind-${i}" value="${escapeAttr(r.kind || '')}" placeholder="Single · EP · Beat-tape">
+        </div>
+        <input class="adm-input" name="rl-listenUrl-${i}" value="${escapeAttr(r.listenUrl || '')}" placeholder="Primary listen URL" type="url">
+      </div>
+      <button type="button" class="adm-link adm-release-remove" data-i="${i}" title="Remove release">×</button>
+    </div>
   `
 }
 
@@ -1147,6 +1291,12 @@ function bindEditFormHandlers(kind, id) {
     bindGallery(id)
   }
 
+  // Music section (MAD+) — bind featured-release + releases-wall handlers
+  if (kind === 'section') {
+    const slug = state.editing?.doc?.slug?.current || state.editing?.doc?.slug || ''
+    if (slug === 'music') bindMusicForm()
+  }
+
   // Outcome row add/remove
   const outcomeAdd = rootEl.querySelector('#adm-outcome-add')
   if (outcomeAdd) {
@@ -1258,7 +1408,7 @@ function collectSectionPayload(data) {
       .split(',')
       .map((x) => x.trim())
       .filter(Boolean)
-  return {
+  const payload = {
     title: data.get('title') || '',
     subtitle: data.get('subtitle') || '',
     description: data.get('description') || '',
@@ -1270,6 +1420,84 @@ function collectSectionPayload(data) {
     worksLabel: data.get('worksLabel') || '',
     worksTitle: data.get('worksTitle') || '',
   }
+
+  // ─── MAD+ music fields ──────────────────────────────────────
+  // Detect by presence of any music-specific input. If none → skip.
+  if (data.has('fr-title') || data.has('fr-cover-asset-id')) {
+    const form = rootEl.querySelector('#adm-form')
+    // Featured release
+    const frCoverAsset = (data.get('fr-cover-asset-id') || '').toString().trim()
+    const frAudioAsset = (data.get('fr-audio-asset-id') || '').toString().trim()
+    const frPlatforms = []
+    if (form) {
+      form.querySelectorAll('.adm-platform-row[data-prefix="fr-pf"]').forEach((row) => {
+        const i = row.dataset.i
+        const platform = (data.get(`fr-pf-platform-${i}`) || '').toString().trim()
+        const url = (data.get(`fr-pf-url-${i}`) || '').toString().trim()
+        const label = (data.get(`fr-pf-label-${i}`) || '').toString().trim()
+        if (platform && url) {
+          const obj = {_key: row.dataset.k || `pf${i}_${Date.now()}${Math.random().toString(36).slice(2, 6)}`, platform, url}
+          if (label) obj.label = label
+          frPlatforms.push(obj)
+        }
+      })
+    }
+    const frTitle = (data.get('fr-title') || '').toString().trim()
+    const frHasContent =
+      frTitle ||
+      frCoverAsset ||
+      frAudioAsset ||
+      (data.get('fr-kicker') || '').toString().trim() ||
+      (data.get('fr-subtitle') || '').toString().trim() ||
+      frPlatforms.length
+    if (frHasContent) {
+      const fr = {
+        kicker: (data.get('fr-kicker') || '').toString().trim(),
+        title: frTitle,
+        subtitle: (data.get('fr-subtitle') || '').toString().trim(),
+        year: (data.get('fr-year') || '').toString().trim(),
+        label: (data.get('fr-label') || '').toString().trim(),
+        platforms: frPlatforms,
+      }
+      if (frCoverAsset) {
+        fr.cover = {_type: 'image', asset: {_type: 'reference', _ref: frCoverAsset}}
+      }
+      if (frAudioAsset) {
+        fr.previewAudio = {_type: 'file', asset: {_type: 'reference', _ref: frAudioAsset}}
+      }
+      payload.featuredRelease = fr
+    } else {
+      payload.featuredRelease = null
+    }
+
+    // Releases wall
+    const releases = []
+    if (form) {
+      form.querySelectorAll('.adm-release-row').forEach((row) => {
+        const i = row.dataset.i
+        const title = (data.get(`rl-title-${i}`) || '').toString().trim()
+        const year = (data.get(`rl-year-${i}`) || '').toString().trim()
+        const kind = (data.get(`rl-kind-${i}`) || '').toString().trim()
+        const listenUrl = (data.get(`rl-listenUrl-${i}`) || '').toString().trim()
+        const coverAsset = (data.get(`rl-cover-asset-id-${i}`) || '').toString().trim()
+        if (!title && !coverAsset && !listenUrl) return
+        const obj = {
+          _key: row.dataset.k || `rl${i}_${Date.now()}${Math.random().toString(36).slice(2, 6)}`,
+          title,
+          year,
+          kind,
+          listenUrl,
+        }
+        if (coverAsset) {
+          obj.cover = {_type: 'image', asset: {_type: 'reference', _ref: coverAsset}}
+        }
+        releases.push(obj)
+      })
+    }
+    payload.releases = releases
+  }
+
+  return payload
 }
 
 /* ─── Gallery helpers ──────────────────────────────────────── */
@@ -1311,6 +1539,157 @@ async function uploadFile(file) {
   const j = await r.json().catch(() => ({}))
   if (!r.ok || !j.ok) throw new Error(j.error || 'Upload failed')
   return j.asset
+}
+
+/* Audio (or other non-image) file upload — uses /api/admin/upload-file. */
+async function uploadAudioFile(file) {
+  const base64 = await fileToBase64(file)
+  const r = await fetch('/api/admin/upload-file', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({filename: file.name, contentType: file.type, base64}),
+  })
+  const j = await r.json().catch(() => ({}))
+  if (!r.ok || !j.ok) throw new Error(j.error || 'Upload failed')
+  return j.asset
+}
+
+/* ─── MAD+ MUSIC FORM HANDLERS ─────────────────────────────── */
+function bindMusicForm() {
+  // Featured release: cover upload
+  const coverInput = rootEl.querySelector('#adm-fr-cover-input')
+  if (coverInput) {
+    coverInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      const status = rootEl.querySelector('#adm-fr-cover-status')
+      status.textContent = 'Uploading…'
+      try {
+        const asset = await uploadFile(file)
+        const wrap = coverInput.closest('.adm-music-asset')
+        const assetIdInput = wrap.querySelector('input[name="fr-cover-asset-id"]')
+        const urlInput = wrap.querySelector('input[name="fr-cover-url"]')
+        assetIdInput.value = asset._id
+        urlInput.value = asset.url
+        // Replace preview img
+        const oldPreview = wrap.querySelector('.adm-music-asset-preview, .adm-music-asset-empty')
+        if (oldPreview) {
+          const img = document.createElement('img')
+          img.className = 'adm-music-asset-preview'
+          img.src = `${asset.url}?w=240&h=240&fit=crop&auto=format`
+          img.alt = 'Cover'
+          oldPreview.replaceWith(img)
+        }
+        status.textContent = '✓ Uploaded'
+      } catch (err) {
+        status.textContent = '✗ ' + (err.message || 'Upload failed')
+      }
+    })
+  }
+
+  // Featured release: audio upload
+  const audioInput = rootEl.querySelector('#adm-fr-audio-input')
+  if (audioInput) {
+    audioInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0]
+      if (!file) return
+      const status = rootEl.querySelector('#adm-fr-audio-status')
+      status.textContent = 'Uploading…'
+      try {
+        const asset = await uploadAudioFile(file)
+        const wrap = audioInput.closest('.adm-music-asset')
+        wrap.querySelector('input[name="fr-audio-asset-id"]').value = asset._id
+        wrap.querySelector('input[name="fr-audio-url"]').value = asset.url
+        const oldPreview = wrap.querySelector('.adm-music-asset-preview-audio, .adm-music-asset-empty')
+        if (oldPreview) {
+          const audio = document.createElement('audio')
+          audio.className = 'adm-music-asset-preview-audio'
+          audio.controls = true
+          audio.preload = 'metadata'
+          audio.src = asset.url
+          oldPreview.replaceWith(audio)
+        }
+        status.textContent = '✓ Uploaded'
+      } catch (err) {
+        status.textContent = '✗ ' + (err.message || 'Upload failed')
+      }
+    })
+  }
+
+  // Featured release: + Add platform / Remove platform
+  const platformsWrap = rootEl.querySelector('#adm-fr-platforms')
+  if (platformsWrap) {
+    platformsWrap.addEventListener('click', (e) => {
+      if (e.target.classList.contains('adm-add-platform')) {
+        e.preventDefault()
+        const i = platformsWrap.querySelectorAll('.adm-platform-row').length
+        const empty = platformsWrap.querySelector('.adm-empty-mini')
+        if (empty) empty.remove()
+        const tmp = document.createElement('div')
+        tmp.innerHTML = renderPlatformRow({}, i, 'fr-pf')
+        platformsWrap.insertBefore(tmp.firstElementChild, e.target)
+      } else if (e.target.classList.contains('adm-platform-remove')) {
+        e.preventDefault()
+        e.target.closest('.adm-platform-row').remove()
+      }
+    })
+  }
+
+  // Releases list: + Add release / Remove release / cover upload per row
+  const releasesWrap = rootEl.querySelector('#adm-releases-list')
+  const addReleaseBtn = rootEl.querySelector('#adm-add-release')
+  if (addReleaseBtn && releasesWrap) {
+    addReleaseBtn.addEventListener('click', () => {
+      const i = releasesWrap.querySelectorAll('.adm-release-row').length
+      const empty = releasesWrap.querySelector('.adm-empty-mini')
+      if (empty) empty.remove()
+      const tmp = document.createElement('div')
+      tmp.innerHTML = renderReleaseRow({}, i)
+      releasesWrap.appendChild(tmp.firstElementChild)
+    })
+  }
+  if (releasesWrap) {
+    releasesWrap.addEventListener('click', (e) => {
+      if (e.target.classList.contains('adm-release-remove')) {
+        e.preventDefault()
+        e.target.closest('.adm-release-row').remove()
+        // Show empty placeholder again if list is now empty
+        if (!releasesWrap.querySelector('.adm-release-row')) {
+          const empty = document.createElement('div')
+          empty.className = 'adm-empty adm-empty-mini'
+          empty.textContent = 'No releases yet — add your first below.'
+          releasesWrap.appendChild(empty)
+        }
+      }
+    })
+    // Per-row cover upload (delegated)
+    releasesWrap.addEventListener('change', async (e) => {
+      const input = e.target.closest('.adm-release-cover-input')
+      if (!input) return
+      const file = input.files[0]
+      if (!file) return
+      const row = input.closest('.adm-release-row')
+      const i = row.dataset.i
+      try {
+        const asset = await uploadFile(file)
+        const idInput = row.querySelector(`input[name="rl-cover-asset-id-${i}"]`)
+        const urlInput = row.querySelector(`input[name="rl-cover-url-${i}"]`)
+        if (idInput) idInput.value = asset._id
+        if (urlInput) urlInput.value = asset.url
+        const coverWrap = row.querySelector('.adm-release-cover')
+        const oldPreview = coverWrap.querySelector('img, .adm-music-asset-empty')
+        if (oldPreview) {
+          const img = document.createElement('img')
+          img.src = `${asset.url}?w=160&h=160&fit=crop&auto=format`
+          img.alt = 'Cover'
+          oldPreview.replaceWith(img)
+        }
+      } catch (err) {
+        alert('Cover upload failed: ' + (err.message || 'unknown'))
+      }
+    })
+  }
 }
 
 /* ─── Helpers ──────────────────────────────────────────────── */
@@ -1718,7 +2097,103 @@ body.is-admin,
 }
 
 /* ─── COVER IMAGE UPLOAD ─── */
-.adm-fields-image legend, .adm-fields-gallery legend{color:#D0FA51}
+.adm-fields-image legend, .adm-fields-gallery legend, .adm-fields-music legend{color:#D0FA51}
+.adm-fields-hint{
+  font-size:0.85rem;opacity:0.55;margin:-0.4rem 0 0.9rem;line-height:1.45;
+}
+.adm-row-2col{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem}
+
+.adm-music-asset-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+  margin:1rem 0 1.4rem;
+}
+.adm-music-asset{
+  display:flex;flex-direction:column;gap:0.6rem;
+  background:#161310;border:0.08rem solid var(--line, rgba(245,240,225,0.1));
+  border-radius:0.6rem;padding:0.9rem;
+}
+.adm-music-asset-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  opacity:0.55;
+}
+.adm-music-asset-preview{
+  width:100%;aspect-ratio:1/1;object-fit:cover;
+  border-radius:0.4rem;background:#0F0E0C;
+}
+.adm-music-asset-preview-audio{width:100%}
+.adm-music-asset-empty{
+  display:flex;align-items:center;justify-content:center;
+  aspect-ratio:1/1;
+  background:#0F0E0C;border:0.08rem dashed rgba(245,240,225,0.18);
+  border-radius:0.4rem;
+  color:rgba(245,240,225,0.4);font-size:0.85rem;
+}
+
+.adm-music-platforms{
+  display:flex;flex-direction:column;gap:0.6rem;
+  margin-top:0.6rem;
+}
+.adm-platform-row{
+  display:grid;
+  grid-template-columns:8rem 1fr 1fr auto;
+  gap:0.5rem;align-items:center;
+}
+.adm-platform-row select.adm-input{padding:0.55rem 0.7rem}
+.adm-add-platform, .adm-add-release{
+  align-self:flex-start;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;
+  background:none;border:0.08rem solid rgba(208,250,81,0.4);
+  color:#D0FA51;
+  padding:0.55rem 1rem;border-radius:999px;
+  cursor:pointer;
+  transition:background 0.2s ease, border-color 0.2s ease;
+}
+.adm-add-platform:hover, .adm-add-release:hover{
+  background:rgba(208,250,81,0.1);border-color:#D0FA51;
+}
+
+.adm-releases-list{display:flex;flex-direction:column;gap:0.8rem;margin-bottom:0.8rem}
+.adm-release-row{
+  display:grid;
+  grid-template-columns:9rem 1fr auto;
+  gap:1rem;align-items:start;
+  background:#161310;border:0.08rem solid rgba(245,240,225,0.1);
+  border-radius:0.6rem;padding:0.9rem;
+}
+.adm-release-cover{
+  position:relative;display:flex;flex-direction:column;gap:0.5rem;
+  width:100%;
+}
+.adm-release-cover img{
+  width:100%;aspect-ratio:1/1;object-fit:cover;
+  border-radius:0.4rem;background:#0F0E0C;
+}
+.adm-release-cover .adm-music-asset-empty{margin:0}
+.adm-release-upload{font-size:0.75rem;padding:0.35rem 0.6rem}
+.adm-release-fields{display:flex;flex-direction:column;gap:0.5rem}
+.adm-release-fields .adm-row-2col{gap:0.5rem}
+.adm-release-remove{
+  align-self:flex-start;
+  width:2rem;height:2rem;flex-shrink:0;
+  background:none;border:0.08rem solid rgba(255,49,59,0.3);
+  color:#FF313B;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1.2rem;line-height:1;
+  transition:background 0.2s ease, border-color 0.2s ease;
+}
+.adm-release-remove:hover{background:rgba(255,49,59,0.15);border-color:#FF313B}
+
+.adm-empty-mini{padding:1rem;font-size:0.85rem;opacity:0.55;text-align:center}
+
+@media (max-width: 900px){
+  .adm-music-asset-row{grid-template-columns:1fr}
+  .adm-platform-row{grid-template-columns:1fr}
+  .adm-release-row{grid-template-columns:1fr}
+  .adm-release-cover{max-width:14rem}
+}
+
 .adm-cover-zone{
   display:flex;flex-direction:column;gap:0.8rem;
 }

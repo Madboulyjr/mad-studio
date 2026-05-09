@@ -210,6 +210,8 @@ const PAGES = Object.fromEntries(
         musicEmbed: s.musicEmbed || null,
         musicPlatforms: s.musicPlatforms || [],
         instagramMusic: s.instagramMusic || null,
+        featuredRelease: s.featuredRelease || null,
+        releases: s.releases || [],
       },
     ]
   })
@@ -428,56 +430,266 @@ const detailProgressUpdate = bindScrollProgress(
 )
 
 /* ─── MUSIC SECTION HELPERS ───────────────────────────────────
-   Convert a user-pasted Spotify/YouTube/SoundCloud URL into an
-   embeddable iframe. Supports the URLs editors commonly paste from
-   the Sanity Studio. */
-function buildMusicEmbed(embed) {
-  if (!embed || !embed.embedUrl) return ''
-  const url = embed.embedUrl.trim()
-  let iframeSrc = ''
-  let iframeAttrs = 'frameborder="0" allow="autoplay; encrypted-media; clipboard-write" loading="lazy"'
-  let height = '352'
+   The MAD+ section uses three custom-built blocks instead of a
+   third-party iframe player (which clashed with the editorial dark
+   palette). All three are rendered fully inside our brand system:
+     1. Hero release card    — buildFeaturedReleaseCard(featuredRelease)
+        → big cover artwork + title + meta + listen pills, plus an
+          optional inline MAD-branded mini audio player when an MP3
+          preview is uploaded to Sanity.
+     2. Releases wall        — buildReleasesWall(releases)
+        → grid of cover tiles below the hero. Click → primary
+          listen URL opens in a new tab.
+     3. Platform pills row   — buildPlatformLinks(platforms, ig)
+        → unchanged; sits below the hero/wall as section-level
+          "Listen / Follow" links. */
 
-  if (embed.type === 'spotify' || /spotify\.com/.test(url)) {
-    // Convert https://open.spotify.com/<type>/<id> to /embed/<type>/<id>
-    const m = url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|playlist|artist|episode|show)\/([A-Za-z0-9]+)/)
-    if (m) {
-      iframeSrc = `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`
-      height = m[1] === 'track' ? '152' : '352'
-    }
-  } else if (embed.type === 'youtube' || /youtu\.?be/.test(url)) {
-    // Pull the video ID or playlist ID
-    const vid = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/)
-    const list = url.match(/[?&]list=([A-Za-z0-9_-]+)/)
-    if (list) iframeSrc = `https://www.youtube.com/embed/videoseries?list=${list[1]}`
-    else if (vid) iframeSrc = `https://www.youtube.com/embed/${vid[1]}`
-    iframeAttrs += ' allowfullscreen'
-    height = '420'
-  } else if (embed.type === 'soundcloud' || /soundcloud\.com/.test(url)) {
-    iframeSrc =
-      'https://w.soundcloud.com/player/?url=' +
-      encodeURIComponent(url) +
-      '&color=%23F5F0E1&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false'
-    height = '166'
-  } else if (embed.type === 'apple-music' || /music\.apple\.com/.test(url)) {
-    // music.apple.com → embed.music.apple.com
-    iframeSrc = url.replace(/music\.apple\.com/, 'embed.music.apple.com')
-    height = '450'
-  }
+function escMusic(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
-  if (!iframeSrc) return ''
+/**
+ * Featured release hero card. Returns empty string when nothing is
+ * configured so the section page just skips the block entirely.
+ */
+function buildFeaturedReleaseCard(featured) {
+  if (!featured || (!featured.title && !featured.coverUrl)) return ''
+  const cover = featured.coverUrl
+    ? `<img class="release-hero-cover" src="${featured.coverUrl}?w=900&h=900&fit=crop&auto=format" alt="${escMusic(featured.title || 'Release cover')}" loading="lazy" decoding="async">`
+    : `<div class="release-hero-cover release-hero-cover-placeholder" aria-hidden="true">
+         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28A4.5 4.5 0 0 0 6 16.5 4.5 4.5 0 0 0 10.5 21a4.5 4.5 0 0 0 4.5-4.5V6h4V3h-7z"/></svg>
+       </div>`
+
+  const meta = [featured.year, featured.label].filter(Boolean).map(escMusic).join(' · ')
+  const platformPills = buildPlatformLinks(featured.platforms, null)
+
+  // Audio preview block — only rendered when an MP3 is uploaded
+  const audioBlock = featured.previewAudioUrl
+    ? `<div class="release-player" data-audio-src="${escMusic(featured.previewAudioUrl)}">
+        <button class="release-play" type="button" aria-label="Play preview" data-state="paused">
+          <svg class="release-play-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 4l14 8-14 8z"/>
+          </svg>
+          <svg class="release-play-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="4" width="4" height="16" rx="1"/>
+            <rect x="14" y="4" width="4" height="16" rx="1"/>
+          </svg>
+        </button>
+        <div class="release-player-meta">
+          <div class="release-player-track">${escMusic(featured.title || 'Preview')}</div>
+          <div class="release-player-time"><span class="rp-cur">0:00</span> · <span class="rp-dur">—</span></div>
+        </div>
+        <div class="release-scrub" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="release-scrub-bg" aria-hidden="true">
+            ${Array.from({length: 48}).map((_, i) => `<span class="rs-bar" style="--i:${i}"></span>`).join('')}
+          </div>
+          <div class="release-scrub-fill" aria-hidden="true"></div>
+          <div class="release-scrub-thumb" aria-hidden="true"></div>
+        </div>
+       </div>`
+    : ''
+
   return `
-    <div class="music-embed-wrap">
-      ${embed.caption ? `<div class="music-embed-label">${embed.caption}</div>` : ''}
-      <iframe
-        class="music-embed"
-        src="${iframeSrc}"
-        width="100%"
-        height="${height}"
-        ${iframeAttrs}>
-      </iframe>
-    </div>
+    <section class="release-hero" aria-label="Featured release">
+      <div class="release-hero-cover-wrap">${cover}</div>
+      <div class="release-hero-body">
+        ${featured.kicker ? `<div class="release-hero-kicker">— ${escMusic(featured.kicker)}</div>` : ''}
+        <h2 class="release-hero-title">${escMusic(featured.title || 'Untitled')}</h2>
+        ${featured.subtitle ? `<div class="release-hero-subtitle">${escMusic(featured.subtitle)}</div>` : ''}
+        ${meta ? `<div class="release-hero-meta">${meta}</div>` : ''}
+        ${audioBlock}
+        ${platformPills}
+      </div>
+    </section>
   `
+}
+
+/**
+ * Releases wall — grid of cover tiles below the featured hero.
+ * Click any tile to open the release on its primary platform.
+ */
+function buildReleasesWall(releases) {
+  if (!Array.isArray(releases) || !releases.length) return ''
+  const tiles = releases
+    .filter((r) => r && (r.title || r.coverUrl))
+    .map((r) => {
+      const url = r.listenUrl || ''
+      const cover = r.coverUrl
+        ? `<img src="${r.coverUrl}?w=600&h=600&fit=crop&auto=format" alt="${escMusic(r.title || 'Release')}" loading="lazy" decoding="async">`
+        : `<div class="release-tile-placeholder" aria-hidden="true">
+             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28A4.5 4.5 0 0 0 6 16.5 4.5 4.5 0 0 0 10.5 21a4.5 4.5 0 0 0 4.5-4.5V6h4V3h-7z"/></svg>
+           </div>`
+      const meta = [r.kind, r.year].filter(Boolean).map(escMusic).join(' · ')
+      const Tag = url ? 'a' : 'div'
+      const linkAttrs = url ? `href="${escMusic(url)}" target="_blank" rel="noopener"` : ''
+      return `
+        <${Tag} class="release-tile" ${linkAttrs}>
+          <div class="release-tile-cover">${cover}
+            ${url ? '<span class="release-tile-overlay" aria-hidden="true"><span class="release-tile-pill">Listen ↗</span></span>' : ''}
+          </div>
+          <div class="release-tile-body">
+            <div class="release-tile-title">${escMusic(r.title || 'Untitled')}</div>
+            ${meta ? `<div class="release-tile-meta">${meta}</div>` : ''}
+          </div>
+        </${Tag}>
+      `
+    })
+    .join('')
+  return `
+    <section class="releases-wall" aria-label="Past releases">
+      <div class="releases-wall-head">
+        <div class="releases-wall-kicker">— Releases · ${String(releases.length).padStart(2, '0')}</div>
+      </div>
+      <div class="releases-wall-grid">${tiles}</div>
+    </section>
+  `
+}
+
+/**
+ * Combined block — featured + wall. Renders only what's available so
+ * a page with just a hero card or just a wall still works cleanly.
+ * If neither is set we fall back to the legacy iframe embed (only
+ * for back-compat with already-seeded data).
+ */
+function buildMusicEmbed(featuredOrEmbed, releases) {
+  // New-style: { featuredRelease, releases } → custom blocks
+  if (featuredOrEmbed && (featuredOrEmbed.title || featuredOrEmbed.coverUrl || featuredOrEmbed.previewAudioUrl)) {
+    return buildFeaturedReleaseCard(featuredOrEmbed) + buildReleasesWall(releases || [])
+  }
+  // No featured release but releases array exists → just the wall
+  if (Array.isArray(releases) && releases.length) {
+    return buildReleasesWall(releases)
+  }
+  return ''
+}
+
+/**
+ * Wires up custom audio players inside the section page after the
+ * detail HTML is injected. Each .release-player block becomes an
+ * interactive play/pause + scrubber. We keep one global Audio element
+ * per page (tracked in state) so opening another section pauses any
+ * playing preview.
+ */
+const _audioState = {audio: null, currentBtn: null}
+
+function bindReleasePlayers(scopeEl) {
+  if (!scopeEl) return
+  scopeEl.querySelectorAll('.release-player').forEach((player) => {
+    const src = player.dataset.audioSrc
+    if (!src) return
+    const btn = player.querySelector('.release-play')
+    const scrub = player.querySelector('.release-scrub')
+    const fill = player.querySelector('.release-scrub-fill')
+    const thumb = player.querySelector('.release-scrub-thumb')
+    const curEl = player.querySelector('.rp-cur')
+    const durEl = player.querySelector('.rp-dur')
+
+    const fmtTime = (s) => {
+      if (!isFinite(s) || s < 0) s = 0
+      const m = Math.floor(s / 60)
+      const sec = Math.floor(s % 60)
+      return `${m}:${sec.toString().padStart(2, '0')}`
+    }
+
+    let audio = _audioState.audio
+    const ensureAudio = () => {
+      if (!audio || audio.src !== src) {
+        // Switching tracks → tear down previous listeners
+        if (_audioState.audio) {
+          _audioState.audio.pause()
+          _audioState.audio.src = ''
+        }
+        audio = new Audio(src)
+        audio.preload = 'metadata'
+        _audioState.audio = audio
+      }
+      return audio
+    }
+
+    const updateUI = () => {
+      const a = _audioState.audio
+      if (!a || a.src !== src) {
+        btn.dataset.state = 'paused'
+        if (fill) fill.style.transform = 'scaleX(0)'
+        if (thumb) thumb.style.left = '0%'
+        if (curEl) curEl.textContent = '0:00'
+        return
+      }
+      btn.dataset.state = a.paused ? 'paused' : 'playing'
+      btn.setAttribute('aria-label', a.paused ? 'Play preview' : 'Pause preview')
+      const dur = isFinite(a.duration) ? a.duration : 0
+      const pct = dur > 0 ? (a.currentTime / dur) * 100 : 0
+      if (fill) fill.style.transform = `scaleX(${pct / 100})`
+      if (thumb) thumb.style.left = `${pct}%`
+      if (curEl) curEl.textContent = fmtTime(a.currentTime)
+      if (durEl) durEl.textContent = dur > 0 ? fmtTime(dur) : '—'
+      scrub.setAttribute('aria-valuenow', String(Math.round(pct)))
+    }
+
+    const attachListeners = (a) => {
+      a.addEventListener('timeupdate', updateUI)
+      a.addEventListener('loadedmetadata', updateUI)
+      a.addEventListener('ended', updateUI)
+      a.addEventListener('play', updateUI)
+      a.addEventListener('pause', updateUI)
+    }
+
+    btn.addEventListener('click', () => {
+      const a = ensureAudio()
+      if (!a._mad_listenersBound) {
+        attachListeners(a)
+        a._mad_listenersBound = true
+      }
+      _audioState.currentBtn = btn
+      if (a.paused) a.play().catch(() => {})
+      else a.pause()
+    })
+
+    // Click-to-seek on the scrub bar
+    const seekFromEvent = (e) => {
+      const a = _audioState.audio
+      if (!a || a.src !== src || !isFinite(a.duration) || a.duration <= 0) return
+      const rect = scrub.getBoundingClientRect()
+      const x = (e.clientX != null ? e.clientX : e.touches && e.touches[0] && e.touches[0].clientX) || 0
+      const pct = Math.min(1, Math.max(0, (x - rect.left) / rect.width))
+      a.currentTime = pct * a.duration
+      updateUI()
+    }
+    scrub.addEventListener('click', seekFromEvent)
+    // Keyboard accessibility on scrub
+    scrub.addEventListener('keydown', (e) => {
+      const a = _audioState.audio
+      if (!a || a.src !== src || !isFinite(a.duration)) return
+      const step = a.duration * 0.05 // 5% per key
+      if (e.key === 'ArrowLeft') {
+        a.currentTime = Math.max(0, a.currentTime - step)
+        updateUI()
+      } else if (e.key === 'ArrowRight') {
+        a.currentTime = Math.min(a.duration, a.currentTime + step)
+        updateUI()
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault()
+        if (a.paused) a.play().catch(() => {})
+        else a.pause()
+      }
+    })
+
+    updateUI()
+  })
+}
+
+/**
+ * Stop any playing audio — call when navigating away from the music
+ * section so the preview doesn't keep playing in the background.
+ */
+function stopReleaseAudio() {
+  if (_audioState.audio && !_audioState.audio.paused) {
+    _audioState.audio.pause()
+  }
 }
 
 /* Platform metadata: brand color + official SVG icon path (sourced from
@@ -628,7 +840,7 @@ function buildDetail(id) {
         <p class="detail-lead">${p.lead}</p>
       </div>
     </div>
-    ${buildMusicEmbed(p.musicEmbed)}
+    ${buildMusicEmbed(p.featuredRelease, p.releases)}
     ${buildPlatformLinks(p.musicPlatforms, p.instagramMusic)}
     ${agenciesHTML}
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
@@ -783,6 +995,8 @@ function openDetailDOM(id) {
   }
   // arm scroll-fade-in observer for the freshly built work rows
   armWorkRowObserver()
+  // wire up the custom MAD-branded mini player(s) inside the music hero
+  bindReleasePlayers(detailInner)
   // Mark cover images as loaded once they're done so the shimmer
   // skeleton stops animating (bg goes back to flat dark).
   detailInner.querySelectorAll('.work-cover img').forEach((img) => {
@@ -807,6 +1021,8 @@ function closeDetailDOM() {
   delete detailPage.dataset.sectionId
   document.body.style.overflow = ''
   setEnterPillVisible(true)
+  // pause any preview audio so it doesn't keep playing in the background
+  stopReleaseAudio()
 }
 detailBack.addEventListener('click', () => navigate({view: 'landing'}))
 // Inline Back button (built inside .detail-section-banner per buildDetail) —

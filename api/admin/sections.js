@@ -19,6 +19,8 @@ const ALLOWED = [
   'musicEmbed',
   'musicPlatforms',
   'instagramMusic',
+  'featuredRelease',
+  'releases',
 ]
 
 function pick(obj, keys) {

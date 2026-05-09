@@ -467,10 +467,8 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .detail-illus svg{width:100%;max-width:56rem;height:auto}
 
 /* ─── MUSIC EMBED + PLATFORM PILLS (MAD+ section) ─── */
-.music-embed-wrap{
-  margin:0 0 4rem;
-  max-width:80rem;
-}
+/* Legacy iframe wrapper — kept for back-compat only. */
+.music-embed-wrap{margin:0 0 4rem;max-width:80rem}
 .music-embed-label{
   font-family:'IBM Plex Mono',monospace;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
@@ -478,12 +476,235 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   margin-bottom:1rem;
 }
 .music-embed{
-  width:100%;
-  border-radius:0.8rem;
+  width:100%;border-radius:0.8rem;
+  background:#1A1815;border:0;display:block;overflow:hidden;
+}
+
+/* ─── FEATURED RELEASE HERO CARD (MAD+ replaces Spotify iframe) ───
+   Two-column editorial poster: big square cover (left, slight crop
+   bleed) + body (right) with kicker, title, meta, optional inline
+   custom audio player, and listen-on platform pills. Stacks on
+   mobile. */
+.release-hero{
+  display:grid;
+  grid-template-columns:minmax(0, 36rem) 1fr;
+  gap:3.5rem;
+  margin:0 0 5rem;
+  align-items:start;
+  position:relative;
+}
+.release-hero-cover-wrap{
+  position:relative;aspect-ratio:1/1;
+  border-radius:0.6rem;overflow:hidden;
   background:#1A1815;
-  border:0;
-  display:block;
+  box-shadow:0 30px 60px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.35);
+}
+.release-hero-cover{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform 0.6s cubic-bezier(0.2,0.8,0.2,1);
+}
+.release-hero:hover .release-hero-cover{transform:scale(1.03)}
+.release-hero-cover-placeholder{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  color:var(--accent);opacity:0.2;
+}
+.release-hero-cover-placeholder svg{width:30%;height:auto}
+.release-hero-body{
+  display:flex;flex-direction:column;
+  padding-top:0.5rem;
+}
+.release-hero-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;margin-bottom:1.2rem;
+}
+.release-hero-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:5rem;line-height:0.98;letter-spacing:-0.02em;
+  color:var(--accent);margin:0 0 0.6rem;
+}
+.release-hero-subtitle{
+  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:500;
+  font-size:1.6rem;line-height:1.3;
+  color:var(--accent);opacity:0.85;
+  margin-bottom:0.8rem;
+}
+.release-hero-meta{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.8rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.5;
+  margin-bottom:2rem;
+}
+/* Tighten the platform-pills row when sitting inside the hero card */
+.release-hero-body .music-platforms{margin:1.2rem 0 0}
+.release-hero-body .music-platforms-label{margin-bottom:0.9rem}
+
+/* ─── INLINE CUSTOM PLAYER (MAD-branded, no Spotify chrome) ───
+   Cream/red brutalist mini-player. Big circular play button on the
+   left, track meta + waveform-style scrubber on the right. */
+.release-player{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:auto auto;
+  gap:0.5rem 1.2rem;
+  padding:1.2rem 1.4rem;
+  margin:0 0 1.6rem;
+  background:linear-gradient(135deg, rgba(255,49,59,0.08) 0%, rgba(245,240,225,0.04) 100%);
+  border:0.08rem solid rgba(255,49,59,0.2);
+  border-radius:0.8rem;
+  align-items:center;
+}
+.release-play{
+  grid-row:1 / span 2;
+  width:3.4rem;height:3.4rem;
+  border-radius:50%;
+  background:var(--cta, #FF313B);
+  border:none;
+  color:#0A0A0A;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:transform 0.2s ease, box-shadow 0.25s ease, background 0.25s ease;
+  box-shadow:0 6px 18px rgba(255,49,59,0.35);
+  position:relative;
+}
+.release-play:hover{transform:scale(1.06);background:#fff;box-shadow:0 10px 24px rgba(255,49,59,0.5)}
+.release-play:active{transform:scale(0.98)}
+.release-play:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
+.release-play svg{width:1.3rem;height:1.3rem;display:none}
+.release-play[data-state="paused"] .release-play-icon-play{display:block;margin-left:2px /* visual-center the triangle */}
+.release-play[data-state="playing"] .release-play-icon-pause{display:block}
+.release-player-meta{
+  display:flex;align-items:baseline;gap:0.8rem;
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.78rem;letter-spacing:0.06em;
+  color:var(--accent);
+}
+.release-player-track{font-weight:600;letter-spacing:0.1em;text-transform:uppercase;opacity:0.95}
+.release-player-time{opacity:0.55;font-variant-numeric:tabular-nums}
+.release-scrub{
+  position:relative;
+  height:1.6rem;
+  cursor:pointer;
+  outline:none;
+  display:flex;align-items:center;
+  border-radius:0.4rem;
+  transition:background 0.2s ease;
+}
+.release-scrub:focus-visible{background:rgba(255,49,59,0.08)}
+.release-scrub-bg{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:space-between;gap:0.18rem;
+  pointer-events:none;
+}
+/* Each bar = a tiny vertical line. Random height variation creates
+   a waveform-poster look without needing real audio analysis. */
+.rs-bar{
+  flex:1 1 auto;
+  background:var(--accent);opacity:0.18;
+  height:calc(40% + (var(--i) * 7%) % 60%);
+  min-height:18%;max-height:90%;
+  border-radius:1px;
+  transform-origin:center;
+  transition:opacity 0.2s ease;
+}
+.release-scrub-fill{
+  position:absolute;left:0;top:0;height:100%;width:100%;
+  background:linear-gradient(90deg, var(--cta) 0%, rgba(255,49,59,0.6) 100%);
+  transform-origin:left center;transform:scaleX(0);
+  border-radius:0.3rem;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  transition:transform 0.08s linear;
+  opacity:0.6;
+}
+.release-scrub-thumb{
+  position:absolute;top:50%;left:0;
+  width:0.7rem;height:1.4rem;
+  background:var(--cta);
+  border-radius:0.2rem;
+  transform:translate(-50%, -50%);
+  pointer-events:none;
+  box-shadow:0 0 0 2px rgba(10,10,10,0.4);
+  transition:left 0.08s linear;
+}
+
+/* ─── RELEASES WALL (grid below the hero) ─── */
+.releases-wall{margin:0 0 5rem}
+.releases-wall-head{margin-bottom:1.6rem}
+.releases-wall-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+}
+.releases-wall-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(15rem, 1fr));
+  gap:1.4rem;
+}
+.release-tile{
+  display:flex;flex-direction:column;
+  background:#1A1815;
+  border:0.08rem solid var(--line);
+  border-radius:0.6rem;overflow:hidden;
+  text-decoration:none;color:var(--accent);
+  transition:transform 0.3s cubic-bezier(0.2,0.8,0.2,1), border-color 0.25s ease, box-shadow 0.3s ease;
+  cursor:pointer;
+}
+.release-tile[href]:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,49,59,0.35);
+  box-shadow:0 14px 30px rgba(0,0,0,0.45);
+}
+.release-tile-cover{
+  position:relative;aspect-ratio:1/1;
+  background:#0F0E0C;overflow:hidden;
+}
+.release-tile-cover img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform 0.5s cubic-bezier(0.2,0.8,0.2,1);
+}
+.release-tile[href]:hover .release-tile-cover img{transform:scale(1.08)}
+.release-tile-placeholder{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  color:var(--accent);opacity:0.2;
+}
+.release-tile-placeholder svg{width:30%}
+.release-tile-overlay{
+  position:absolute;inset:0;
+  display:flex;align-items:flex-end;justify-content:flex-end;
+  padding:0.9rem;
+  background:linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.6) 100%);
+  opacity:0;transition:opacity 0.25s ease;
+  pointer-events:none;
+}
+.release-tile[href]:hover .release-tile-overlay{opacity:1}
+.release-tile-pill{
+  font-family:'IBM Plex Mono',monospace;font-weight:600;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:#0A0A0A;background:var(--cta);
+  padding:0.4rem 0.8rem;border-radius:999px;
+}
+.release-tile-body{padding:1rem 1.2rem 1.2rem}
+.release-tile-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:1.15rem;line-height:1.2;letter-spacing:-0.01em;
+  margin-bottom:0.3rem;
+  /* clamp to 2 lines so meta stays aligned */
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
   overflow:hidden;
+}
+.release-tile-meta{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--accent);opacity:0.5;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .release-hero:hover .release-hero-cover,
+  .release-tile[href]:hover .release-tile-cover img,
+  .release-tile[href]:hover{transform:none}
 }
 .music-platforms{
   margin:0 0 5rem;
@@ -552,6 +773,38 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   .music-platforms{margin-bottom:3.5rem}
   .music-pill{padding:0.7rem 1.1rem;font-size:0.85rem;gap:0.55rem}
   .music-pill-icon{width:1rem;height:1rem}
+
+  /* Hero release card — stack cover above body */
+  .release-hero{
+    grid-template-columns:1fr;
+    gap:2rem;
+    margin-bottom:3.5rem;
+  }
+  .release-hero-cover-wrap{max-width:24rem;margin:0 auto;width:100%}
+  .release-hero-body{padding-top:0;text-align:left}
+  .release-hero-title{font-size:3.4rem;line-height:1.02}
+  .release-hero-subtitle{font-size:1.3rem}
+  .release-hero-meta{font-size:0.72rem;margin-bottom:1.4rem}
+
+  /* Custom mini-player — slightly smaller controls */
+  .release-player{
+    grid-template-columns:auto 1fr;gap:0.4rem 1rem;
+    padding:0.95rem 1.1rem;margin-bottom:1.2rem;
+  }
+  .release-play{width:2.8rem;height:2.8rem}
+  .release-play svg{width:1.1rem;height:1.1rem}
+  .release-player-meta{font-size:0.7rem;gap:0.6rem}
+  .release-scrub{height:1.4rem}
+
+  /* Releases wall — smaller tiles + tighter gap */
+  .releases-wall{margin-bottom:3.5rem}
+  .releases-wall-grid{
+    grid-template-columns:repeat(2, 1fr);
+    gap:0.9rem;
+  }
+  .release-tile-body{padding:0.7rem 0.9rem 0.95rem}
+  .release-tile-title{font-size:0.95rem}
+  .release-tile-meta{font-size:0.6rem;letter-spacing:0.12em}
 }
 
 /* agencies strip */

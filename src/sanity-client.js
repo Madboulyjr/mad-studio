@@ -25,7 +25,17 @@ const QUERY = `{
     landingBg, landingAccent, landingHeadline, landingSubtitle, counterLabel,
     kicker, manifesto, lead, agencies, worksLabel, worksTitle,
     illustrationSvg,
-    musicEmbed, musicPlatforms, instagramMusic
+    musicEmbed, musicPlatforms, instagramMusic,
+    "featuredRelease": featuredRelease{
+      kicker, title, subtitle, year, label,
+      "coverUrl": cover.asset->url,
+      "previewAudioUrl": previewAudio.asset->url,
+      platforms
+    },
+    "releases": releases[]{
+      title, year, kind, listenUrl,
+      "coverUrl": cover.asset->url
+    }
   },
   "projects": *[_type == "project" && published == true] | order(section->order asc, order asc){
     _id,
