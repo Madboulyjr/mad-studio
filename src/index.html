@@ -2202,7 +2202,10 @@ body{
 }
 
 /* ─── DETAIL PAGE — adapt to cream palette ─── */
-.detail-page{padding:2.5rem 2.4rem 12rem}
+/* Bottom padding tightened from 12rem → 2.5rem; the .collab-cta block
+   already provides its own 6rem padding-bottom + a hairline rule, so
+   the extra page padding was just dead space below the visual end. */
+.detail-page{padding:2.5rem 2.4rem 2.5rem}
 .detail-back{
   background:#1A1815;color:var(--accent);
   border:0.08rem solid var(--line);
