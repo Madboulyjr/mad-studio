@@ -1,9 +1,59 @@
 import {defineConfig, loadEnv} from 'vite'
 import {resolve} from 'path'
+import {writeFileSync, mkdirSync} from 'node:fs'
+
+/**
+ * Vite plugin: generate /dist/sitemap.xml from seed-data at build time.
+ * Maps internal section slugs to public URLs (music → madplus).
+ */
+function sitemapPlugin() {
+  return {
+    name: 'mad-studio-sitemap',
+    apply: 'build',
+    async closeBundle() {
+      const SITE_URL = 'https://beingmad.co'
+      const ID_TO_URL = {originals: 'originals', bubble: 'bubble', music: 'madplus', vision: 'vision'}
+      const today = new Date().toISOString().split('T')[0]
+      // Pull section + project lists from the seed file.
+      const seed = await import('./sanity/scripts/seed-data.mjs')
+      const sections = (seed.SECTIONS || []).map((s) => s.slug)
+      const projects = seed.ORIGINALS_PROJECTS || []
+      const urls = [
+        {loc: `${SITE_URL}/`, priority: '1.0', changefreq: 'weekly'},
+        ...sections.map((slug) => ({
+          loc: `${SITE_URL}/${ID_TO_URL[slug] || slug}`,
+          priority: '0.9',
+          changefreq: 'weekly',
+        })),
+        ...projects.map((p) => ({
+          // Every seeded project sits under the "originals" section today.
+          loc: `${SITE_URL}/${ID_TO_URL[p.sectionSlug || 'originals'] || 'originals'}/${p.slug}`,
+          priority: '0.7',
+          changefreq: 'monthly',
+        })),
+      ]
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls
+  .map(
+    (u) =>
+      `  <url><loc>${u.loc}</loc><lastmod>${today}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`,
+  )
+  .join('\n')}
+</urlset>
+`
+      const outDir = resolve(__dirname, 'dist')
+      mkdirSync(outDir, {recursive: true})
+      writeFileSync(resolve(outDir, 'sitemap.xml'), xml, 'utf8')
+      console.log(`✓ Generated sitemap.xml (${urls.length} URLs)`)
+    },
+  }
+}
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
+    plugins: [sitemapPlugin()],
     root: 'src',
     publicDir: resolve(__dirname, 'public'),
     build: {

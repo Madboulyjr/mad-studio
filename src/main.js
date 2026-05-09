@@ -1,4 +1,11 @@
 import {fetchContent, urlFor} from './sanity-client.js'
+import {inject as injectAnalytics} from '@vercel/analytics'
+
+/* Vercel Analytics — only fires on the production beingmad.co host.
+   In dev / preview deploys it stays silent so we don't pollute stats. */
+if (typeof window !== 'undefined' && window.location.hostname === 'beingmad.co') {
+  injectAnalytics()
+}
 
 /* Lazy-load @mux/mux-player only when a video is actually rendered.
    Saves ~85KB gzip on first paint (most landing visits never need it). */
@@ -474,6 +481,16 @@ function setEnterPillVisible(show) {
 }
 
 function openDetailDOM(id) {
+  // If the detail page is already open for the SAME section, do nothing —
+  // this preserves the user's scroll position when they back-out from a
+  // project view (closeProjectDOM only removes the overlay; the detail
+  // underneath should look exactly as the user left it).
+  const alreadyOpenSameSection =
+    detailPage.classList.contains('open') && detailPage.dataset.sectionId === id
+  if (alreadyOpenSameSection) {
+    setEnterPillVisible(false)
+    return
+  }
   // sync landing's selected section to match (so closing detail returns to the right one)
   const idx = SECTIONS.findIndex((s) => s.id === id)
   if (idx >= 0 && idx !== current) switchTo(idx)
