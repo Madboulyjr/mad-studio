@@ -1006,32 +1006,32 @@ body{
 .hero .illustration:hover .avatar3d{--avatar-scale:1.04}
 .hero .illustration:hover .avatar-light{opacity:1.2}
 
-/* ─── SPEECH BUBBLE — rotating witty phrases, from different sides ─── */
+/* ─── SPEECH BUBBLE — always overlays face, max z-index ─── */
 .speech-bubble{
-  position:absolute;z-index:5;
+  position:absolute;z-index:50;
   max-width:18rem;
-  background:rgba(22, 20, 16, 0.7);
-  -webkit-backdrop-filter:blur(14px) saturate(140%);
-  backdrop-filter:blur(14px) saturate(140%);
-  border:0.08rem solid rgba(245, 240, 225, 0.14);
+  background:rgba(22, 20, 16, 0.85);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  backdrop-filter:blur(18px) saturate(140%);
+  border:0.08rem solid rgba(245, 240, 225, 0.18);
   color:var(--accent);
   padding:0.85rem 1.4rem;
   border-radius:1.4rem;
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   font-size:1.05rem;letter-spacing:-0.005em;
   white-space:normal;text-align:center;
-  box-shadow:0 12px 28px rgba(0,0,0,0.4), inset 0 1px 0 rgba(245,240,225,0.05);
-  opacity:0;transform:translateY(0.5rem) scale(0.96);
+  box-shadow:0 16px 36px rgba(0,0,0,0.55), inset 0 1px 0 rgba(245,240,225,0.06);
+  opacity:0;transform:translateY(0.5rem) scale(0.96) translateZ(60px);
   transition:opacity 0.4s cubic-bezier(.2,.7,.2,1), transform 0.5s cubic-bezier(.2,.7,.2,1);
   pointer-events:none;
 }
 .speech-bubble.show{
-  opacity:1;transform:translateY(0) scale(1);
+  opacity:1;transform:translateY(0) scale(1) translateZ(60px);
   animation:speechFloat 4s ease-in-out infinite;
 }
 @keyframes speechFloat{
-  0%,100%{transform:translateY(0) scale(1)}
-  50%{transform:translateY(-0.4rem) scale(1)}
+  0%,100%{transform:translateY(0) scale(1) translateZ(60px)}
+  50%{transform:translateY(-0.4rem) scale(1) translateZ(60px)}
 }
 /* tail base — visible only via per-position rules */
 .speech-bubble::before{
@@ -1043,36 +1043,27 @@ body{
   border:0.08rem solid rgba(245, 240, 225, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants (data-pos drives top/right/left/bottom + corner radius + tail) ─── */
-/* TOP-RIGHT — bubble is top-right of avatar, tail points down-left */
-.speech-bubble[data-pos="top-right"]{top:14%;right:2%;border-bottom-left-radius:0.4rem}
-.speech-bubble[data-pos="top-right"]::before{left:-0.45rem;bottom:0.6rem;clip-path:polygon(100% 0, 100% 100%, 0 100%)}
-/* TOP-LEFT — bubble is top-left, tail points down-right */
-.speech-bubble[data-pos="top-left"]{top:14%;left:2%;right:auto;border-bottom-right-radius:0.4rem}
-.speech-bubble[data-pos="top-left"]::before{right:-0.45rem;bottom:0.6rem;left:auto;clip-path:polygon(0 0, 100% 100%, 0 100%)}
-/* BOTTOM-RIGHT — bubble is bottom-right, tail points up-left */
-.speech-bubble[data-pos="bottom-right"]{bottom:18%;right:2%;top:auto;border-top-left-radius:0.4rem}
-.speech-bubble[data-pos="bottom-right"]::before{left:-0.45rem;top:0.6rem;clip-path:polygon(0 0, 100% 0, 100% 100%)}
-/* BOTTOM-LEFT — bubble is bottom-left, tail points up-right */
-.speech-bubble[data-pos="bottom-left"]{bottom:18%;left:2%;right:auto;top:auto;border-top-right-radius:0.4rem}
-.speech-bubble[data-pos="bottom-left"]::before{right:-0.45rem;top:0.6rem;left:auto;clip-path:polygon(0 0, 100% 0, 0 100%)}
-/* TOP-CENTER — bubble centered above avatar, tail points down */
-.speech-bubble[data-pos="top-center"]{top:2%;left:50%;right:auto;transform-origin:bottom center}
-.speech-bubble[data-pos="top-center"].show{
-  /* override base transform with center translate, then float */
-  animation:speechFloatCenter 4s ease-in-out infinite;
-}
-.speech-bubble[data-pos="top-center"]::before{bottom:-0.4rem;left:50%;transform:translateX(-50%) rotate(45deg)}
+/* ─── Position variants — all OVERLAP the face area, hovering on top ─── */
+/* TOP-LEFT-FACE — over forehead/left-eye area */
+.speech-bubble[data-pos="top-left"]{top:30%;left:18%;right:auto}
+/* TOP-RIGHT-FACE — over forehead/right-eye area */
+.speech-bubble[data-pos="top-right"]{top:30%;right:18%;left:auto}
+/* CENTER-FACE — across the eyes/nose */
+.speech-bubble[data-pos="top-center"]{top:36%;left:50%;right:auto;transform-origin:center}
+.speech-bubble[data-pos="top-center"].show{animation:speechFloatCenter 4s ease-in-out infinite}
 @keyframes speechFloatCenter{
-  0%,100%{transform:translateX(-50%) translateY(0) scale(1)}
-  50%{transform:translateX(-50%) translateY(-0.4rem) scale(1)}
+  0%,100%{transform:translateX(-50%) translateY(0) scale(1) translateZ(60px)}
+  50%{transform:translateX(-50%) translateY(-0.4rem) scale(1) translateZ(60px)}
 }
-/* RIGHT-MIDDLE — bubble far right, tail points left */
-.speech-bubble[data-pos="right-middle"]{top:42%;right:1%;border-bottom-left-radius:0.4rem}
-.speech-bubble[data-pos="right-middle"]::before{left:-0.45rem;top:50%;transform:translateY(-50%) rotate(45deg)}
-/* LEFT-MIDDLE — bubble far left, tail points right */
-.speech-bubble[data-pos="left-middle"]{top:42%;left:1%;right:auto;border-bottom-right-radius:0.4rem}
-.speech-bubble[data-pos="left-middle"]::before{right:-0.45rem;top:50%;left:auto;transform:translateY(-50%) rotate(45deg)}
+/* BOTTOM-LEFT-FACE — over chin/cheek-left */
+.speech-bubble[data-pos="bottom-left"]{top:auto;bottom:24%;left:18%;right:auto}
+/* BOTTOM-RIGHT-FACE — over chin/cheek-right */
+.speech-bubble[data-pos="bottom-right"]{top:auto;bottom:24%;right:18%;left:auto}
+/* MOUTH — across the mustache/lips */
+.speech-bubble[data-pos="left-middle"]{top:55%;left:24%;right:auto}
+.speech-bubble[data-pos="right-middle"]{top:55%;right:24%;left:auto}
+/* tail removed — bubble is overlay, no need to point */
+.speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
 .hero-copy{
   position:relative;z-index:2;text-align:center;
