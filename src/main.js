@@ -600,10 +600,14 @@ function buildDetail(id) {
   // Resolve section's display name (e.g. "Originals", "Bubble", "MAD+", "Vision")
   const sec = SECTIONS.find((s) => s.id === id)
   const secLabel = sec ? sec.cTitle : id
+  const secIdx = SECTIONS.findIndex((s) => s.id === id)
+  const secIndexLabel = secIdx >= 0
+    ? `${String(secIdx + 1).padStart(2, '0')} / ${String(SECTIONS.length).padStart(2, '0')}`
+    : ''
   detailInner.innerHTML = `
     <div class="detail-hero">
       <div class="detail-copy">
-        <!-- Section banner: Back pill + MAD logo + section name, all on one row -->
+        <!-- Section banner: Back pill + MAD logo + section name + rule + index -->
         <div class="detail-section-banner" aria-label="MAD ${secLabel}">
           <button class="detail-back detail-back-inline" type="button" aria-label="Back to home">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -615,6 +619,8 @@ function buildDetail(id) {
             <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
           </svg>
           <span class="detail-banner-name">${secLabel}</span>
+          <span class="detail-banner-rule" aria-hidden="true"></span>
+          ${secIndexLabel ? `<span class="detail-banner-index">${secIndexLabel}</span>` : ''}
         </div>
         ${p.kicker ? `<div class="detail-kicker">${p.kicker}</div>` : ''}
         <h1 class="manifesto">${p.manifesto}</h1>
@@ -877,8 +883,11 @@ function renderGalleryItem(item, gi) {
     </div>`
   }
   if (item._type === 'image' || item.asset) {
+    // a11y: prefer item.alt, fall back to item.caption, then a generic
+    // "Project image" + index so we never ship empty alt= attrs
+    const alt = item.alt || item.caption || `Project image ${gi + 1}`
     return `<div class="g-item" style="--gi:${gi}">
-      <img src="${mediaImageUrl(item)}" alt="${item.alt || ''}" loading="lazy">
+      <img src="${mediaImageUrl(item)}" alt="${alt.replace(/"/g, '&quot;')}" loading="lazy" decoding="async">
     </div>`
   }
   return ''

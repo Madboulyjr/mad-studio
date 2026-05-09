@@ -147,7 +147,7 @@ function renderLogin() {
         <h1 class="adm-login-title">Sign in.</h1>
         <p class="adm-login-lead">Enter your admin password to edit content directly from the site.</p>
         <form class="adm-login-form" id="adm-login-form" autocomplete="off">
-          <input type="password" id="adm-password" name="password" placeholder="Password" autofocus required ${state.busy ? 'disabled' : ''}>
+          <input type="password" id="adm-password" name="password" placeholder="Password" autocomplete="current-password" autofocus required ${state.busy ? 'disabled' : ''}>
           <button type="submit" ${state.busy ? 'disabled' : ''}>${state.busy ? 'Signing in…' : 'Sign in →'}</button>
         </form>
         <div class="adm-login-hint">
