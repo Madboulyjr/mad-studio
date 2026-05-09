@@ -1948,11 +1948,38 @@ body{
   opacity:1;color:var(--cta);transform:translateX(4px);
 }
 
+/* When user clicks a work-row, brief "expand outward" animation
+   suggests the row is morphing into the project page underneath.
+   Used as fallback when View Transitions API isn't available. */
+.work-row.is-entering{
+  animation:workRowEnter 0.22s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  pointer-events:none;
+}
+.work-row.is-entering .work-cover img{
+  animation:workRowEnterImg 0.22s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+@keyframes workRowEnter{
+  0%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(-1.2rem) scale(1.03)}
+}
+@keyframes workRowEnterImg{
+  0%{transform:scale(1)}
+  100%{transform:scale(1.08)}
+}
+
+/* View Transitions API support (modern browsers) — names the cover
+   image so the browser auto-animates it across the route change.
+   Falls back gracefully when unsupported. */
+@supports (view-transition-name: foo){
+  .work-row .work-cover{view-transition-name:auto}
+}
+
 /* Reduced-motion safe defaults */
 @media (prefers-reduced-motion: reduce){
   .work-row{opacity:1 !important;transform:none !important}
   .work-row:hover .work-cover img{transform:none}
   .work-row .work-cover-overlay{display:none}
+  .work-row.is-entering{animation:none}
 }
 
 /* ─── EMPTY STATE — when a section has 0 projects (Bubble/MAD+/Vision)

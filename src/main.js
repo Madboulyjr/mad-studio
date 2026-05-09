@@ -1094,7 +1094,20 @@ detailInner.addEventListener('click', (e) => {
   if (!p || !p.works.length) return
   const slug = p.works[idx] && p.works[idx].slug
   if (!slug) return
-  navigate({view: 'project', id, projectSlug: slug})
+  // Shared-element-feel transition: briefly expand+fade the clicked row
+  // before navigating, so the user perceives "the row IS becoming the
+  // project page". 200ms total. Uses View Transitions API where
+  // available, falls back to CSS animation otherwise.
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const go = () => navigate({view: 'project', id, projectSlug: slug})
+  if (reduced) return go()
+  if (typeof document.startViewTransition === 'function') {
+    document.startViewTransition(go)
+  } else {
+    // Manual fallback: add class, wait 200ms, navigate
+    row.classList.add('is-entering')
+    setTimeout(go, 220)
+  }
 })
 
 /* Helper: find the previous project in global ALL_PROJECTS order
