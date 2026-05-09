@@ -28,14 +28,14 @@ const client = createClient({
 const patch = {
   musicEmbed: {
     type: 'spotify',
-    embedUrl: 'https://open.spotify.com/artist/1rgIIBUadDr57yF2gMfHlv',
+    embedUrl: 'https://open.spotify.com/artist/6wcaWzTRzPz0uGwF0Z54Jy',
     caption: 'Listen on Spotify',
   },
   musicPlatforms: [
     {
       _key: 'platform-spotify',
       platform: 'spotify',
-      url: 'https://open.spotify.com/artist/1rgIIBUadDr57yF2gMfHlv?si=q5JbXLsFS26lf8AHKXkbmg',
+      url: 'https://open.spotify.com/artist/6wcaWzTRzPz0uGwF0Z54Jy?si=WI8kEHFSTzq07Mh9orPeiA',
     },
     {
       _key: 'platform-apple-music',
