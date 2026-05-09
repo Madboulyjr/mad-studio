@@ -1,16 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
-  <style>
-    /* Default: light mode → black background, cream M */
-    /* (matches the brand splash/topbar look, never invisible on light tabs) */
-    .bg { fill: #F5F0E1; }
-    .fg { fill: #0A0A0A; }
-    @media (prefers-color-scheme: dark) {
-      .bg { fill: #0A0A0A; }
-      .fg { fill: #F5F0E1; }
-    }
-  </style>
-  <rect class="bg" width="600" height="600" rx="80"/>
-  <g class="fg" transform="translate(80 231) scale(0.83) translate(-30 -320)">
+  <rect width="600" height="600" rx="80" fill="#0A0A0A"/>
+  <g transform="translate(80 231) scale(0.83) translate(-30 -320)" fill="#F5F0E1">
     <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
     <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
     <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>

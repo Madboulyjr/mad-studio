@@ -26,7 +26,12 @@
 
 <link rel="canonical" href="https://beingmad.co/">
 
-<!-- Favicon: MAD logo on black, same brand mark as the splash + topbar -->
+<!-- Favicon: theme-aware MAD mark.
+     Chrome respects `media=...` per icon, Safari honors @media inside the
+     SVG itself, so we cover both: explicit per-mode files PLUS one
+     adaptive fallback. Light mode = black M on cream. Dark = cream M on black. -->
+<link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="/favicon-dark.svg" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
