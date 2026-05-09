@@ -372,7 +372,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
      "Back" pill button (which sits at top:3rem with ~3.5rem height,
      bottom ≈ 6.5rem). Banner now starts at ~10rem from page top with
      comfortable visual separation. */
-  margin:7rem 0 5rem;
+  /* Reduced from 7rem after the Back button moved INLINE inside the
+     section banner. Was buffering for fixed top:11rem positioning. */
+  margin:1.5rem 0 4rem;
 }
 .detail-hero .detail-copy{max-width:130rem}
 
@@ -1040,7 +1042,7 @@ body::after{display:none}
   .detail-logo .sub{font-size:1.4rem}
 
   .detail-inner{margin-top:5rem}
-  .detail-hero{min-height:auto;margin:5rem 0 4rem;align-items:flex-start}
+  .detail-hero{min-height:auto;margin:1rem 0 3rem;align-items:flex-start}
   .detail-hero .detail-copy{max-width:100%}
   /* Mobile: Back is inline; rule + index don't fit in the cramped row */
   .detail-section-banner{padding-left:0;min-height:auto;flex-wrap:wrap;gap:1rem}
