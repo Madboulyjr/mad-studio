@@ -40,8 +40,8 @@ function xhrUpload(url, file, onProgress) {
 
 /* In-memory edit-form state for media so changes batch into one PATCH */
 let mediaState = []
-let coverState = null // {assetId, url, hotspot?} or {remove: true} or null
-let hotspotState = null // {x, y} (0-1) — applies to current cover (existing or just-uploaded)
+let coverState = null // {assetId, url} or {remove: true} or null
+let cropState = null // {top, left, right, bottom} all 0-1, all are fractions to chop from each edge
 
 let rootEl = null
 let state = {authed: false, view: 'list', sections: [], projects: [], editing: null, busy: false}
@@ -495,14 +495,28 @@ function renderProjectForm(p) {
         <legend>Cover image</legend>
         <div class="adm-cover-zone" data-cover-current="${escapeAttr(p.coverImage?.assetId || '')}">
           ${p.coverImage?.url
-            ? `<div class="adm-cover-preview-wrap">
-                 <img class="adm-cover-preview" src="${escapeAttr(p.coverImage.url)}?w=800&auto=format" alt="Current cover">
-                 <button type="button" class="adm-cover-hotspot" id="adm-cover-hotspot"
-                   data-x="${p.coverImage.hotspot?.x ?? 0.5}" data-y="${p.coverImage.hotspot?.y ?? 0.5}"
-                   style="left:${(p.coverImage.hotspot?.x ?? 0.5) * 100}%;top:${(p.coverImage.hotspot?.y ?? 0.5) * 100}%"
-                   aria-label="Drag to set focal point"
-                   title="Drag this dot to set the focal point — image stays centered on it when cropped"></button>
-                 <div class="adm-cover-hotspot-hint">⊕ Drag dot to set focal point</div>
+            ? `<div class="adm-crop-wrap">
+                 <div class="adm-crop-stage" id="adm-crop-stage">
+                   <img class="adm-crop-img" id="adm-crop-img" src="${escapeAttr(p.coverImage.url)}?w=1400&auto=format" alt="Cover" draggable="false">
+                   <div class="adm-crop-overlay" aria-hidden="true"></div>
+                   <div class="adm-crop-rect" id="adm-crop-rect"
+                        data-top="${p.coverImage.crop?.top ?? 0}"
+                        data-left="${p.coverImage.crop?.left ?? 0}"
+                        data-right="${p.coverImage.crop?.right ?? 0}"
+                        data-bottom="${p.coverImage.crop?.bottom ?? 0}">
+                     <div class="adm-crop-handle adm-crop-handle-tl" data-handle="tl"></div>
+                     <div class="adm-crop-handle adm-crop-handle-tr" data-handle="tr"></div>
+                     <div class="adm-crop-handle adm-crop-handle-bl" data-handle="bl"></div>
+                     <div class="adm-crop-handle adm-crop-handle-br" data-handle="br"></div>
+                     <div class="adm-crop-grid" aria-hidden="true"></div>
+                   </div>
+                 </div>
+                 <div class="adm-crop-controls">
+                   <span class="adm-crop-zoom-label">ZOOM</span>
+                   <input type="range" class="adm-crop-zoom" id="adm-crop-zoom" min="0.3" max="1" step="0.01" value="1" title="Smaller = zoomed in further">
+                   <span class="adm-crop-percent" id="adm-crop-percent">100%</span>
+                 </div>
+                 <div class="adm-crop-hint">Drag the rectangle to position · drag corners to resize · slider to zoom in</div>
                </div>`
             : '<div class="adm-cover-empty">No cover yet — drop or click to upload</div>'}
           <div class="adm-cover-actions">
@@ -511,7 +525,7 @@ function renderProjectForm(p) {
               <span>${p.coverImage?.url ? 'Replace cover ↑' : 'Upload cover ↑'}</span>
             </label>
             ${p.coverImage?.url ? '<button type="button" class="adm-link adm-cover-remove">Remove</button>' : ''}
-            ${p.coverImage?.url ? '<button type="button" class="adm-link adm-cover-reset-hotspot" id="adm-cover-reset-hotspot">Reset focal point</button>' : ''}
+            ${p.coverImage?.url ? '<button type="button" class="adm-link adm-crop-reset" id="adm-crop-reset">Reset crop</button>' : ''}
           </div>
           <div class="adm-cover-status" id="adm-cover-status"></div>
         </div>
@@ -593,22 +607,21 @@ function renderSectionForm(s) {
   `
 }
 
-/* COVER IMAGE upload + remove + hotspot drag */
+/* COVER IMAGE — upload, remove, draggable + resizable crop rectangle.
+   The rectangle is locked to a 16:10 aspect ratio (matches the public
+   cover render). User drags it to position what they want centered,
+   drags corner handles to resize, or uses the zoom slider for quick
+   sizing. On save, rect's position relative to the natural image
+   dimensions is converted to Sanity crop {top, bottom, left, right}. */
 function bindCoverUpload(projectId) {
   const input = rootEl.querySelector('#adm-cover-input')
   const status = rootEl.querySelector('#adm-cover-status')
   const zone = rootEl.querySelector('.adm-cover-zone')
   const removeBtn = rootEl.querySelector('.adm-cover-remove')
-  const hotspotEl = rootEl.querySelector('#adm-cover-hotspot')
-  const resetHotspotBtn = rootEl.querySelector('#adm-cover-reset-hotspot')
   if (!input || !zone) return
 
-  // Initialise hotspotState from existing cover
-  if (hotspotEl) {
-    const x = parseFloat(hotspotEl.dataset.x) || 0.5
-    const y = parseFloat(hotspotEl.dataset.y) || 0.5
-    hotspotState = {x, y}
-  }
+  // Reset crop state — initialised in attachCropTool from rect's data-* attrs
+  cropState = null
 
   input.addEventListener('change', async (e) => {
     const file = e.target.files?.[0]
@@ -617,25 +630,12 @@ function bindCoverUpload(projectId) {
     try {
       const asset = await uploadFile(file)
       coverState = {assetId: asset._id, url: asset.url}
-      hotspotState = {x: 0.5, y: 0.5} // reset to center for new image
-      // Update preview live (rebuild the wrap so hotspot dot reappears)
-      const wrap = zone.querySelector('.adm-cover-preview-wrap')
-      const empty = zone.querySelector('.adm-cover-empty')
-      const wrapHTML = `<img class="adm-cover-preview" src="${asset.url}?w=800&auto=format" alt="New cover">
-        <button type="button" class="adm-cover-hotspot" id="adm-cover-hotspot"
-          data-x="0.5" data-y="0.5" style="left:50%;top:50%"
-          aria-label="Drag to set focal point"></button>
-        <div class="adm-cover-hotspot-hint">⊕ Drag dot to set focal point</div>`
-      if (wrap) wrap.innerHTML = wrapHTML
-      else if (empty) {
-        const newWrap = document.createElement('div')
-        newWrap.className = 'adm-cover-preview-wrap'
-        newWrap.innerHTML = wrapHTML
-        empty.replaceWith(newWrap)
-      }
-      // Re-attach hotspot drag to the freshly inserted dot
-      attachHotspotDrag(zone)
-      status.textContent = '✓ Uploaded — drag dot to set focus, then save'
+      cropState = {top: 0, left: 0, right: 0, bottom: 0}
+      // Replace cover area with the crop tool
+      const wrap = zone.querySelector('.adm-crop-wrap, .adm-cover-empty')
+      if (wrap) wrap.outerHTML = makeCropToolHTML(asset.url + '?w=1400&auto=format', cropState)
+      attachCropTool()
+      status.textContent = '✓ Uploaded — drag the rect to crop, then save'
     } catch (err) {
       status.textContent = '✗ ' + err.message
     }
@@ -644,73 +644,261 @@ function bindCoverUpload(projectId) {
   if (removeBtn) {
     removeBtn.addEventListener('click', () => {
       coverState = {remove: true}
-      hotspotState = null
-      const wrap = zone.querySelector('.adm-cover-preview-wrap')
-      if (wrap) wrap.replaceWith(Object.assign(document.createElement('div'), {className: 'adm-cover-empty', textContent: 'Cover removed (will save when you click "Save changes")'}))
+      cropState = null
+      const wrap = zone.querySelector('.adm-crop-wrap')
+      if (wrap) wrap.replaceWith(Object.assign(document.createElement('div'), {
+        className: 'adm-cover-empty', textContent: 'Cover removed (will save when you click "Save changes")',
+      }))
       removeBtn.remove()
-      const reset = rootEl.querySelector('#adm-cover-reset-hotspot')
+      const reset = rootEl.querySelector('#adm-crop-reset')
       if (reset) reset.remove()
       status.textContent = 'Cover marked for removal'
     })
   }
 
-  if (resetHotspotBtn) {
-    resetHotspotBtn.addEventListener('click', () => {
-      hotspotState = {x: 0.5, y: 0.5}
-      const dot = zone.querySelector('.adm-cover-hotspot')
-      if (dot) {
-        dot.style.left = '50%'
-        dot.style.top = '50%'
-        dot.dataset.x = 0.5
-        dot.dataset.y = 0.5
+  attachCropTool()
+}
+
+function makeCropToolHTML(imgUrl, crop = {top: 0, left: 0, right: 0, bottom: 0}) {
+  return `
+    <div class="adm-crop-wrap">
+      <div class="adm-crop-stage" id="adm-crop-stage">
+        <img class="adm-crop-img" id="adm-crop-img" src="${escapeAttr(imgUrl)}" alt="Cover" draggable="false">
+        <div class="adm-crop-overlay" aria-hidden="true"></div>
+        <div class="adm-crop-rect" id="adm-crop-rect"
+             data-top="${crop.top}" data-left="${crop.left}" data-right="${crop.right}" data-bottom="${crop.bottom}">
+          <div class="adm-crop-handle adm-crop-handle-tl" data-handle="tl"></div>
+          <div class="adm-crop-handle adm-crop-handle-tr" data-handle="tr"></div>
+          <div class="adm-crop-handle adm-crop-handle-bl" data-handle="bl"></div>
+          <div class="adm-crop-handle adm-crop-handle-br" data-handle="br"></div>
+          <div class="adm-crop-grid" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="adm-crop-controls">
+        <span class="adm-crop-zoom-label">ZOOM</span>
+        <input type="range" class="adm-crop-zoom" id="adm-crop-zoom" min="0.3" max="1" step="0.01" value="1">
+        <span class="adm-crop-percent" id="adm-crop-percent">100%</span>
+      </div>
+      <div class="adm-crop-hint">Drag the rectangle to position · drag corners to resize · slider to zoom in</div>
+    </div>
+  `
+}
+
+/* Crop rectangle drag/resize logic. Rect coords stored as fractions of
+   the image's natural dimensions: {x, y, w, h} where (x,y) is top-left
+   and (w,h) are size, all 0-1. Aspect ratio LOCKED to 16:10 = 1.6 to
+   match the public cover render. On save, converts to Sanity crop
+   {top, bottom, left, right} where each value is the fraction CHOPPED
+   from that edge.
+
+   Visual: the overlay darkens everything outside the rect via the
+   .adm-crop-rect's box-shadow trick (large blackout shadow projected
+   outwards covers the rest of the stage). */
+const CROP_ASPECT = 16 / 10
+
+function attachCropTool() {
+  const stage = rootEl.querySelector('#adm-crop-stage')
+  const img = rootEl.querySelector('#adm-crop-img')
+  const rect = rootEl.querySelector('#adm-crop-rect')
+  const zoomSlider = rootEl.querySelector('#adm-crop-zoom')
+  const percentEl = rootEl.querySelector('#adm-crop-percent')
+  const status = rootEl.querySelector('#adm-cover-status')
+  const resetBtn = rootEl.querySelector('#adm-crop-reset')
+  if (!stage || !img || !rect) return
+
+  // Internal state in fractions of the image's BOUNDING BOX (which equals
+  // its natural aspect ratio scaled to fit the stage). x,y = top-left of
+  // crop rect; w,h = size. All 0..1.
+  let cx, cy, cw, ch
+
+  const initFromExisting = () => {
+    const top = parseFloat(rect.dataset.top) || 0
+    const left = parseFloat(rect.dataset.left) || 0
+    const right = parseFloat(rect.dataset.right) || 0
+    const bottom = parseFloat(rect.dataset.bottom) || 0
+    if (top || left || right || bottom) {
+      cx = left
+      cy = top
+      cw = 1 - left - right
+      ch = 1 - top - bottom
+    } else {
+      // No existing crop — default rect = largest 16:10 area inside the image
+      defaultRect()
+    }
+  }
+
+  const defaultRect = () => {
+    if (!img.naturalWidth) {
+      // fallback if natural dims not yet known — assume image native equals 16:10
+      cx = 0; cy = 0; cw = 1; ch = 1
+      return
+    }
+    const imgAspect = img.naturalWidth / img.naturalHeight
+    if (imgAspect >= CROP_ASPECT) {
+      // Image wider than 16:10 — full height, narrower width centered
+      ch = 1
+      cw = (CROP_ASPECT / imgAspect)
+      cx = (1 - cw) / 2
+      cy = 0
+    } else {
+      // Image taller than 16:10 — full width, shorter height centered
+      cw = 1
+      ch = (imgAspect / CROP_ASPECT)
+      cx = 0
+      cy = (1 - ch) / 2
+    }
+  }
+
+  const apply = () => {
+    rect.style.left = (cx * 100) + '%'
+    rect.style.top = (cy * 100) + '%'
+    rect.style.width = (cw * 100) + '%'
+    rect.style.height = (ch * 100) + '%'
+    cropState = {
+      top: clamp01(cy),
+      left: clamp01(cx),
+      right: clamp01(1 - cx - cw),
+      bottom: clamp01(1 - cy - ch),
+    }
+    if (status) status.textContent = `Crop: ${Math.round(cw * 100)}% × ${Math.round(ch * 100)}% — click Save to apply`
+    if (percentEl) percentEl.textContent = Math.round(cw * 100) + '%'
+    if (zoomSlider) zoomSlider.value = cw
+  }
+
+  const setSize = (newW) => {
+    // Resize keeping the rect centered on its current center
+    const cxOld = cx + cw / 2
+    const cyOld = cy + ch / 2
+    cw = Math.max(0.15, Math.min(1, newW))
+    // Maintain visual aspect 16:10 within the image's container box.
+    // CROP_ASPECT is the ratio of (cw_in_pixels)/(ch_in_pixels). Since
+    // cw and ch are in fractions of imgWidth/imgHeight (different units),
+    // the rect's pixel aspect = (cw * imgWidth) / (ch * imgHeight)
+    // For pixel aspect = CROP_ASPECT: ch = (cw * imgWidth) / (CROP_ASPECT * imgHeight)
+    const imgAspect = img.naturalWidth / img.naturalHeight || CROP_ASPECT
+    ch = (cw * imgAspect) / CROP_ASPECT
+    if (ch > 1) {
+      // height capped; recompute cw from ch
+      ch = 1
+      cw = (CROP_ASPECT * ch) / imgAspect
+    }
+    // Re-center
+    cx = clamp01(cxOld - cw / 2)
+    cy = clamp01(cyOld - ch / 2)
+    if (cx + cw > 1) cx = 1 - cw
+    if (cy + ch > 1) cy = 1 - ch
+    apply()
+  }
+
+  // Initial setup once image dims are known
+  const init = () => {
+    initFromExisting()
+    apply()
+  }
+  if (img.complete && img.naturalWidth) init()
+  else img.addEventListener('load', init, {once: true})
+
+  /* DRAG to move the rect */
+  let dragMode = null // 'move' or one of 'tl','tr','bl','br'
+  let dragStart = null
+
+  const onPointerMove = (e) => {
+    if (!dragMode) return
+    e.preventDefault()
+    const stageRect = stage.getBoundingClientRect()
+    const cx2 = (e.touches ? e.touches[0].clientX : e.clientX) - stageRect.left
+    const cy2 = (e.touches ? e.touches[0].clientY : e.clientY) - stageRect.top
+    const fx = clamp01(cx2 / stageRect.width)
+    const fy = clamp01(cy2 / stageRect.height)
+    if (dragMode === 'move') {
+      cx = clamp01(dragStart.cx + (fx - dragStart.fx))
+      cy = clamp01(dragStart.cy + (fy - dragStart.fy))
+      if (cx + cw > 1) cx = 1 - cw
+      if (cy + ch > 1) cy = 1 - ch
+    } else {
+      // Resize from a corner — anchor opposite corner, recompute new rect
+      // with aspect ratio locked.
+      const imgAspect = img.naturalWidth / img.naturalHeight || CROP_ASPECT
+      const anchor = {
+        tl: {x: dragStart.cx + dragStart.cw, y: dragStart.cy + dragStart.ch},
+        tr: {x: dragStart.cx,                y: dragStart.cy + dragStart.ch},
+        bl: {x: dragStart.cx + dragStart.cw, y: dragStart.cy},
+        br: {x: dragStart.cx,                y: dragStart.cy},
+      }[dragMode]
+      let newW = Math.abs(fx - anchor.x)
+      // Aspect-locked height: ch = newW * imgAspect / CROP_ASPECT
+      let newH = (newW * imgAspect) / CROP_ASPECT
+      // Bound to stage
+      if (newW < 0.15) newW = 0.15
+      if (newH > 1) {
+        newH = 1
+        newW = (CROP_ASPECT * newH) / imgAspect
       }
-      status.textContent = 'Focal point reset — click Save to apply'
+      // Determine new top-left based on anchor + handle direction
+      cw = newW
+      ch = newH
+      if (dragMode.includes('l')) cx = anchor.x - newW
+      else cx = anchor.x
+      if (dragMode.includes('t')) cy = anchor.y - newH
+      else cy = anchor.y
+      cx = clamp01(cx); cy = clamp01(cy)
+      if (cx + cw > 1) cx = 1 - cw
+      if (cy + ch > 1) cy = 1 - ch
+    }
+    apply()
+  }
+  const onPointerUp = () => {
+    dragMode = null
+    document.removeEventListener('mousemove', onPointerMove)
+    document.removeEventListener('touchmove', onPointerMove)
+    document.removeEventListener('mouseup', onPointerUp)
+    document.removeEventListener('touchend', onPointerUp)
+  }
+  const startDrag = (mode) => (e) => {
+    e.preventDefault()
+    dragMode = mode
+    const stageRect = stage.getBoundingClientRect()
+    const cx2 = (e.touches ? e.touches[0].clientX : e.clientX) - stageRect.left
+    const cy2 = (e.touches ? e.touches[0].clientY : e.clientY) - stageRect.top
+    dragStart = {fx: cx2 / stageRect.width, fy: cy2 / stageRect.height, cx, cy, cw, ch}
+    document.addEventListener('mousemove', onPointerMove, {passive: false})
+    document.addEventListener('touchmove', onPointerMove, {passive: false})
+    document.addEventListener('mouseup', onPointerUp)
+    document.addEventListener('touchend', onPointerUp)
+  }
+
+  // Bind drag on the rect body (move) and corners (resize)
+  rect.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('adm-crop-handle')) return
+    startDrag('move')(e)
+  })
+  rect.addEventListener('touchstart', (e) => {
+    if (e.target.classList.contains('adm-crop-handle')) return
+    startDrag('move')(e)
+  }, {passive: false})
+  rect.querySelectorAll('.adm-crop-handle').forEach((h) => {
+    h.addEventListener('mousedown', startDrag(h.dataset.handle))
+    h.addEventListener('touchstart', startDrag(h.dataset.handle), {passive: false})
+  })
+
+  // Zoom slider — sets crop width directly
+  if (zoomSlider) {
+    zoomSlider.addEventListener('input', (e) => {
+      setSize(parseFloat(e.target.value))
     })
   }
 
-  attachHotspotDrag(zone)
+  // Reset button
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      defaultRect()
+      apply()
+    })
+  }
 }
 
-/* Hotspot drag — bound to whatever .adm-cover-hotspot is currently in zone */
-function attachHotspotDrag(zone) {
-  const dot = zone.querySelector('.adm-cover-hotspot')
-  const wrap = zone.querySelector('.adm-cover-preview-wrap')
-  const status = rootEl.querySelector('#adm-cover-status')
-  if (!dot || !wrap) return
-  let dragging = false
-  const onMove = (e) => {
-    if (!dragging) return
-    e.preventDefault()
-    const rect = wrap.getBoundingClientRect()
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
-    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
-    dot.style.left = (x * 100) + '%'
-    dot.style.top = (y * 100) + '%'
-    dot.dataset.x = x.toFixed(4)
-    dot.dataset.y = y.toFixed(4)
-    hotspotState = {x, y}
-  }
-  const stop = () => {
-    if (!dragging) return
-    dragging = false
-    document.removeEventListener('mousemove', onMove)
-    document.removeEventListener('touchmove', onMove)
-    document.removeEventListener('mouseup', stop)
-    document.removeEventListener('touchend', stop)
-    if (status) status.textContent = `Focal point: ${(hotspotState.x * 100).toFixed(0)}%, ${(hotspotState.y * 100).toFixed(0)}% — click Save to apply`
-  }
-  const start = (e) => {
-    dragging = true
-    e.preventDefault()
-    document.addEventListener('mousemove', onMove, {passive: false})
-    document.addEventListener('touchmove', onMove, {passive: false})
-    document.addEventListener('mouseup', stop)
-    document.addEventListener('touchend', stop)
-  }
-  dot.addEventListener('mousedown', start)
-  dot.addEventListener('touchstart', start, {passive: false})
+function clamp01(n) {
+  return Math.max(0, Math.min(1, Number(n) || 0))
 }
 
 /* GALLERY — add/remove/reorder + video upload via Mux */
@@ -937,21 +1125,19 @@ function collectProjectPayload(data, form) {
       outcome,
     },
   }
-  // Cover image — include if user uploaded a new one OR moved hotspot OR removed it
+  // Cover image — include if user uploaded a new one OR moved crop OR removed it
   if (coverState && coverState.remove) {
-    payload.coverImage = null // PATCH set null clears the field
+    payload.coverImage = null
   } else if (coverState && coverState.assetId) {
-    // New cover uploaded this session — include hotspot
     payload.coverImage = {
       assetId: coverState.assetId,
-      ...(hotspotState ? {hotspot: hotspotState} : {}),
+      ...(cropState ? {crop: cropState} : {}),
     }
-  } else if (hotspotState) {
-    // Hotspot moved on existing cover — re-send the existing assetId + new hotspot.
-    // Server keeps both: assetId from current doc, hotspot from us.
+  } else if (cropState) {
+    // Crop changed on existing cover — re-send existing assetId + new crop
     const currentAssetId = rootEl.querySelector('.adm-cover-zone')?.dataset.coverCurrent
     if (currentAssetId) {
-      payload.coverImage = {assetId: currentAssetId, hotspot: hotspotState}
+      payload.coverImage = {assetId: currentAssetId, crop: cropState}
     }
   }
   // Media gallery — always send the current ordered list (additions,
@@ -1381,49 +1567,109 @@ function injectStyles() {
 .adm-cover-zone{
   display:flex;flex-direction:column;gap:0.8rem;
 }
-.adm-cover-preview-wrap{
-  position:relative;display:inline-block;
-  width:100%;max-width:36rem;
-  border-radius:0.6rem;overflow:hidden;
-  border:0.08rem solid rgba(245,240,225,0.1);
+/* CROP TOOL — draggable + resizable rectangle on the original image */
+.adm-crop-wrap{
+  display:flex;flex-direction:column;gap:0.8rem;
+  max-width:36rem;
 }
-.adm-cover-preview{
-  width:100%;
-  aspect-ratio:16/10;
-  object-fit:cover;
+.adm-crop-stage{
+  position:relative;
+  width:100%;max-height:30rem;
   background:#0A0A0A;
-  display:block;
+  border-radius:0.6rem;
+  overflow:hidden;
+  border:0.08rem solid rgba(245,240,225,0.1);
   user-select:none;
 }
-/* Focal point dot — draggable */
-.adm-cover-hotspot{
+.adm-crop-img{
+  width:100%;height:auto;display:block;
+  pointer-events:none; /* drag goes to the rect, not the image */
+  user-select:none;
+}
+/* Dim everything outside the crop rect */
+.adm-crop-overlay{
+  position:absolute;inset:0;
+  background:rgba(10,10,10,0.6);
+  pointer-events:none;
+  z-index:1;
+}
+/* The crop rectangle. Box-shadow of the rect "punches a hole" by being
+   the only fully-bright area; combined with .adm-crop-overlay, only the
+   inside of the rect is unobscured. */
+.adm-crop-rect{
   position:absolute;
-  width:2rem;height:2rem;
-  margin-left:-1rem;margin-top:-1rem;
-  border-radius:50%;
+  border:0.12rem solid #D0FA51;
+  cursor:move;
+  z-index:2;
+  /* Inverse highlight: clear inside, fade everything else (via overlay above) */
+  box-shadow:0 0 0 9999px rgba(10,10,10,0.55);
+  /* Subtract from overlay so inside stays bright */
+  -webkit-mask:none;
+}
+.adm-crop-rect::before{
+  /* Carve out the rect area from the overlay */
+  content:'';
+  position:absolute;inset:0;
+  background:transparent;
+  /* uses sibling overlay to dim — the rect itself is just border */
+}
+/* Override: cleaner approach — use a pseudo overlay on stage, no shadow */
+.adm-crop-overlay{display:none}
+.adm-crop-rect{
+  box-shadow:0 0 0 9999px rgba(10,10,10,0.55);
+}
+.adm-crop-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(to right, transparent 33.3%, rgba(245,240,225,0.25) 33.3%, rgba(245,240,225,0.25) 33.5%, transparent 33.5%, transparent 66.6%, rgba(245,240,225,0.25) 66.6%, rgba(245,240,225,0.25) 66.8%, transparent 66.8%),
+    linear-gradient(to bottom, transparent 33.3%, rgba(245,240,225,0.25) 33.3%, rgba(245,240,225,0.25) 33.5%, transparent 33.5%, transparent 66.6%, rgba(245,240,225,0.25) 66.6%, rgba(245,240,225,0.25) 66.8%, transparent 66.8%);
+  pointer-events:none;
+}
+.adm-crop-handle{
+  position:absolute;
+  width:1rem;height:1rem;
   background:#D0FA51;
-  border:0.18rem solid #0A0A0A;
-  box-shadow:0 0 0 0.06rem #D0FA51, 0 0.4rem 1rem rgba(0,0,0,0.6);
+  border:0.12rem solid #0A0A0A;
+  border-radius:50%;
+  z-index:3;
+}
+.adm-crop-handle-tl{top:-0.5rem;left:-0.5rem;cursor:nwse-resize}
+.adm-crop-handle-tr{top:-0.5rem;right:-0.5rem;cursor:nesw-resize}
+.adm-crop-handle-bl{bottom:-0.5rem;left:-0.5rem;cursor:nesw-resize}
+.adm-crop-handle-br{bottom:-0.5rem;right:-0.5rem;cursor:nwse-resize}
+
+.adm-crop-controls{
+  display:flex;align-items:center;gap:0.8rem;
+}
+.adm-crop-zoom-label,.adm-crop-percent{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
+  opacity:0.55;
+}
+.adm-crop-percent{min-width:3rem;text-align:right;color:#D0FA51;opacity:0.85}
+.adm-crop-zoom{
+  flex:1;
+  -webkit-appearance:none;appearance:none;
+  height:0.3rem;
+  background:rgba(245,240,225,0.1);
+  border-radius:999px;
+  cursor:pointer;
+}
+.adm-crop-zoom::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:1.2rem;height:1.2rem;border-radius:50%;
+  background:#D0FA51;border:0.12rem solid #0A0A0A;
   cursor:grab;
-  z-index:5;
-  padding:0;
-  transition:transform 0.15s ease;
 }
-.adm-cover-hotspot::after{
-  content:'';position:absolute;inset:0;
-  margin:0.4rem;border-radius:50%;
-  background:#0A0A0A;
+.adm-crop-zoom::-moz-range-thumb{
+  width:1.2rem;height:1.2rem;border-radius:50%;
+  background:#D0FA51;border:0.12rem solid #0A0A0A;
+  cursor:grab;
 }
-.adm-cover-hotspot:hover{transform:scale(1.15)}
-.adm-cover-hotspot:active{cursor:grabbing;transform:scale(1.05)}
-.adm-cover-hotspot-hint{
-  position:absolute;left:0.6rem;bottom:0.6rem;
-  background:rgba(0,0,0,0.7);
-  color:#F5F0E1;
-  padding:0.3rem 0.7rem;border-radius:999px;
+.adm-crop-hint{
   font-family:'IBM Plex Mono',monospace;font-weight:500;
   font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
-  pointer-events:none;
+  opacity:0.5;
 }
 .adm-cover-empty{
   width:100%;max-width:36rem;
