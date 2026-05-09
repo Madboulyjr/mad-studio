@@ -66,6 +66,13 @@ export default async function handler(req, res) {
     return jsonResponse(res, 413, {error: `File too large: ${buf.length} bytes (max ${MAX_BYTES})`})
   }
 
+  if (!process.env.SANITY_WRITE_TOKEN) {
+    return jsonResponse(res, 500, {
+      error:
+        'SANITY_WRITE_TOKEN is not set on the server. Add it in Vercel → Settings → Environment Variables (use a token with Editor or higher permissions).',
+    })
+  }
+
   try {
     const client = sanityClient()
     const asset = await client.assets.upload('file', buf, {filename, contentType})
@@ -79,6 +86,18 @@ export default async function handler(req, res) {
       },
     })
   } catch (e) {
-    return jsonResponse(res, 500, {error: e.message || 'Upload failed'})
+    const detail =
+      (e && e.response && (e.response.body && (e.response.body.error || e.response.body.message)
+        || e.response.statusMessage)) ||
+      (e && e.message) ||
+      'Upload failed'
+    const code = (e && (e.statusCode || (e.response && e.response.statusCode))) || 500
+    console.error('[upload-file] Sanity error:', code, detail, e)
+    if (code === 401 || code === 403) {
+      return jsonResponse(res, 500, {
+        error: `Sanity rejected the upload (HTTP ${code}). Your SANITY_WRITE_TOKEN doesn't have write/asset permission. Generate a new "Editor" token at https://sanity.io/manage and update it on Vercel.`,
+      })
+    }
+    return jsonResponse(res, 500, {error: `Sanity error (${code}): ${detail}`})
   }
 }

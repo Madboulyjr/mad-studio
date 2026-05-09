@@ -2045,10 +2045,15 @@ body.is-admin,
 }
 
 /* SPLIT PANE — edit form left, live iframe preview right */
-.adm-shell-edit{max-width:none;padding:1.2rem 1.5rem 0;height:100vh;display:flex;flex-direction:column}
+/* Shell-edit takes the full small-viewport height (100svh respects
+   iOS URL bar collapse). Padding kept tight so the iframe gets max
+   vertical room. */
+.adm-shell-edit{max-width:none;padding:1rem 1.4rem 0;height:100vh;height:100svh;display:flex;flex-direction:column}
 .adm-split{
   display:grid;
-  grid-template-columns:minmax(28rem, 38%) 1fr;
+  /* Form pane shrinks slightly (38% → 32%) so the live preview gets
+     more horizontal room — was making the iframe feel cramped. */
+  grid-template-columns:minmax(26rem, 32%) 1fr;
   gap:1.2rem;
   flex:1;min-height:0;
   margin-bottom:1.5rem;
@@ -2089,7 +2094,11 @@ body.is-admin,
 .adm-preview-frame{
   flex:1;width:100%;border:0;
   background:#0A0A0A;
-  min-height:0;
+  /* Force a generous minimum height so the iframe never collapses to
+     a tiny strip even when the form column happens to be short.
+     Uses calc(100vh - top/bar/hint allowance) so it scales with the
+     viewport. */
+  min-height:calc(100vh - 12rem);
 }
 .adm-preview-hint{
   padding:0.6rem 1rem;
