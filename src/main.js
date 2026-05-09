@@ -794,175 +794,15 @@ function buildPlatformLinks(platforms, instagramMusic) {
   `
 }
 
-/* ─── SPOTIFY AUTO-PULL (MAD+ only) ─────────────────────────
- * Fetches Madbouly's catalog from /api/spotify-tracks (which talks
- * to Spotify's Web API server-side with cached auth). Replaces the
- * placeholder skeleton inside the detail page once data lands.
- *
- * Caching: API route returns CDN-cached responses (s-maxage=3600),
- * and we cache the JSON in module memory for the session so revisits
- * don't refetch. Failures soft-fail — the placeholder just hides. */
-let _spotifyCache = null
+/* ─── SPOTIFY AUTO-PULL — REMOVED ─────────────────────────────
+ * Originally pulled the live catalog from /api/spotify-tracks at
+ * runtime. Spotify now requires a paid Premium subscription for new
+ * Web API apps, so the auto-pull was retired. The MAD+ section now
+ * uses Sanity-driven content (featuredRelease + releases array) that
+ * is seeded directly from Spotify embed metadata via
+ *   sanity/scripts/seed-madplus-real.mjs
+ * Re-run that script whenever you ship a new track. */
 
-async function fetchSpotifyCatalog() {
-  if (_spotifyCache) return _spotifyCache
-  try {
-    const r = await fetch('/api/spotify-tracks', {
-      headers: {Accept: 'application/json'},
-      cache: 'default',
-    })
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    const j = await r.json()
-    _spotifyCache = {tracks: j.tracks || [], albums: j.albums || [], error: j.error || null}
-    return _spotifyCache
-  } catch (e) {
-    _spotifyCache = {tracks: [], albums: [], error: e.message || 'fetch failed'}
-    return _spotifyCache
-  }
-}
-
-function fmtDuration(ms) {
-  if (!ms || !isFinite(ms)) return ''
-  const total = Math.floor(ms / 1000)
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${String(s).padStart(2, '0')}`
-}
-
-function escSpot(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
-function buildSpotifyTrackRow(track, idx) {
-  const num = String(idx + 1).padStart(2, '0')
-  const cover = track.coverUrl
-    ? `<img class="madplus-track-cover" src="${escSpot(track.coverUrl)}" alt="${escSpot(track.title)}" loading="lazy" decoding="async">`
-    : '<div class="madplus-track-cover madplus-track-cover-empty" aria-hidden="true"></div>'
-  // Inline mini-player: only when Spotify gives us a 30s preview URL.
-  const player = track.previewUrl
-    ? `<div class="release-player madplus-track-player" data-audio-src="${escSpot(track.previewUrl)}">
-        <button class="release-play" type="button" aria-label="Play preview" data-state="paused">
-          <svg class="release-play-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-          <svg class="release-play-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
-        </button>
-        <div class="release-scrub" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <div class="release-scrub-bg" aria-hidden="true">
-            ${Array.from({length: 32}).map((_, i) => `<span class="rs-bar" style="--i:${i}"></span>`).join('')}
-          </div>
-          <div class="release-scrub-fill" aria-hidden="true"></div>
-          <div class="release-scrub-thumb" aria-hidden="true"></div>
-        </div>
-        <div class="release-player-time"><span class="rp-cur">0:00</span></div>
-       </div>`
-    : '<div class="madplus-track-player madplus-track-no-preview">Preview not available</div>'
-
-  const listenPill = track.listenUrl
-    ? `<a class="madplus-track-listen" href="${escSpot(track.listenUrl)}" target="_blank" rel="noopener" aria-label="Listen on Spotify">
-         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-           <path d="M11.999 0C5.371 0 0 5.371 0 12s5.371 12 11.999 12C18.627 24 24 18.629 24 12s-5.373-12-12.001-12zm5.506 17.299a.747.747 0 0 1-1.029.249c-2.819-1.722-6.366-2.111-10.546-1.157a.748.748 0 1 1-.333-1.458c4.572-1.044 8.494-.594 11.658 1.337a.747.747 0 0 1 .25 1.029zm1.469-3.267a.937.937 0 0 1-1.286.308c-3.227-1.984-8.146-2.558-11.962-1.4a.937.937 0 1 1-.543-1.794c4.358-1.323 9.778-.682 13.483 1.6a.937.937 0 0 1 .308 1.286zm.126-3.403C15.244 8.474 8.524 8.272 4.78 9.408a1.124 1.124 0 1 1-.652-2.151c4.297-1.305 11.72-1.054 16.351 1.7a1.123 1.123 0 1 1-1.379 1.672z"/>
-         </svg>
-         <span>Listen ↗</span>
-       </a>`
-    : ''
-
-  return `
-    <article class="madplus-track-row">
-      <span class="madplus-track-num">${num}</span>
-      ${cover}
-      <div class="madplus-track-meta">
-        <div class="madplus-track-title">${escSpot(track.title)}${track.explicit ? ' <span class="madplus-track-explicit" title="Explicit">E</span>' : ''}</div>
-        <div class="madplus-track-sub">${escSpot(track.year || '')}${track.durationMs ? ` · ${fmtDuration(track.durationMs)}` : ''}</div>
-      </div>
-      ${player}
-      ${listenPill}
-    </article>
-  `
-}
-
-function buildSpotifyTracksMarkup(catalog) {
-  const tracks = catalog.tracks || []
-  const albums = catalog.albums || []
-  if (!tracks.length && !albums.length) {
-    // Nothing to show — likely missing creds. Render a quiet placeholder
-    // pointing the owner to /admin so this isn't a hard fail.
-    return `
-      <div class="madplus-spotify-empty">
-        <div class="works-empty-kicker">— Catalog</div>
-        <h3 class="works-empty-title">Catalog loading from Spotify.</h3>
-        <p class="works-empty-lead">
-          Configure <code>SPOTIFY_CLIENT_ID</code> and <code>SPOTIFY_CLIENT_SECRET</code> on Vercel to auto-pull tracks &amp; albums here.
-        </p>
-      </div>
-    `
-  }
-
-  let html = ''
-  if (tracks.length) {
-    html += `
-      <div class="detail-section-label">— Tracks · ${String(tracks.length).padStart(2, '0')}</div>
-      <h2 class="section-title">Selected Tracks.</h2>
-      <div class="madplus-tracks-list">
-        ${tracks.map((t, i) => buildSpotifyTrackRow(t, i)).join('')}
-      </div>
-    `
-  }
-  if (albums.length) {
-    const tiles = albums
-      .map((a) => {
-        const cover = a.coverUrl
-          ? `<img src="${escSpot(a.coverUrl)}" alt="${escSpot(a.title)}" loading="lazy" decoding="async">`
-          : '<div class="release-tile-placeholder" aria-hidden="true"></div>'
-        const meta = [a.kind, a.year].filter(Boolean).map(escSpot).join(' · ')
-        const Tag = a.listenUrl ? 'a' : 'div'
-        const linkAttrs = a.listenUrl ? `href="${escSpot(a.listenUrl)}" target="_blank" rel="noopener"` : ''
-        return `
-          <${Tag} class="release-tile" ${linkAttrs}>
-            <div class="release-tile-cover">${cover}
-              ${a.listenUrl ? '<span class="release-tile-overlay" aria-hidden="true"><span class="release-tile-pill">Listen ↗</span></span>' : ''}
-            </div>
-            <div class="release-tile-body">
-              <div class="release-tile-title">${escSpot(a.title)}</div>
-              ${meta ? `<div class="release-tile-meta">${meta}</div>` : ''}
-            </div>
-          </${Tag}>
-        `
-      })
-      .join('')
-    html += `
-      <section class="releases-wall releases-wall-spotify" aria-label="Discography">
-        <div class="releases-wall-head">
-          <div class="releases-wall-kicker">— Discography · ${String(albums.length).padStart(2, '0')}</div>
-        </div>
-        <div class="releases-wall-grid">${tiles}</div>
-      </section>
-    `
-  }
-  return html
-}
-
-async function loadSpotifyIntoMadplus(scopeEl) {
-  if (!scopeEl) return
-  const block = scopeEl.querySelector('#madplus-spotify-tracks')
-  if (!block) return
-  const catalog = await fetchSpotifyCatalog()
-  // If we already moved on (user navigated away), bail.
-  if (!block.isConnected) return
-  const hasContent = catalog.tracks.length || catalog.albums.length
-  if (!hasContent) {
-    // Spotify creds missing or returned empty → hide the block silently
-    // (the Sanity releases wall above already shows curated content).
-    block.style.display = 'none'
-    block.dataset.state = 'empty'
-    return
-  }
-  block.dataset.state = 'loaded'
-  block.innerHTML = buildSpotifyTracksMarkup(catalog)
-  bindReleasePlayers(block)
-}
 
 function buildDetail(id) {
   const p = PAGES[id]
@@ -1012,15 +852,6 @@ function buildDetail(id) {
     </div>
     ${buildMusicEmbed(p.featuredRelease, p.releases)}
     ${buildPlatformLinks(p.musicPlatforms, p.instagramMusic)}
-    ${id === 'music'
-      ? `<div id="madplus-spotify-tracks" class="madplus-spotify-tracks" data-state="loading">
-           <div class="detail-section-label">— Tracks</div>
-           <h2 class="section-title">Loading from Spotify…</h2>
-           <div class="madplus-spotify-skeleton" aria-hidden="true">
-             ${Array.from({length: 4}).map(() => '<div class="madplus-track-skel"></div>').join('')}
-           </div>
-         </div>`
-      : ''}
     ${agenciesHTML}
     ${id === 'music'
       ? '' // MAD+ replaces the works/empty-state block with Spotify content above
@@ -1178,10 +1009,6 @@ function openDetailDOM(id) {
   armWorkRowObserver()
   // wire up the custom MAD-branded mini player(s) inside the music hero
   bindReleasePlayers(detailInner)
-  // MAD+ — async-fetch Madbouly's Spotify catalog and render tracks/albums
-  if (id === 'music') {
-    loadSpotifyIntoMadplus(detailInner)
-  }
   // Mark cover images as loaded once they're done so the shimmer
   // skeleton stops animating (bg goes back to flat dark).
   detailInner.querySelectorAll('.work-cover img').forEach((img) => {
