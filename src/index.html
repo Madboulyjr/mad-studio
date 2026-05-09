@@ -129,16 +129,19 @@ body{
   display:flex;align-items:center;justify-content:center;
   background:#000;
   pointer-events:auto;
-  /* Splash dismisses by SLIDING UP off-screen (transform translateY)
-     instead of fading. Avoids the overlap moment where avatar peeked
-     through a fading translucent splash. The body content stays at
-     opacity 1 the whole time — splash just leaves the viewport. */
-  transform:translateY(0);
-  transition:transform 0.7s cubic-bezier(0.76, 0, 0.24, 1);
+  /* Simple opacity fade-out on dismiss — short enough (0.3s) that
+     any overlap with the avatar underneath is barely perceptible.
+     visibility:hidden after the fade so the splash doesn't catch
+     pointer events or take up paint cycles. */
+  opacity:1;
+  visibility:visible;
+  transition:opacity 0.3s ease, visibility 0s linear 0.3s;
 }
 body:not(.loading) .splash{
-  transform:translateY(-100%);
+  opacity:0;
+  visibility:hidden;
   pointer-events:none;
+  transition:opacity 0.3s ease, visibility 0s linear 0.3s;
 }
 /* Logo zooms in from "far" — starts as a tiny blurred dot in the
    center, expands toward the camera with the blur lifting as it
