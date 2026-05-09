@@ -1454,7 +1454,8 @@ body::after{display:none}
   html, body, .illustration, .nav-card, a, button{cursor:auto}
 
   /* ─── DETAIL PAGE ─── */
-  .detail-page{padding:1.5rem 1.25rem 3rem}
+  /* Mobile: same rule — page ends at the CTA border, no trailing pad */
+  .detail-page{padding:1.5rem 1.25rem 0}
   .detail-topbar .detail-back{
     /* Mobile: also align with the MAD banner (which starts ~5rem
        from the top after the reduced hero margin). */
@@ -2202,10 +2203,11 @@ body{
 }
 
 /* ─── DETAIL PAGE — adapt to cream palette ─── */
-/* Bottom padding tightened from 12rem → 2.5rem; the .collab-cta block
-   already provides its own 6rem padding-bottom + a hairline rule, so
-   the extra page padding was just dead space below the visual end. */
-.detail-page{padding:2.5rem 2.4rem 2.5rem}
+/* Bottom padding intentionally 0: the page should terminate exactly
+   at the .collab-cta hairline border. The CTA already supplies its
+   own internal 6rem padding-bottom for breathing room — anything past
+   the border is dead space. */
+.detail-page{padding:2.5rem 2.4rem 0}
 .detail-back{
   background:#1A1815;color:var(--accent);
   border:0.08rem solid var(--line);
