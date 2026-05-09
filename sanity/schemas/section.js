@@ -120,6 +120,94 @@ export const section = {
       description: 'Paste the full <svg>...</svg> markup for this section.',
       rows: 6,
     },
+
+    // ─── MUSIC SECTION FIELDS (used on MAD+ section) ─────────────────────
+    {
+      name: 'musicEmbed',
+      title: 'Music embed (Spotify or YouTube)',
+      type: 'object',
+      description: 'Embedded player shown at the top of the section page. Optional.',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {
+          name: 'type',
+          title: 'Platform',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Spotify (artist, album, playlist or track)', value: 'spotify'},
+              {title: 'YouTube (video, playlist, or channel)', value: 'youtube'},
+              {title: 'SoundCloud (track or set)', value: 'soundcloud'},
+              {title: 'Apple Music (album or playlist)', value: 'apple-music'},
+            ],
+            layout: 'radio',
+          },
+        },
+        {
+          name: 'embedUrl',
+          title: 'Embed URL (or full link, we extract the embed ID)',
+          type: 'url',
+          description:
+            'Spotify: paste any spotify.com link (artist/track/album/playlist). ' +
+            'YouTube: paste youtube.com/watch?v=... or youtu.be/... or playlist link. ' +
+            'SoundCloud: paste the full track/set URL. Apple Music: paste any album URL.',
+        },
+        {
+          name: 'caption',
+          title: 'Caption (optional)',
+          type: 'string',
+          description: 'Shown above the embed, e.g. "Latest release" or "Listen now"',
+        },
+      ],
+    },
+    {
+      name: 'musicPlatforms',
+      title: 'Music platform links',
+      type: 'array',
+      description: 'Listed as a row of pill buttons on the section page.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {
+              name: 'platform',
+              title: 'Platform',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'Spotify', value: 'spotify'},
+                  {title: 'Apple Music', value: 'apple-music'},
+                  {title: 'YouTube Music', value: 'youtube-music'},
+                  {title: 'YouTube', value: 'youtube'},
+                  {title: 'SoundCloud', value: 'soundcloud'},
+                  {title: 'Tidal', value: 'tidal'},
+                  {title: 'Anghami', value: 'anghami'},
+                  {title: 'Bandcamp', value: 'bandcamp'},
+                  {title: 'Deezer', value: 'deezer'},
+                  {title: 'Amazon Music', value: 'amazon-music'},
+                ],
+              },
+            },
+            {name: 'url', title: 'URL', type: 'url'},
+            {name: 'label', title: 'Custom label (optional)', type: 'string'},
+          ],
+          preview: {
+            select: {title: 'platform', subtitle: 'url'},
+          },
+        },
+      ],
+    },
+    {
+      name: 'instagramMusic',
+      title: 'Instagram (music account)',
+      type: 'object',
+      description: 'Optional dedicated Instagram handle for music — appears as a pill button alongside the platforms.',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {name: 'handle', title: 'Handle (without @)', type: 'string', description: 'e.g. "madbouly.music"'},
+        {name: 'url', title: 'Full URL (optional, auto-built from handle if blank)', type: 'url'},
+      ],
+    },
   ],
   orderings: [
     {title: 'Display order', name: 'order', by: [{field: 'order', direction: 'asc'}]},

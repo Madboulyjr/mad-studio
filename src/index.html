@@ -232,8 +232,8 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .cursor-label{
   position:relative;
   font-family:'IBM Plex Mono',monospace;
-  font-weight:700;
-  font-size:1.95rem;
+  font-weight:600;
+  font-size:0.78rem;
   letter-spacing:0.18em;
   text-transform:uppercase;
   color:#000;
@@ -242,13 +242,14 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   transition:opacity 0.2s ease 0.1s;
   z-index:1;
 }
-/* hover state: morph into pill with label */
+/* hover state: morph into pill with label — tightened from 10.8rem×4.5rem
+   per user feedback (was visually overpowering, esp. over project covers) */
 .cursor.hover{
-  width:10.8rem;height:4.5rem;
-  border-radius:2rem;
+  width:5.4rem;height:2rem;
+  border-radius:1rem;
 }
 .cursor.hover .cursor-ring{
-  border-radius:2rem;
+  border-radius:1rem;
   background:#fff;
 }
 .cursor.hover .cursor-label{opacity:1}
@@ -360,6 +361,84 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .detail-illus{display:flex;align-items:center;justify-content:center}
 .detail-illus svg{width:100%;max-width:56rem;height:auto}
+
+/* ─── MUSIC EMBED + PLATFORM PILLS (MAD+ section) ─── */
+.music-embed-wrap{
+  margin:0 0 4rem;
+  max-width:80rem;
+}
+.music-embed-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent-soft, #F5F0E1);opacity:0.55;
+  margin-bottom:1rem;
+}
+.music-embed{
+  width:100%;
+  border-radius:0.8rem;
+  background:#1A1815;
+  border:0;
+  display:block;
+  overflow:hidden;
+}
+.music-platforms{
+  margin:0 0 5rem;
+}
+.music-platforms-label{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent);opacity:0.55;
+  margin-bottom:1.4rem;
+}
+.music-platforms-grid{
+  display:flex;flex-wrap:wrap;gap:0.6rem;
+}
+.music-pill{
+  display:inline-flex;align-items:center;gap:0.7rem;
+  padding:0.85rem 1.4rem;
+  background:#1A1815;
+  border:0.08rem solid var(--line);
+  border-radius:999px;
+  color:var(--accent);
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:0.95rem;letter-spacing:0;text-decoration:none;
+  transition:background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, padding 0.25s ease;
+}
+.music-pill:hover{
+  background:#23201B;
+  border-color:var(--platform, var(--accent));
+  transform:translateY(-1px);
+  padding-right:1.6rem;
+}
+.music-pill-dot{
+  width:0.6rem;height:0.6rem;border-radius:50%;
+  background:var(--platform, var(--accent));
+  flex-shrink:0;
+}
+.music-pill-arrow{
+  font-size:1.05rem;line-height:1;
+  opacity:0.6;
+  transition:opacity 0.25s ease, transform 0.25s ease;
+}
+.music-pill:hover .music-pill-arrow{
+  opacity:1;
+  transform:translate(2px,-2px);
+}
+.music-pill-ig{
+  background:linear-gradient(135deg, rgba(225,48,108,0.12) 0%, rgba(245,133,41,0.12) 50%, rgba(252,176,69,0.12) 100%);
+  border-color:rgba(225,48,108,0.35);
+}
+.music-pill-ig .music-pill-dot{
+  background:linear-gradient(135deg, #E1306C 0%, #F58529 50%, #FCB045 100%);
+}
+.music-pill-ig:hover{border-color:#E1306C}
+
+@media (max-width: 768px){
+  .music-embed-wrap{margin-bottom:3rem}
+  .music-platforms{margin-bottom:3.5rem}
+  .music-pill{padding:0.7rem 1.1rem;font-size:0.85rem}
+  .music-pill-dot{width:0.5rem;height:0.5rem}
+}
 
 /* agencies strip */
 .agencies{

@@ -197,6 +197,9 @@ const PAGES = Object.fromEntries(
         worksLabel: s.worksLabel || 'Selected Works',
         worksTitle: s.worksTitle || '',
         works,
+        musicEmbed: s.musicEmbed || null,
+        musicPlatforms: s.musicPlatforms || [],
+        instagramMusic: s.instagramMusic || null,
       },
     ]
   })
@@ -412,6 +415,108 @@ const detailProgressUpdate = bindScrollProgress(
   document.getElementById('detail-scroll-progress-fill'),
 )
 
+/* ─── MUSIC SECTION HELPERS ───────────────────────────────────
+   Convert a user-pasted Spotify/YouTube/SoundCloud URL into an
+   embeddable iframe. Supports the URLs editors commonly paste from
+   the Sanity Studio. */
+function buildMusicEmbed(embed) {
+  if (!embed || !embed.embedUrl) return ''
+  const url = embed.embedUrl.trim()
+  let iframeSrc = ''
+  let iframeAttrs = 'frameborder="0" allow="autoplay; encrypted-media; clipboard-write" loading="lazy"'
+  let height = '352'
+
+  if (embed.type === 'spotify' || /spotify\.com/.test(url)) {
+    // Convert https://open.spotify.com/<type>/<id> to /embed/<type>/<id>
+    const m = url.match(/spotify\.com\/(?:intl-[a-z]+\/)?(track|album|playlist|artist|episode|show)\/([A-Za-z0-9]+)/)
+    if (m) {
+      iframeSrc = `https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`
+      height = m[1] === 'track' ? '152' : '352'
+    }
+  } else if (embed.type === 'youtube' || /youtu\.?be/.test(url)) {
+    // Pull the video ID or playlist ID
+    const vid = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/)
+    const list = url.match(/[?&]list=([A-Za-z0-9_-]+)/)
+    if (list) iframeSrc = `https://www.youtube.com/embed/videoseries?list=${list[1]}`
+    else if (vid) iframeSrc = `https://www.youtube.com/embed/${vid[1]}`
+    iframeAttrs += ' allowfullscreen'
+    height = '420'
+  } else if (embed.type === 'soundcloud' || /soundcloud\.com/.test(url)) {
+    iframeSrc =
+      'https://w.soundcloud.com/player/?url=' +
+      encodeURIComponent(url) +
+      '&color=%23F5F0E1&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false'
+    height = '166'
+  } else if (embed.type === 'apple-music' || /music\.apple\.com/.test(url)) {
+    // music.apple.com → embed.music.apple.com
+    iframeSrc = url.replace(/music\.apple\.com/, 'embed.music.apple.com')
+    height = '450'
+  }
+
+  if (!iframeSrc) return ''
+  return `
+    <div class="music-embed-wrap">
+      ${embed.caption ? `<div class="music-embed-label">${embed.caption}</div>` : ''}
+      <iframe
+        class="music-embed"
+        src="${iframeSrc}"
+        width="100%"
+        height="${height}"
+        ${iframeAttrs}>
+      </iframe>
+    </div>
+  `
+}
+
+const PLATFORM_META = {
+  spotify: {label: 'Spotify', color: '#1DB954'},
+  'apple-music': {label: 'Apple Music', color: '#FA243C'},
+  'youtube-music': {label: 'YouTube Music', color: '#FF0033'},
+  youtube: {label: 'YouTube', color: '#FF0033'},
+  soundcloud: {label: 'SoundCloud', color: '#FF5500'},
+  tidal: {label: 'Tidal', color: '#000000'},
+  anghami: {label: 'Anghami', color: '#7B16FF'},
+  bandcamp: {label: 'Bandcamp', color: '#629AA9'},
+  deezer: {label: 'Deezer', color: '#A238FF'},
+  'amazon-music': {label: 'Amazon Music', color: '#1ad1ff'},
+}
+
+function buildPlatformLinks(platforms, instagramMusic) {
+  const items = []
+  for (const p of platforms || []) {
+    if (!p || !p.url) continue
+    const meta = PLATFORM_META[p.platform] || {label: p.platform || 'Listen', color: '#F5F0E1'}
+    const label = p.label || meta.label
+    items.push(
+      `<a class="music-pill" href="${p.url}" target="_blank" rel="noopener" style="--platform:${meta.color}">
+         <span class="music-pill-dot" aria-hidden="true"></span>
+         <span class="music-pill-label">${label}</span>
+         <span class="music-pill-arrow" aria-hidden="true">↗</span>
+       </a>`,
+    )
+  }
+  if (instagramMusic && (instagramMusic.handle || instagramMusic.url)) {
+    const handle = instagramMusic.handle ? instagramMusic.handle.replace(/^@/, '') : ''
+    const url = instagramMusic.url || (handle ? `https://www.instagram.com/${handle}/` : '')
+    if (url) {
+      items.push(
+        `<a class="music-pill music-pill-ig" href="${url}" target="_blank" rel="noopener">
+           <span class="music-pill-dot" aria-hidden="true"></span>
+           <span class="music-pill-label">Instagram${handle ? ` · @${handle}` : ''}</span>
+           <span class="music-pill-arrow" aria-hidden="true">↗</span>
+         </a>`,
+      )
+    }
+  }
+  if (!items.length) return ''
+  return `
+    <div class="music-platforms">
+      <div class="music-platforms-label">— Listen / Follow</div>
+      <div class="music-platforms-grid">${items.join('')}</div>
+    </div>
+  `
+}
+
 function buildDetail(id) {
   const p = PAGES[id]
   if (!p) return
@@ -449,6 +554,8 @@ function buildDetail(id) {
         <p class="detail-lead">${p.lead}</p>
       </div>
     </div>
+    ${buildMusicEmbed(p.musicEmbed)}
+    ${buildPlatformLinks(p.musicPlatforms, p.instagramMusic)}
     ${agenciesHTML}
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
     <h2 class="section-title">${p.worksTitle}</h2>

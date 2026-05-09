@@ -24,7 +24,8 @@ const QUERY = `{
     order, title, subtitle, description, cardLabel,
     landingBg, landingAccent, landingHeadline, landingSubtitle, counterLabel,
     kicker, manifesto, lead, agencies, worksLabel, worksTitle,
-    illustrationSvg
+    illustrationSvg,
+    musicEmbed, musicPlatforms, instagramMusic
   },
   "projects": *[_type == "project" && published == true] | order(section->order asc, order asc){
     _id,
