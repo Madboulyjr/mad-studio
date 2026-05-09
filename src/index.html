@@ -71,17 +71,10 @@ body{
   display:grid;
   grid-template-rows:auto 1fr;
   height:100vh;
-  /* Body fades IN with a 0.3s delay — long enough for the splash to
-     finish its own 0.3s fade-out — so the avatar/landing doesn't show
-     through the splash for a moment. The splash and the body are now
-     sequenced (splash fades first, then body), not overlapping. */
-  opacity:0;
-  transition:background var(--dur) cubic-bezier(.4,0,.2,1),
-             opacity 0.45s ease 0.3s;
+  transition:background var(--dur) cubic-bezier(.4,0,.2,1);
 }
-body:not(.loading){opacity:1}
-/* While loading, body stays at 0 — splash on top fully covers everything */
-body.loading{opacity:0;transition:none}
+/* No opacity hiding on body — splash overlays the entire viewport via
+   z-index, then SLIDES UP off-screen on dismiss (see .splash rule). */
 
 /* ─── SKIP LINK — keyboard users skip the bottom navbar tab cycle ─── */
 .skip-link{
@@ -136,13 +129,17 @@ body.loading{opacity:0;transition:none}
   display:flex;align-items:center;justify-content:center;
   background:#000;
   pointer-events:auto;
-  opacity:1;
-  /* Faster fade (0.7s → 0.3s) so it clears the screen before the body
-     starts its own delayed fade-in — kills the moment where avatar +
-     splash were both visible at the same time. */
-  transition:opacity 0.3s ease;
+  /* Splash dismisses by SLIDING UP off-screen (transform translateY)
+     instead of fading. Avoids the overlap moment where avatar peeked
+     through a fading translucent splash. The body content stays at
+     opacity 1 the whole time — splash just leaves the viewport. */
+  transform:translateY(0);
+  transition:transform 0.7s cubic-bezier(0.76, 0, 0.24, 1);
 }
-body:not(.loading) .splash{opacity:0;pointer-events:none}
+body:not(.loading) .splash{
+  transform:translateY(-100%);
+  pointer-events:none;
+}
 /* Logo zooms in from "far" — starts as a tiny blurred dot in the
    center, expands toward the camera with the blur lifting as it
    approaches. A small overshoot at ~85% adds a tactile "settle" so
