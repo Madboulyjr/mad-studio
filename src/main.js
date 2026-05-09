@@ -1297,8 +1297,14 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         ${secIndexLabel ? `<span class="detail-banner-index">${secIndexLabel}</span>` : ''}
       </div>
 
-      <!-- Brand kicker for the section -->
-      <div class="madplus-brandmark" aria-hidden="true">— MAD+</div>
+      <!-- Editorial copy block — same as other detail pages so MAD+
+           still reads as part of the studio, just with the glass /
+           glow / cinematic treatment around it. -->
+      <div class="madplus-copy">
+        ${p.kicker ? `<div class="madplus-kicker">${p.kicker}</div>` : ''}
+        ${p.manifesto ? `<h1 class="madplus-manifesto">${p.manifesto}</h1>` : ''}
+        ${p.lead ? `<p class="madplus-lead">${p.lead}</p>` : ''}
+      </div>
 
       <!-- Card carousel -->
       <div class="madplus-carousel" role="region" aria-label="Releases carousel">
@@ -1375,11 +1381,14 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         ${platformPills}
       </div>
 
-      <!-- Footer attribution -->
-      <div class="madplus-foot">
-        <span>© ${new Date().getFullYear()} — MAD+ MUSIC</span>
-        <span class="madplus-foot-sep" aria-hidden="true">·</span>
-        <span>By Mad Bouly</span>
+      <!-- Collab CTA — same block as other detail pages so the section
+           closes with the studio's standard call-to-action, not a
+           one-off footer that breaks the site rhythm. -->
+      <div class="collab-cta madplus-collab">
+        <div class="collab-kicker">Let's Collaborate</div>
+        <h2 class="collab-title">Sound that <em>moves.</em></h2>
+        <p class="collab-lead">Need original music or sound design for a film, brand, or campaign? Let's make something nobody else could.</p>
+        <a class="collab-btn" href="mailto:${SITE.contactEmail || 'madboulyjr.7@gmail.com'}">Get In Touch → </a>
       </div>
     </div>
   `

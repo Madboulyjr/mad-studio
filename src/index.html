@@ -585,13 +585,49 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .madplus-banner .detail-banner-logo{color:#F5F0E1}
 .madplus-banner .detail-banner-index{color:#F5F0E1;opacity:0.55}
 
-/* Brand kicker above the carousel */
+/* Brand kicker above the carousel — kept as a fallback if the JS-built
+   stage ever removes the editorial copy. Otherwise the .madplus-copy
+   block below takes over. */
 .madplus-brandmark{
   font-family:'IBM Plex Mono',monospace;font-weight:500;
   font-size:0.85rem;letter-spacing:0.32em;text-transform:uppercase;
   color:#F5F0E1;opacity:0.55;
   margin:1rem 0 2rem;
 }
+
+/* EDITORIAL COPY (kicker + manifesto + lead) — same content shape as
+   other detail pages but on a dark glow stage. Scoped to .madplus-stage
+   so the regular .manifesto / .detail-lead styles elsewhere stay. */
+.madplus-copy{
+  width:100%;max-width:80rem;
+  text-align:center;
+  margin:0.5rem auto 2.6rem;
+  color:#F5F0E1;
+}
+.madplus-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
+  color:#F5F0E1;opacity:0.6;
+  margin-bottom:1.6rem;
+}
+.madplus-manifesto{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:5rem;line-height:0.96;letter-spacing:-0.025em;
+  color:#F5F0E1;
+  margin:0 auto 1.4rem;
+  max-width:30ch;
+}
+.madplus-manifesto em{
+  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;
+}
+.madplus-lead{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-size:1.2rem;line-height:1.55;
+  color:#F5F0E1;opacity:0.75;
+  max-width:50rem;margin:0 auto;
+}
+.madplus-lead strong{font-weight:600;opacity:1}
 
 /* CAROUSEL ─────────────────────────────────────────────────────────── */
 .madplus-carousel{
@@ -705,14 +741,16 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 
 /* GLASS PLAYER BAR ─────────────────────────────────────────────────── */
+/* Tighter width (was 60rem → too stretched). Now sized by content with
+   a max-width cap, and the now-playing pod no longer flex-grows to push
+   controls to opposite edges, so the bar feels grounded instead of
+   floating across the page. */
 .madplus-player-bar{
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center;
-  gap:1.4rem;
-  width:100%;max-width:60rem;
-  padding:0.7rem 0.9rem;
-  margin:0 0 2rem;
+  display:flex;align-items:center;justify-content:center;
+  gap:1.2rem;
+  width:auto;max-width:46rem;
+  padding:0.55rem 0.7rem;
+  margin:0 auto 2rem;
   background:rgba(255,255,255,0.07);
   -webkit-backdrop-filter:blur(40px) saturate(160%) brightness(110%);
   backdrop-filter:blur(40px) saturate(160%) brightness(110%);
@@ -723,9 +761,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
     0 8px 16px rgba(0,0,0,0.3),
     inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.mp-controls{display:flex;align-items:center;gap:0.4rem}
+.mp-controls{display:flex;align-items:center;gap:0.3rem}
 .mp-btn{
-  width:2.6rem;height:2.6rem;
+  width:2.4rem;height:2.4rem;
   border:none;background:transparent;
   border-radius:50%;
   color:#F5F0E1;
@@ -735,19 +773,33 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .mp-btn:hover{background:rgba(255,255,255,0.12)}
 .mp-btn:active{transform:scale(0.94)}
+/* Subtle inset focus ring instead of an outer red glow that read as
+   a "broken" UI artifact on the play button. White inset + dark halo
+   stays inside the button's silhouette. */
 .mp-btn:focus-visible{
   outline:none;
-  box-shadow:0 0 0 2px rgba(255,49,59,0.6);
+  box-shadow:inset 0 0 0 1.5px rgba(245,240,225,0.85);
 }
-.mp-btn svg{width:1.1rem;height:1.1rem}
+.mp-btn svg{width:1rem;height:1rem}
 
-/* Center play button is bigger + filled */
+/* Center play button — solid CREAM with dark icon (matches Spotify
+   Connect / brand CTA pill). Reads as the strong action.
+   Was: white-glass on glass — too subtle, almost invisible. */
 .mp-play{
-  width:2.8rem;height:2.8rem;
-  background:rgba(255,255,255,0.18);
+  width:3rem;height:3rem;
+  background:#F5F0E1;
+  color:#0A0A0A;
   position:relative;
+  flex-shrink:0;
+  box-shadow:0 4px 14px rgba(0,0,0,0.35);
 }
-.mp-play:hover{background:rgba(255,255,255,0.28)}
+.mp-play:hover{background:#FFFFFF;transform:scale(1.05)}
+.mp-play:focus-visible{
+  outline:none;
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.35),
+    inset 0 0 0 2px rgba(255,49,59,0.75);
+}
 .mp-play svg{display:none;width:1.05rem;height:1.05rem}
 .mp-play[data-state="paused"] .mp-icon-play{display:block;margin-left:2px}
 .mp-play[data-state="playing"] .mp-icon-pause{display:block}
@@ -762,14 +814,15 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .mp-now{
   display:flex;align-items:center;gap:0.7rem;
   min-width:0;
+  max-width:18rem;
   background:rgba(0,0,0,0.35);
   border:0.06rem solid rgba(255,255,255,0.08);
   border-radius:99px;
-  padding:0.35rem 0.85rem 0.35rem 0.35rem;
+  padding:0.3rem 1rem 0.3rem 0.3rem;
 }
 .mp-now-cover{
-  width:2.2rem;height:2.2rem;
-  border-radius:0.4rem;overflow:hidden;
+  width:2rem;height:2rem;
+  border-radius:0.35rem;overflow:hidden;
   flex-shrink:0;background:#161310;
 }
 .mp-now-cover img{width:100%;height:100%;object-fit:cover;display:block}
@@ -854,22 +907,49 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   transform:translateY(-2px);
 }
 
-/* FOOTER */
-.madplus-foot{
-  display:flex;align-items:center;justify-content:center;gap:0.7rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
-  font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
-  color:#F5F0E1;opacity:0.45;
-  margin-top:auto;
-  padding-top:2rem;
+/* COLLAB CTA inside the stage — re-themed for the dark glow palette
+   so it doesn't clash with the rest of the cinematic surface. Same
+   block as Originals/Bubble/Vision detail pages, just glass-tinted
+   borders + cream-on-dark text. Sits at the bottom of the stage. */
+.madplus-collab{
+  width:100%;max-width:80rem;
+  margin:2rem auto 0;
+  border-top:0.08rem solid rgba(245,240,225,0.18);
+  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+  padding:5rem 0;
+  color:#F5F0E1;
 }
-.madplus-foot-sep{opacity:0.5}
+.madplus-collab .collab-kicker{color:#F5F0E1;opacity:0.55}
+.madplus-collab .collab-title{color:#F5F0E1}
+.madplus-collab .collab-title em{color:#FF313B}
+.madplus-collab .collab-lead{color:#F5F0E1;opacity:0.7}
+/* Glass-themed CTA pill */
+.madplus-collab .collab-btn{
+  background:rgba(255,255,255,0.08);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);
+  backdrop-filter:blur(20px) saturate(150%);
+  color:#F5F0E1;
+  border:0.08rem solid rgba(255,255,255,0.18);
+  box-shadow:0 12px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.14);
+}
+.madplus-collab .collab-btn:hover{
+  background:rgba(255,49,59,0.85);
+  border-color:transparent;
+  color:#F5F0E1;
+}
 
 /* MOBILE — < 900px */
 @media (max-width: 900px){
   .madplus-stage{padding:1.2rem 1rem 2rem}
   .madplus-banner{margin-bottom:1.5rem}
   .madplus-brandmark{font-size:0.75rem;margin:0.6rem 0 1.4rem}
+
+  .madplus-copy{margin:0.4rem 0 1.8rem}
+  .madplus-kicker{font-size:0.72rem;margin-bottom:1rem}
+  .madplus-manifesto{font-size:3rem;line-height:1.02}
+  .madplus-lead{font-size:1.05rem;line-height:1.5}
+
+  .madplus-collab{padding:3rem 0;margin-top:1rem}
 
   .madplus-carousel{height:24rem;margin-bottom:1.4rem}
   .madplus-card{width:17rem}
