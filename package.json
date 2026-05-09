@@ -10,7 +10,8 @@
     "studio": "cd sanity && npm run dev",
     "studio:build": "cd sanity && npm run build",
     "studio:deploy": "cd sanity && npm run deploy",
-    "seed": "node sanity/scripts/seed.mjs"
+    "seed": "node sanity/scripts/seed.mjs",
+    "optimize-avatars": "node scripts/optimize-avatars.mjs"
   },
   "dependencies": {
     "@mux/mux-player": "^3.2.0",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
+    "sharp": "^0.34.5",
     "vite": "^5.4.11"
   }
 }
