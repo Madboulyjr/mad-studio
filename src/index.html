@@ -42,45 +42,25 @@ body{
 /* loading: keep body invisible, splash overlay handles the visual */
 body.loading{opacity:1}
 
-/* ─── LOADING SPLASH — full-screen black with pulsing MAD logo + progress bar ─── */
+/* ─── LOADING SPLASH — minimal: MAD logo centered on black, clean fade only ─── */
 .splash{
   position:fixed;inset:0;z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3rem;
+  display:flex;align-items:center;justify-content:center;
   background:#000;
   pointer-events:auto;
   opacity:1;
-  transition:opacity 0.6s cubic-bezier(.2,.7,.2,1);
+  transition:opacity 0.7s cubic-bezier(.2,.7,.2,1);
 }
 body:not(.loading) .splash{opacity:0;pointer-events:none}
-body:not(.loading) .splash .splash-logo{animation:splashOut 0.6s cubic-bezier(.2,.7,.2,1) forwards}
 .splash-logo{
-  width:clamp(8rem, 18vw, 16rem);height:auto;
+  width:clamp(7rem, 14vw, 13rem);height:auto;
   color:var(--accent);
-  animation:splashPulse 1.6s ease-in-out infinite;
-  filter:drop-shadow(0 0 30px rgba(245,240,225,0.18));
+  opacity:0.95;
+  animation:splashFadeIn 0.5s ease-out;
 }
-@keyframes splashPulse{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:0.6;transform:scale(0.97)}
-}
-@keyframes splashOut{
-  to{opacity:0;transform:scale(1.08)}
-}
-.splash-bar{
-  width:clamp(10rem, 22vw, 18rem);height:0.12rem;
-  background:rgba(245,240,225,0.12);border-radius:999px;overflow:hidden;
-}
-.splash-bar-fill{
-  width:0;height:100%;
-  background:var(--accent);
-  border-radius:999px;
-  animation:splashBarFill 1.8s cubic-bezier(.2,.7,.2,1) infinite;
-}
-@keyframes splashBarFill{
-  0%{width:0;transform:translateX(0)}
-  60%{width:100%;transform:translateX(0)}
-  100%{width:100%;transform:translateX(110%)}
+@keyframes splashFadeIn{
+  from{opacity:0}
+  to{opacity:0.95}
 }
 
 /* HEADER */
@@ -1536,14 +1516,13 @@ body{
 </head>
 <body class="loading">
 
-<!-- LOADING SPLASH — MAD logo on black bg, fades out when content ready -->
+<!-- LOADING SPLASH — minimal poch-style: just MAD logo on black, clean fade -->
 <div id="splash" class="splash" aria-hidden="true">
   <svg class="splash-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
     <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
     <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
   </svg>
-  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
 </div>
 
 <!-- TOP-LEFT MARK -->
