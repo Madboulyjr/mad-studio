@@ -49,7 +49,19 @@ const SIZE_300 = 'ab67616d00001e02'
 const SIZE_640 = 'ab67616d0000b273'
 const upsize = (url) => url.replace(SIZE_300, SIZE_640)
 
+/* Featured track is first — we promote نعيم الوعي to the hero card.
+   Original Spotify "top tracks" order is preserved underneath for the
+   wall. */
 const TRACKS = [
+  {
+    id: '0GIQoLeR4PQVadJmwkwMY8',
+    // Arabic-only title — keep original glyphs (rendered RTL by the browser)
+    title: 'نعيم الوعي',
+    subtitle: '',
+    durationMs: 134391,
+    thumb: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c242f5493c2d307cab1f95a0',
+    preview: 'https://p.scdn.co/mp3-preview/7b99f6d5b40a3611662f780f45b47c76460b3ab5',
+  },
   {
     id: '35NLqVDFu7CUOnf4GOQTrb',
     title: 'Boy Zacaria',
@@ -81,15 +93,6 @@ const TRACKS = [
     durationMs: 134058,
     thumb: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e0214b31e77cb2586adf3b7a4d4',
     preview: 'https://p.scdn.co/mp3-preview/a58fb6bf4572f567fa8582e7e73e9c72d3954137',
-  },
-  {
-    id: '0GIQoLeR4PQVadJmwkwMY8',
-    // Arabic-only title — keep original glyphs for the wall
-    title: 'نعيم الوعي',
-    subtitle: '',
-    durationMs: 134391,
-    thumb: 'https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02c242f5493c2d307cab1f95a0',
-    preview: 'https://p.scdn.co/mp3-preview/7b99f6d5b40a3611662f780f45b47c76460b3ab5',
   },
 ]
 
@@ -164,7 +167,7 @@ async function main() {
 
   const patch = {
     featuredRelease: {
-      kicker: 'TOP TRACK',
+      kicker: 'LATEST RELEASE',
       title: featured.fullTitle,
       subtitle: 'by MAD',
       year: '',
