@@ -106,8 +106,11 @@ const SPEECH = {
 }
 
 const SPEECH_POSITIONS = [
-  'top-right', 'top-left', 'bottom-right', 'bottom-left',
-  'right-middle', 'left-middle', 'top-center',
+  'top-left', 'top-center', 'top-right',
+  'left-middle', 'right-middle',
+  'forehead-left', 'forehead-right',
+  'cheek-left', 'cheek-right',
+  'bottom-left', 'bottom-center', 'bottom-right',
 ]
 let speechTimer = null
 let speechIdx = 0
