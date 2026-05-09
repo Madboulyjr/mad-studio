@@ -1017,8 +1017,14 @@ body{
   50%{opacity:1;transform:translateX(-50%) scaleX(1.12)}
 }
 /* hover state — scale up slightly, brighter light */
-.hero .illustration:hover .avatar3d{--avatar-scale:1.04}
+.hero .illustration:hover .avatar3d{--avatar-scale:calc(var(--avatar-base-scale, 1) * 1.04)}
 .hero .illustration:hover .avatar-light{opacity:1.2}
+
+/* Per-section scale corrections so all avatars look the same visual size as MAD+ */
+.illustration[data-id="originals"] .avatar3d{--avatar-base-scale:1.18;--avatar-scale:1.18}
+.illustration[data-id="bubble"] .avatar3d{--avatar-base-scale:1.18;--avatar-scale:1.18}
+.illustration[data-id="music"] .avatar3d{--avatar-base-scale:1;--avatar-scale:1}
+.illustration[data-id="vision"] .avatar3d{--avatar-base-scale:1.15;--avatar-scale:1.15}
 
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
 .speech-bubble{
