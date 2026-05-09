@@ -1590,77 +1590,179 @@ body{
 .agencies-track span::after{color:var(--cta);opacity:0.6}
 .agencies{border-color:var(--line)}
 
-/* ─── EDITORIAL 3-COLUMN WORK ROWS (poch-style) ─── */
-.works-list{border-top:0.08rem solid var(--line)}
+/* ─── EDITORIAL WORK ROWS — magazine-like, scroll-revealed ───
+   Layout: 4-column grid
+     col 1: large index number (01, 02, 03 ...)
+     col 2: title + caption (Newsreader italic)
+     col 3: preview thumbnail (4:3, hover overlay)
+     col 4: description columns (Brief — About — Approach split)
+   Each row fades + lifts in as it enters the viewport (Intersection Observer
+   in main.js adds .is-in-view class). Hover state lifts the whole row,
+   reveals "Open Case ↗" overlay over the preview, and saturates the image. */
+.works-list{
+  border-top:0.08rem solid var(--line);
+  margin-top:0;
+}
 .work-row{
   display:grid;
-  grid-template-columns:1fr 1.4fr 1.6fr;
+  grid-template-columns:5rem 1.5fr 1.4fr 1.6fr;
   grid-template-rows:auto auto;
-  gap:0 3rem;
-  padding:2.5rem 0;
+  gap:0 2.5rem;
+  padding:3rem 0 2.5rem;
   border-bottom:0.08rem solid var(--line);
   cursor:pointer;position:relative;
-  transition:background 0.25s ease;
+  /* Scroll-fade-in: rows start transparent + 28px down, lift into view
+     when IntersectionObserver in main.js adds .is-in-view */
+  opacity:0;transform:translateY(28px);
+  transition:opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+             transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+             background 0.3s ease;
 }
-.work-row::before{display:none}
-.work-row:hover{padding-left:0;background:rgba(245,240,225,0.025)}
-/* row 1: tags + see full case */
+.work-row.is-in-view{opacity:1;transform:translateY(0)}
+.work-row:hover{background:rgba(245,240,225,0.02)}
+/* hairline accent slides in on hover */
+.work-row::before{
+  content:'';position:absolute;top:0;left:0;right:auto;
+  width:0;height:0.18rem;
+  background:var(--cta);
+  transition:width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events:none;
+}
+.work-row:hover::before{width:100%}
+/* row 1: tags-row spans full width — tags left, "See Full Case" right */
 .work-row .work-tags-row{
   grid-column:1 / -1;
   display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:1.5rem;
+  margin-bottom:1.6rem;
+  gap:1rem;
 }
 .work-row .work-tags-row .work-tags{
   display:flex;flex-wrap:wrap;gap:0.4rem;
 }
 .work-row .work-tags-row .work-tags span{
   background:#1A1815;border:0;color:var(--accent);
-  padding:0.3rem 0.85rem;border-radius:999px;
+  padding:0.32rem 0.85rem;border-radius:999px;
   font-family:'Hanken Grotesk',sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0;text-transform:none;
+  transition:background 0.2s ease, transform 0.2s ease;
 }
+.work-row:hover .work-tags-row .work-tags span{background:#23201B}
 .work-row .work-see-full{
   font-family:'Hanken Grotesk',sans-serif;font-weight:500;
   font-size:0.85rem;color:var(--accent);text-decoration:none;
-  display:inline-flex;align-items:center;gap:0.3rem;
-  padding:0.4rem 0.9rem;border:0.08rem solid var(--line);border-radius:999px;
-  transition:background 0.2s ease, color 0.2s ease;
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.45rem 1rem;border:0.08rem solid var(--line);border-radius:999px;
+  white-space:nowrap;flex-shrink:0;
+  transition:background 0.25s ease, color 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
 }
-.work-row:hover .work-see-full{background:var(--accent);color:var(--bg);border-color:transparent}
-/* row 2: title (col 1) | preview (col 2) | description (col 3) */
+.work-row .work-see-full::after{
+  content:'↗';font-size:0.9rem;line-height:1;
+  transition:transform 0.25s ease;
+}
+.work-row:hover .work-see-full{
+  background:var(--cta);color:#1A1815;border-color:transparent;
+  padding-right:1.2rem;
+}
+.work-row:hover .work-see-full::after{transform:translate(2px,-2px)}
+
+/* row 2: NUMBER (col 1) | TITLE (col 2) | PREVIEW (col 3) | DESC (col 4) */
+.work-row .work-num{
+  grid-column:1;display:block;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:300;
+  font-size:2rem;line-height:0.95;letter-spacing:-0.02em;
+  color:var(--accent);opacity:0.4;
+  font-feature-settings:'tnum';
+  transition:opacity 0.3s ease, color 0.3s ease;
+  align-self:start;padding-top:0.35rem;
+}
+.work-row:hover .work-num{opacity:0.95;color:var(--cta)}
+
 .work-row .work-mid{
-  grid-column:1;
-  display:block;
-  padding-right:1rem;
+  grid-column:2;display:block;padding-right:0.5rem;
+  align-self:start;
 }
 .work-row .work-title{
   font-family:'Hanken Grotesk',sans-serif;font-weight:600;
-  font-size:1.9rem;line-height:1.2;letter-spacing:-0.02em;
+  font-size:2.2rem;line-height:1.1;letter-spacing:-0.025em;
   text-transform:none;color:var(--accent);
+  margin:0 0 0.5rem;
+  transition:transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .work-row .work-title strong{font-weight:700;display:inline}
 .work-row .work-title .caption{
-  display:inline;
-  font-family:'Hanken Grotesk',sans-serif;font-style:normal;font-weight:400;
-  font-size:1.9rem;letter-spacing:-0.02em;color:var(--accent);
-  opacity:1;margin-top:0;text-transform:none;
+  display:block;
+  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-size:1.25rem;line-height:1.4;letter-spacing:-0.005em;
+  color:var(--accent);opacity:0.85;
+  margin-top:0.6rem;text-transform:none;
 }
-.work-row .work-meta{display:none}
-.work-row .work-num{display:none}
+
+/* preview thumbnail — bigger, with hover overlay */
 .work-row .work-preview{
-  grid-column:2;
+  grid-column:3;position:relative;
   aspect-ratio:4/3;width:100%;
   background:#161310;border:0;border-radius:0.6rem;overflow:hidden;
 }
-.work-row .work-preview img{filter:saturate(1) contrast(1)}
-.work-row:hover .work-preview img{transform:scale(1.04)}
+.work-row .work-preview img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:saturate(0.9) contrast(1) brightness(0.92);
+  transition:transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+             filter 0.45s ease;
+  will-change:transform;
+}
+.work-row:hover .work-preview img{
+  transform:scale(1.06);
+  filter:saturate(1.1) contrast(1.05) brightness(1);
+}
+/* "Open Case ↗" overlay — glass pill that fades in on hover */
+.work-row .work-preview::after{
+  content:'Open Case ↗';
+  position:absolute;left:0.85rem;bottom:0.85rem;
+  padding:0.45rem 0.95rem;
+  background:rgba(245, 240, 225, 0.12);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  backdrop-filter:blur(20px) saturate(160%);
+  border:0.06rem solid rgba(245, 240, 225, 0.22);
+  border-radius:999px;
+  color:var(--accent);
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
+  opacity:0;transform:translateY(6px);
+  transition:opacity 0.3s ease, transform 0.3s ease;
+  pointer-events:none;
+}
+.work-row:hover .work-preview::after{opacity:1;transform:translateY(0)}
+
 .work-row .work-desc{
-  grid-column:3;
+  grid-column:4;
   display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
   font-family:'Hanken Grotesk',sans-serif;font-weight:400;
   font-size:0.95rem;line-height:1.55;color:var(--accent);
+  align-self:start;
 }
-.work-row .work-desc p{margin:0}
+.work-row .work-desc p{margin:0;opacity:0.92}
+.work-row .work-meta{display:none}
+
+/* Sticky section header — "Selected Works · 21" stays at top while scrolling */
+.detail-section-label.is-sticky{
+  position:sticky;top:1rem;z-index:15;
+  background:rgba(13, 13, 13, 0.85);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+  padding:0.8rem 1.2rem;border-radius:999px;
+  border:0.08rem solid var(--line);
+  display:inline-flex;align-items:center;gap:0.6rem;
+  margin-bottom:1.5rem;
+  width:fit-content;
+}
+
+/* respect reduced-motion: disable scroll-reveal + hover transforms */
+@media (prefers-reduced-motion: reduce){
+  .work-row{opacity:1 !important;transform:none !important}
+  .work-row:hover .work-preview img{transform:none}
+  .work-row .work-preview::after{display:none}
+  .work-row::before{display:none}
+}
 
 /* image strip carousel below each project */
 .work-row-strip{
@@ -1911,17 +2013,36 @@ body{
   .detail-lead{font-size:1.3rem}
   .detail-lead::first-letter{font-size:3.4rem}
   .section-title{font-size:2.6rem}
+  /* Mobile work rows: stack everything vertically, preview at top, magazine-style */
   .work-row{
-    grid-template-columns:1fr;gap:1rem;padding:2rem 0;
+    grid-template-columns:1fr;gap:1rem;padding:2.4rem 0 2rem;
   }
-  .work-row .work-tags-row{margin-bottom:0.8rem;flex-wrap:wrap;gap:0.6rem}
+  .work-row .work-tags-row{
+    margin-bottom:1rem;flex-wrap:wrap;gap:0.6rem;
+  }
+  .work-row .work-num{
+    grid-column:1;font-size:1.3rem;opacity:0.5;padding:0;
+    margin-bottom:0.5rem;
+  }
   .work-row .work-mid,
   .work-row .work-preview,
   .work-row .work-desc{grid-column:1}
-  .work-row .work-desc{grid-template-columns:1fr;gap:0.8rem}
-  .work-row .work-title,
-  .work-row .work-title .caption{font-size:1.4rem}
+  .work-row .work-mid{order:2;padding-right:0}
+  .work-row .work-preview{order:1;aspect-ratio:16/10;margin-bottom:0.8rem}
+  .work-row .work-preview::after{
+    /* show overlay always on mobile (no hover) — read-only label */
+    opacity:0.85 !important;transform:none !important;
+    font-size:0.65rem;left:0.6rem;bottom:0.6rem;padding:0.35rem 0.75rem;
+  }
+  .work-row .work-desc{
+    order:3;grid-template-columns:1fr;gap:0.8rem;
+    font-size:0.95rem;
+  }
+  .work-row .work-title{font-size:1.6rem;line-height:1.15}
+  .work-row .work-title .caption{font-size:1.05rem;margin-top:0.4rem}
   .work-row-strip .strip-item{flex:0 0 65%}
+  /* Disable scroll-reveal stagger on mobile (saves perf, less janky) */
+  .work-row{transition-duration:0.4s}
   .project-view{padding:2rem 1.25rem 10rem}
   .project-hero .p-title{font-size:4rem}
   .collab-cta .collab-title{font-size:3.5rem}

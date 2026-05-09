@@ -456,15 +456,17 @@ function buildDetail(id) {
             .slice(1, 6)
             .map((m) => m.asset?.url)
             .filter(Boolean)
+          const num = String(i + 1).padStart(2, '0')
           return `
         <article class="work-row" data-idx="${i}">
           <div class="work-tags-row">
             <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
-            <span class="work-see-full">See Full Case ↗</span>
+            <span class="work-see-full">See Full Case</span>
           </div>
+          <div class="work-num" aria-hidden="true">${num}</div>
           <div class="work-mid">
-            <h3 class="work-title"><strong>${w.title}${w.year ? ` · ${w.year}` : ''}:</strong>${
-              titleBrief ? ` <span class="caption">${titleBrief}</span>` : ''
+            <h3 class="work-title"><strong>${w.title}${w.year ? ` · ${w.year}` : ''}.</strong>${
+              titleBrief ? `<span class="caption">${titleBrief}</span>` : ''
             }</h3>
           </div>
           <div class="work-preview">${
@@ -526,6 +528,30 @@ function bindScrollProgress(scrollEl, fillEl) {
   return update
 }
 
+/* IntersectionObserver — fade in work rows + agency block as they enter
+   the detail page's scroll viewport. Uses the detail-page itself as root
+   (it's the scroll container, not window). Re-armed every openDetailDOM
+   so freshly built rows get observed. */
+let workRowObserver = null
+function armWorkRowObserver() {
+  if (workRowObserver) workRowObserver.disconnect()
+  // Skip on reduced-motion users — rows render visible immediately via CSS
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+  if (!('IntersectionObserver' in window)) return
+  workRowObserver = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-in-view')
+          workRowObserver.unobserve(entry.target)
+        }
+      }
+    },
+    {root: detailPage, rootMargin: '0px 0px -8% 0px', threshold: 0.05},
+  )
+  detailInner.querySelectorAll('.work-row').forEach((el) => workRowObserver.observe(el))
+}
+
 function openDetailDOM(id) {
   // If the detail page is already open for the SAME section, do nothing —
   // this preserves the user's scroll position when they back-out from a
@@ -559,6 +585,15 @@ function openDetailDOM(id) {
     detailPage.scrollTop = 0
     detailProgressUpdate()
   }
+  // arm scroll-fade-in observer for the freshly built work rows
+  armWorkRowObserver()
+  // reveal first 3 rows immediately (above-the-fold) so the page
+  // doesn't feel empty before user scrolls
+  requestAnimationFrame(() => {
+    detailInner.querySelectorAll('.work-row').forEach((el, i) => {
+      if (i < 3) el.classList.add('is-in-view')
+    })
+  })
 }
 function closeDetailDOM() {
   detailPage.classList.remove('open')
