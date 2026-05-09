@@ -28,9 +28,16 @@ if ! grep -q '"authToken"' ~/.config/sanity/config.json 2>/dev/null; then
   echo ""
 fi
 
-echo "  Building + deploying Studio (this takes ~30s)…"
+echo "  Step 1/2: Deploying schema manifest…"
+echo "  (Required for Dashboard discovery + Content Agent)"
+echo ""
+./node_modules/.bin/sanity schema deploy
+
+echo ""
+echo "  Step 2/2: Building + deploying Studio app (this takes ~30s)…"
 echo ""
 ./node_modules/.bin/sanity deploy
 echo ""
 echo "  ✓ Studio live at: https://madboulyjr-studio.sanity.studio"
+echo "  ✓ Dashboard:      https://www.sanity.io/manage/project/f4pxr4lu/studios"
 echo ""

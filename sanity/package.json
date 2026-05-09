@@ -10,10 +10,10 @@
     "deploy-graphql": "sanity graphql deploy"
   },
   "dependencies": {
-    "@sanity/vision": "^3.99.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sanity": "^3.99.0",
+    "@sanity/vision": "^5.24.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "sanity": "^5.24.0",
     "sanity-plugin-mux-input": "^2.18.0",
     "styled-components": "^6.4.1"
   },
