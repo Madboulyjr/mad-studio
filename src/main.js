@@ -443,46 +443,31 @@ function buildDetail(id) {
     <div class="works-list">
       ${works
         .map((w, i) => {
-          // caption format: "Brief — About — Approach" (3 parts split on em-dash)
-          const cap = w.caption || ''
-          const parts = cap.includes(' — ')
-            ? cap.split(' — ')
-            : [cap]
-          const titleBrief = parts[0] || ''
-          const aboutCol = parts[1] || (parts.length === 1 ? cap : '')
-          const approachCol = parts[2] || ''
-          const stripImgs = (w.media || [])
-            .filter((m) => m._type === 'image' && m.asset)
-            .slice(1, 6)
-            .map((m) => m.asset?.url)
-            .filter(Boolean)
+          // Caption is treated as ONE paragraph now. If it contains the
+          // legacy "Brief — About — Approach" format we just join the
+          // last two parts as a single readable paragraph.
+          const cap = (w.caption || '').replace(/\s+—\s+/g, ' ').trim()
           const num = String(i + 1).padStart(2, '0')
           return `
         <article class="work-row" data-idx="${i}">
-          <div class="work-tags-row">
-            <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
-            <span class="work-see-full">See Full Case</span>
+          <div class="work-cover">
+            ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
+            <div class="work-cover-overlay" aria-hidden="true">
+              <span class="work-open-pill">Open Case ↗</span>
+            </div>
           </div>
-          <div class="work-num" aria-hidden="true">${num}</div>
-          <div class="work-mid">
-            <h3 class="work-title"><strong>${w.title}${w.year ? ` · ${w.year}` : ''}.</strong>${
-              titleBrief ? `<span class="caption">${titleBrief}</span>` : ''
-            }</h3>
+          <div class="work-info">
+            <div class="work-info-top">
+              <span class="work-num" aria-hidden="true">— ${num}</span>
+              <span class="work-year">${w.year || ''}</span>
+            </div>
+            <h3 class="work-title">${w.title}.</h3>
+            ${cap ? `<p class="work-caption">${cap}</p>` : ''}
+            <div class="work-info-bottom">
+              <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
+              <span class="work-cta" aria-hidden="true">View project ↗</span>
+            </div>
           </div>
-          <div class="work-preview">${
-            w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy">` : ''
-          }</div>
-          <div class="work-desc">
-            <p>${aboutCol}</p>
-            <p>${approachCol}</p>
-          </div>
-          ${
-            stripImgs.length
-              ? `<div class="work-row-strip">${stripImgs
-                  .map((u) => `<div class="strip-item"><img src="${u}?w=600&auto=format" alt="" loading="lazy"></div>`)
-                  .join('')}</div>`
-              : ''
-          }
         </article>
       `
         })
