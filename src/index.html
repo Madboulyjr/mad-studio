@@ -302,9 +302,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .cursor{
   position:fixed;
   top:0;left:0;
-  /* 20% smaller (was 1.65rem) — the previous dot read a touch loud
-     against the dark backdrop, especially over light cover images */
-  width:1.32rem;height:1.32rem;
+  /* Two passes of -20% (1.65rem → 1.32rem → 1.05rem) — the dot
+     should be felt, not noticed; especially light over project covers */
+  width:1.05rem;height:1.05rem;
   pointer-events:none;
   z-index:9999;
   mix-blend-mode:difference;
