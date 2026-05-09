@@ -4,11 +4,6 @@
   "installCommand": "npm install",
   "redirects": [
     {
-      "source": "/admin",
-      "destination": "https://madboulyjr-studio.sanity.studio",
-      "permanent": false
-    },
-    {
       "source": "/studio",
       "destination": "https://madboulyjr-studio.sanity.studio",
       "permanent": false
@@ -17,6 +12,14 @@
   "rewrites": [
     {
       "source": "/((?!api/|assets/|avatars/|favicon|robots|sitemap|admin|studio).*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin",
       "destination": "/index.html"
     }
   ]
