@@ -106,10 +106,11 @@ body.loading{opacity:1}
   border-radius:inherit;
 }
 
-/* ─── LOADING SPLASH — minimal: MAD logo centered on black, clean fade only ─── */
+/* ─── LOADING SPLASH — MAD logo centered on black + thin progress bar ─── */
 .splash{
   position:fixed;inset:0;z-index:9999;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2.5rem;
   background:#000;
   pointer-events:auto;
   opacity:1;
@@ -122,9 +123,31 @@ body:not(.loading) .splash{opacity:0;pointer-events:none}
   opacity:0.95;
   animation:splashFadeIn 0.5s ease-out;
 }
+/* Indeterminate progress bar — shimmers while we wait for Sanity fetch */
+.splash-progress{
+  width:clamp(8rem, 20vw, 18rem);
+  height:0.18rem;
+  background:rgba(245,240,225,0.1);
+  overflow:hidden;
+  border-radius:999px;
+  position:relative;
+}
+.splash-progress::after{
+  content:'';
+  position:absolute;top:0;left:0;height:100%;width:30%;
+  background:linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+  animation:splashProgressSlide 1.5s ease-in-out infinite;
+}
+@keyframes splashProgressSlide{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(400%)}
+}
 @keyframes splashFadeIn{
   from{opacity:0}
   to{opacity:0.95}
+}
+@media (prefers-reduced-motion: reduce){
+  .splash-progress::after{animation:none;width:60%}
 }
 
 /* HEADER */
@@ -1758,16 +1781,37 @@ body{
 
 /* COVER — single full-bleed image, dominant element. Background tint
    slightly lighter than page bg so very-dark Behance-screenshot covers
-   still read as a card, not a void. */
+   still read as a card, not a void. While the image loads, a subtle
+   shimmer skeleton plays on the background — better than a flat block. */
 .work-row .work-cover{
   position:relative;
   aspect-ratio:16/10;
-  background:#1A1815;
+  background:linear-gradient(
+    100deg,
+    #1A1815 30%,
+    #2a2520 50%,
+    #1A1815 70%
+  );
+  background-size:300% 100%;
+  animation:coverSkeleton 2s ease-in-out infinite;
   border-radius:0.8rem;
   overflow:hidden;
   box-shadow:
     inset 0 0 0 0.06rem rgba(245,240,225,0.08),
     0 0.4rem 1.6rem rgba(0,0,0,0.4);
+}
+@keyframes coverSkeleton{
+  0%{background-position:100% 0}
+  100%{background-position:-100% 0}
+}
+/* Stop shimmer once the image is loaded — img dispatches `load` event,
+   we add .is-loaded via JS in main.js and the bg returns to flat. */
+.work-row .work-cover.is-loaded{
+  animation:none;
+  background:#1A1815;
+}
+@media (prefers-reduced-motion: reduce){
+  .work-row .work-cover{animation:none}
 }
 .work-row .work-cover img{
   width:100%;height:100%;object-fit:cover;display:block;
@@ -1871,6 +1915,50 @@ body{
   .work-row{opacity:1 !important;transform:none !important}
   .work-row:hover .work-cover img{transform:none}
   .work-row .work-cover-overlay{display:none}
+}
+
+/* ─── EMPTY STATE — when a section has 0 projects (Bubble/MAD+/Vision)
+   Replaces the bare "Coming Soon" placeholder row with an editorial card. */
+.works-empty{
+  display:flex;flex-direction:column;align-items:flex-start;
+  padding:6rem 0 8rem;max-width:48rem;
+  margin-top:2rem;
+}
+.works-empty-icon{
+  width:4rem;height:4rem;
+  color:var(--cta);opacity:0.85;
+  margin-bottom:2rem;
+}
+.works-empty-icon svg{width:100%;height:100%}
+.works-empty-kicker{
+  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--accent-soft);margin-bottom:1.4rem;
+}
+.works-empty-title{
+  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-size:4rem;line-height:1.05;letter-spacing:-0.025em;
+  color:var(--accent);margin:0 0 1.5rem;
+}
+.works-empty-lead{
+  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-size:1.4rem;line-height:1.55;
+  color:var(--accent);opacity:0.85;
+  margin:0 0 2.2rem;
+}
+.works-empty-cta{
+  display:inline-flex;align-items:center;
+  background:var(--cta);color:#1A1815;
+  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-size:1rem;text-decoration:none;
+  padding:1rem 2rem;border-radius:999px;
+  transition:background 0.2s ease, transform 0.2s ease;
+}
+.works-empty-cta:hover{background:#fff;transform:translateY(-1px)}
+@media (max-width: 768px){
+  .works-empty{padding:3rem 0 5rem}
+  .works-empty-title{font-size:2.6rem}
+  .works-empty-lead{font-size:1.15rem}
 }
 
 /* ─── COLLAB CTA ─── */
@@ -2171,6 +2259,7 @@ body{
     <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
     <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
   </svg>
+  <div class="splash-progress" aria-hidden="true"></div>
 </div>
 
 <!-- HERO — centered conversational, illustration as backdrop -->

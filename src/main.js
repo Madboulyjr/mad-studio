@@ -254,10 +254,14 @@ function buildNav() {
     })
   }
   SECTIONS.forEach((s, i) => {
-    const d = document.createElement('div')
+    // Use <button> instead of <div> so it's natively keyboard-focusable
+    // and announced as a button by screen readers.
+    const d = document.createElement('button')
+    d.type = 'button'
     d.className = 'nav-card' + (i === 0 ? ' active' : '')
     d.dataset.id = s.id
     d.dataset.num = String(i + 1).padStart(2, '0')
+    d.setAttribute('aria-label', `Switch to ${s.cTitle} section`)
     d.innerHTML = `
       <div class="c-info">
         <span class="c-num">${s.cNum}</span>
@@ -268,8 +272,6 @@ function buildNav() {
       <div class="c-enter">Enter</div>
     `
     d.addEventListener('click', () => {
-      // If user is currently on a detail/project overlay, navigate to that section's detail.
-      // Otherwise (on landing) just switch the active section — landing stays at "/".
       const onOverlay =
         detailPage.classList.contains('open') || projectView.classList.contains('open')
       if (onOverlay) navigate({view: 'detail', id: s.id})
@@ -583,9 +585,8 @@ function buildPlatformLinks(platforms, instagramMusic) {
 function buildDetail(id) {
   const p = PAGES[id]
   if (!p) return
-  const works = p.works.length
-    ? p.works
-    : [{title: 'Coming Soon', year: '—', caption: 'Project in progress', tags: ['WIP']}]
+  const isEmpty = p.works.length === 0
+  const works = p.works
   const agenciesHTML = p.agencies.length
     ? `
     <div class="detail-section-label">— In Collaboration With</div>
@@ -632,7 +633,25 @@ function buildDetail(id) {
     ${agenciesHTML}
     <div class="detail-section-label">${p.worksLabel} · ${String(works.length).padStart(2, '0')}</div>
     <h2 class="section-title">${p.worksTitle}</h2>
-    <div class="works-list">
+    ${isEmpty
+      ? `<div class="works-empty">
+           <div class="works-empty-icon" aria-hidden="true">
+             <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+               <rect x="8" y="14" width="48" height="36" rx="3"/>
+               <path d="M8 28h48"/>
+               <path d="M22 38h6"/>
+               <path d="M22 44h14"/>
+             </svg>
+           </div>
+           <div class="works-empty-kicker">— Coming up</div>
+           <h3 class="works-empty-title">In the studio.</h3>
+           <p class="works-empty-lead">
+             Projects for this section are still in production. Drop me a line
+             if you'd like to see early work or commission something new.
+           </p>
+           <a class="works-empty-cta" href="mailto:${SITE.contactEmail || 'madboulyjr.7@gmail.com'}">Get in touch →</a>
+         </div>`
+      : `<div class="works-list">
       ${works
         .map((w, i) => {
           // Caption is treated as ONE paragraph now. If it contains the
@@ -664,7 +683,7 @@ function buildDetail(id) {
       `
         })
         .join('')}
-    </div>
+    </div>`}
     <div class="collab-cta">
       <div class="collab-kicker">Let's Collaborate</div>
       <h2 class="collab-title">Your brand,<br><em>legendary.</em></h2>
@@ -764,6 +783,16 @@ function openDetailDOM(id) {
   }
   // arm scroll-fade-in observer for the freshly built work rows
   armWorkRowObserver()
+  // Mark cover images as loaded once they're done so the shimmer
+  // skeleton stops animating (bg goes back to flat dark).
+  detailInner.querySelectorAll('.work-cover img').forEach((img) => {
+    if (img.complete && img.naturalWidth) {
+      img.parentElement.classList.add('is-loaded')
+    } else {
+      img.addEventListener('load', () => img.parentElement.classList.add('is-loaded'), {once: true})
+      img.addEventListener('error', () => img.parentElement.classList.add('is-loaded'), {once: true})
+    }
+  })
   // reveal first 3 rows immediately (above-the-fold) so the page
   // doesn't feel empty before user scrolls
   requestAnimationFrame(() => {
@@ -1076,6 +1105,40 @@ function currentProjectRef() {
 }
 
 document.addEventListener('keydown', (e) => {
+  // ←/→ on landing — switch active section (no modifier keys, not in input)
+  if (
+    (e.key === 'ArrowLeft' || e.key === 'ArrowRight') &&
+    !e.metaKey && !e.ctrlKey && !e.altKey &&
+    !detailPage.classList.contains('open') &&
+    !projectView.classList.contains('open')
+  ) {
+    const target = e.target
+    if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable)) {
+      e.preventDefault()
+      const dir = e.key === 'ArrowRight' ? 1 : -1
+      const next = (current + dir + SECTIONS.length) % SECTIONS.length
+      switchTo(next)
+      // Sync the bottom nav scroll on mobile
+      const card = document.querySelectorAll('.bottomnav-links .nav-card')[next]
+      if (card && window.matchMedia('(max-width: 768px)').matches) {
+        card.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'})
+      }
+      return
+    }
+  }
+  // Enter on landing — enter the active section's detail page
+  if (
+    e.key === 'Enter' &&
+    !detailPage.classList.contains('open') &&
+    !projectView.classList.contains('open')
+  ) {
+    const target = e.target
+    if (target && target.tagName === 'BUTTON') return // let button handle its own Enter
+    if (!target || (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA' && !target.isContentEditable)) {
+      const s = SECTIONS[current]
+      if (s) navigate({view: 'detail', id: s.id})
+    }
+  }
   // ESC handling — order: 404 → project → detail
   if (e.key === 'Escape') {
     const notFound = document.getElementById('not-found')
