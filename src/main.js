@@ -44,6 +44,13 @@ function coverImageUrl(project, w = 1600) {
 }
 
 /* ─── Fetch content from Sanity ─────────────────────────────────── */
+// Record the splash start time so we can enforce a minimum display
+// duration. The zoom-in animation runs 1.4s; we hold the splash for
+// at least 1.6s total so the user sees the full animation + a brief
+// settled moment before the content reveals. Even when Sanity's CDN
+// returns instantly, the splash gets its full screen time.
+const _splashStart = performance.now()
+const SPLASH_MIN_MS = 1600
 const content = await fetchContent()
 const {sections: sectionsDocs, projects: projectDocs} = content
 
@@ -2554,5 +2561,11 @@ if (SITE.websiteUrl && SITE.websiteUrlLabel) {
   }
 }
 
-/* hide loading state */
-document.body.classList.remove('loading')
+/* Hide loading state — but only after the splash has been visible for
+   the full minimum duration (so the zoom-in animation always finishes
+   gracefully even on instant CDN cache hits). */
+{
+  const elapsed = performance.now() - _splashStart
+  const remaining = Math.max(0, SPLASH_MIN_MS - elapsed)
+  setTimeout(() => document.body.classList.remove('loading'), remaining)
+}
