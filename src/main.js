@@ -2777,24 +2777,33 @@ document.body.appendChild(cursor)
 
 // Start the cursor off-screen + hidden so it doesn't park itself on the
 // avatar at viewport-center until the user actually moves the mouse.
-// The first mousemove snaps the position to the real cursor, adds the
-// `is-active` class (which fades the cursor in via CSS), then hands
-// off to the lerp loop for smooth follow.
+// First mousemove snaps it to the real pointer, adds `.is-active`
+// (CSS fade-in), and from then on every pointer event writes the
+// transform directly — no rAF, no lerp, no smoothing. The lerp loop
+// used to add ~50ms of trailing lag that read as "premium" but
+// actually just felt sluggish.
 let cx = -100,
   cy = -100
 let tx = cx,
   ty = cy
 let cursorFirstMove = true
+function writeCursorTransform() {
+  // translate3d forces a GPU compositor layer (along with the
+  // will-change/translateZ in the .cursor CSS rule) so movement
+  // never touches layout or paint.
+  cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%,-50%)`
+}
 window.addEventListener('mousemove', (e) => {
   tx = e.clientX
   ty = e.clientY
+  cx = tx
+  cy = ty
+  writeCursorTransform()
   if (cursorFirstMove) {
-    cx = tx
-    cy = ty
     cursor.classList.add('is-active')
     cursorFirstMove = false
   }
-})
+}, {passive: true})
 // Hide again if the cursor leaves the window so it doesn't sit at the
 // last known position when the user is doing something else.
 window.addEventListener('mouseout', (e) => {
@@ -2803,20 +2812,12 @@ window.addEventListener('mouseout', (e) => {
 window.addEventListener('mouseover', () => {
   if (!cursorFirstMove) cursor.classList.add('is-active')
 })
-/* Lerp factor controls how closely the cursor tracks the mouse on
-   each frame. 0.22 = noticeable "follow" lag (used to read as premium
-   but actually feels sluggish). 0.5 = snappy, still smoothed enough
-   to hide jitter on high-DPI displays.
-   Also: only run the avatar parallax when the landing is actually
-   visible. While a detail-page / project-view / manifesto overlay is
-   open, the avatar is offscreen — the parallax work was burning
-   frames for nothing. */
-const CURSOR_LERP = 0.5
+/* rAF loop now ONLY drives the avatar parallax (which still needs the
+   smoothed lerp for a natural 3D-tilt feel). The cursor itself is
+   updated synchronously inside the mousemove handler above — instant,
+   no per-frame work. Also: if no overlay is open we don't even ask
+   the parallax to run, so frames stay essentially free. */
 function rafCursor() {
-  cx += (tx - cx) * CURSOR_LERP
-  cy += (ty - cy) * CURSOR_LERP
-  cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`
-  // Skip parallax when an overlay is on top — avatar isn't visible.
   const overlayOpen =
     (detailPage && detailPage.classList.contains('open')) ||
     (projectView && projectView.classList.contains('open')) ||
