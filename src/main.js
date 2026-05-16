@@ -2837,14 +2837,35 @@ if (reduceMotion && reduceMotion.addEventListener) {
 let avatarRotX = 0, avatarRotY = 0
 let avatarTx = 0, avatarTy = 0
 let shadowShift = 0
+/* ─── Avatar parallax — perf-tuned ────────────────────────────────
+   Previously this called `document.getElementById('illustration')`
+   + `target.getBoundingClientRect()` on every animation frame. The
+   getBoundingClientRect call forces synchronous layout — calling it
+   60×/s on every mousemove was the silent cost behind the cursor
+   lag. Now: cache the element ref + the rect, recompute the rect
+   only when the window resizes or scrolls. Also: collapse the five
+   setProperty calls into one cssText write so the style invalidation
+   happens once per frame instead of five times. */
+let _avParallaxIllus = null
+let _avParallaxRect = null
+function _refreshAvParallaxRect() {
+  if (!_avParallaxIllus) _avParallaxIllus = document.getElementById('illustration')
+  if (!_avParallaxIllus) return
+  const stage = _avParallaxIllus.querySelector('.avatar-stage')
+  const target = stage || _avParallaxIllus
+  _avParallaxRect = target.getBoundingClientRect()
+}
+// Recompute on resize/scroll/orientationchange (passive — never blocks input)
+const _refreshRectPassive = () => { _avParallaxRect = null }
+window.addEventListener('resize', _refreshRectPassive, {passive: true})
+window.addEventListener('scroll', _refreshRectPassive, {passive: true})
+window.addEventListener('orientationchange', _refreshRectPassive, {passive: true})
+
 function updateAvatarParallax(mx, my) {
   if (prefersReducedMotion) return
-  const illus = document.getElementById('illustration')
-  if (!illus) return
-  const stage = illus.querySelector('.avatar-stage')
-  const target = stage || illus
-  const r = target.getBoundingClientRect()
-  if (!r.width) return
+  if (!_avParallaxRect) _refreshAvParallaxRect()
+  const r = _avParallaxRect
+  if (!r || !r.width) return
   const centerX = r.left + r.width / 2
   const centerY = r.top + r.height / 2
   // normalize cursor offset to [-1, 1] relative to viewport
@@ -2864,11 +2885,13 @@ function updateAvatarParallax(mx, my) {
   avatarTx += (targetTx - avatarTx) * 0.08
   avatarTy += (targetTy - avatarTy) * 0.08
   shadowShift += (targetShadowShift - shadowShift) * 0.07
-  illus.style.setProperty('--avatar-rx', avatarRotX.toFixed(2) + 'deg')
-  illus.style.setProperty('--avatar-ry', avatarRotY.toFixed(2) + 'deg')
-  illus.style.setProperty('--avatar-tx', avatarTx.toFixed(1) + 'px')
-  illus.style.setProperty('--avatar-ty', avatarTy.toFixed(1) + 'px')
-  illus.style.setProperty('--shadow-shift', shadowShift.toFixed(1))
+  // Single batched style write — one invalidation per frame instead of five.
+  _avParallaxIllus.style.cssText =
+    `--avatar-rx:${avatarRotX.toFixed(2)}deg;` +
+    `--avatar-ry:${avatarRotY.toFixed(2)}deg;` +
+    `--avatar-tx:${avatarTx.toFixed(1)}px;` +
+    `--avatar-ty:${avatarTy.toFixed(1)}px;` +
+    `--shadow-shift:${shadowShift.toFixed(1)};`
 }
 
 rafCursor()

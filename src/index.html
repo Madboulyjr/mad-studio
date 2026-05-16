@@ -313,10 +313,20 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   width:1.05rem;height:1.05rem;
   pointer-events:none;
   z-index:9999;
-  mix-blend-mode:difference;
+  /* NOTE: previously used `mix-blend-mode:difference` for auto-contrast
+     against any background. It looks great but is the #1 cause of laggy
+     custom cursors — every frame the compositor has to re-blend the
+     cursor pixels against the entire stacked viewport underneath.
+     Removed in favor of solid colors that flip per-palette via
+     `.cursor-ring{background: …}` overrides (cream on dark sections,
+     ink on cream/light sections — see further down). */
   display:flex;
   align-items:center;
   justify-content:center;
+  /* Promote to its own compositor layer so cursor movement never
+     invalidates the rest of the page. */
+  will-change:transform;
+  transform:translateZ(0);
   /* Hidden until the first real mousemove snaps it to the user's
      actual pointer position. JS adds .is-active on first move (and
      re-adds on mouseover after a mouseout) — fixes the "ghost cursor
