@@ -225,7 +225,6 @@ const PAGES = Object.fromEntries(
         works,
         musicPlatforms: s.musicPlatforms || [],
         instagramMusic: s.instagramMusic || null,
-        typography: s.typography || null,
         featuredRelease: s.featuredRelease || null,
         releases: s.releases || [],
       },
@@ -249,43 +248,6 @@ function findNextProject(sectionId, projectSlug) {
 }
 
 const SITE = content.siteSettings || {}
-
-/* ─── TYPOGRAPHY — global default + per-section override ────────────
- * Reads weight values from Sanity (siteSettings.typography for global
- * + section.typography per-section) and applies them as CSS custom
- * properties on the appropriate container. CSS selectors read those
- * variables via `var(--mad-heading-weight, 900)` so the hardcoded
- * defaults still hold when no override is set.
- *
- * Defaults (kept in sync with CSS fallbacks):
- *   --mad-heading-weight  → 900
- *   --mad-body-weight     → 300
- *   --mad-kicker-weight   → 700
- */
-const TYPO_DEFAULTS = {headingWeight: '900', bodyWeight: '300', kickerWeight: '700'}
-
-function resolveTypography(perSectionOverride) {
-  const global = SITE.typography || {}
-  const local = perSectionOverride || {}
-  return {
-    headingWeight: local.headingWeight || global.headingWeight || TYPO_DEFAULTS.headingWeight,
-    bodyWeight: local.bodyWeight || global.bodyWeight || TYPO_DEFAULTS.bodyWeight,
-    kickerWeight: local.kickerWeight || global.kickerWeight || TYPO_DEFAULTS.kickerWeight,
-  }
-}
-
-function applyTypography(el, perSectionOverride) {
-  if (!el) return
-  const t = resolveTypography(perSectionOverride)
-  el.style.setProperty('--mad-heading-weight', t.headingWeight)
-  el.style.setProperty('--mad-body-weight', t.bodyWeight)
-  el.style.setProperty('--mad-kicker-weight', t.kickerWeight)
-}
-
-// Apply the global defaults on the body once — landing page + manifesto
-// + any container without its own override inherits these via the
-// CSS cascade.
-applyTypography(document.body, null)
 
 /* ─── Landing page state & rendering ─────────────────────────────── */
 let current = 0
@@ -1533,25 +1495,6 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
 }
 
 /**
- * Caption helper — splits on the first em-dash. The text BEFORE the
- * dash is wrapped in <em> (rendered as Newsreader italic via CSS).
- * The text AFTER is body, with any remaining em-dashes flattened to
- * spaces. Falls through cleanly if no em-dash exists.
- *
- *   "Ask Google — the launching campaign…"
- *     → "<em>Ask Google</em> the launching campaign…"
- */
-function formatCaption(raw) {
-  const s = String(raw || '').trim()
-  if (!s) return ''
-  const m = s.match(/^(.+?)\s+—\s+(.+)$/s)
-  if (!m) return s.replace(/\s+—\s+/g, ' ')
-  const accent = m[1].trim()
-  const body = m[2].replace(/\s+—\s+/g, ' ').trim()
-  return `<em>${accent}</em> ${body}`
-}
-
-/**
  * Gold "award seal" SVG generator — sits in the top-right corner of a
  * project's work-row cover when the project has caseStudy.awards.
  *
@@ -1718,12 +1661,10 @@ function buildDetail(id) {
       : `<div class="works-list">
       ${works
         .map((w, i) => {
-          // Caption typography: the FIRST phrase (before the first em-
-          // dash) is treated as a "campaign name" accent → wrapped in
-          // <em> so it renders in Newsreader italic. The rest is
-          // body text in Roboto Light. Subsequent em-dashes are still
-          // stripped (legacy "Brief — About — Approach" format).
-          const cap = formatCaption(w.caption || '')
+          // Caption is treated as ONE paragraph now. If it contains the
+          // legacy "Brief — About — Approach" format we just join the
+          // last two parts as a single readable paragraph.
+          const cap = (w.caption || '').replace(/\s+—\s+/g, ' ').trim()
           const num = String(i + 1).padStart(2, '0')
           // Awards badge — parses caseStudy.awards strings for
           // "shortlist"/"nominated"/"finalist" keywords to decide
@@ -1856,9 +1797,6 @@ function openDetailDOM(id) {
   detailPage.classList.add('open')
   detailPage.setAttribute('aria-hidden', 'false')
   detailPage.dataset.sectionId = id
-  // Per-section typography override (falls back to global default
-  // when the section doesn't set one)
-  applyTypography(detailPage, p.typography)
   document.body.style.overflow = 'hidden'
   setEnterPillVisible(false)
   // reset progress bar to 0 on fresh open
@@ -2103,7 +2041,7 @@ function buildProject(works, idx, sectionId) {
       <h1 class="p-title">${w.title}</h1>
       ${credits ? `<div class="p-credits">${credits}${cs.client ? ` · for <strong>${cs.client}</strong>` : ''}</div>` : ''}
       <div class="p-meta-row">
-        ${w.caption ? `<p class="p-caption">${formatCaption(w.caption)}</p>` : '<div></div>'}
+        ${w.caption ? `<p class="p-caption">${w.caption}</p>` : '<div></div>'}
         <div class="p-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
       </div>
     </div>
@@ -2155,9 +2093,6 @@ function openProjectDOM(works, idx, sectionId) {
     projectView.classList.add('open')
     projectView.setAttribute('aria-hidden', 'false')
     projectView.dataset.sectionId = sectionId
-    // Project pages inherit their parent section's typography override
-    const section = PAGES[sectionId]
-    applyTypography(projectView, section && section.typography)
     projectView.scrollTo(0, 0)
     projectViewInner.classList.remove('is-fading')
     if (projectProgressUpdate) projectProgressUpdate()
@@ -2856,25 +2791,12 @@ window.addEventListener('mouseout', (e) => {
 window.addEventListener('mouseover', () => {
   if (!cursorFirstMove) cursor.classList.add('is-active')
 })
-/* Lerp factor controls how closely the cursor tracks the mouse on
-   each frame. 0.22 = noticeable "follow" lag (used to be premium-feel
-   but actually reads as sluggish). 0.5 = snappy, still smoothed
-   enough to hide jitter on high-DPI displays.
-   Also: only run the avatar parallax when the landing is actually
-   visible. While a detail-page / project-view / manifesto / admin
-   overlay is open, the avatar's offscreen — the parallax work was
-   burning frames for nothing. */
-const CURSOR_LERP = 0.5
 function rafCursor() {
-  cx += (tx - cx) * CURSOR_LERP
-  cy += (ty - cy) * CURSOR_LERP
+  cx += (tx - cx) * 0.22
+  cy += (ty - cy) * 0.22
   cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`
-  // Skip parallax when an overlay is on top — avatar isn't visible
-  const overlayOpen =
-    (detailPage && detailPage.classList.contains('open')) ||
-    (projectView && projectView.classList.contains('open')) ||
-    (_manifestoEl && _manifestoEl.classList && _manifestoEl.classList.contains('open'))
-  if (!overlayOpen) updateAvatarParallax(tx, ty)
+  // 3D-tilt parallax on illustration following cursor
+  updateAvatarParallax(tx, ty)
   requestAnimationFrame(rafCursor)
 }
 

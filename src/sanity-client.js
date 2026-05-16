@@ -19,8 +19,7 @@ const QUERY = `{
   "siteSettings": *[_type == "siteSettings"][0]{
     tagline, websiteUrl, websiteUrlLabel, contactEmail, socials,
     manifestoTitle, manifestoBody, manifestoStats,
-    awardsWon, awardsShortlisted, pressFeatures,
-    typography
+    awardsWon, awardsShortlisted, pressFeatures
   },
   "sections": *[_type == "section"] | order(order asc){
     "slug": slug.current,
@@ -29,7 +28,6 @@ const QUERY = `{
     kicker, manifesto, lead, agencies, worksLabel, worksTitle,
     illustrationSvg,
     musicPlatforms, instagramMusic,
-    typography,
     "featuredRelease": featuredRelease{
       kicker, title, subtitle, year, label,
       "coverUrl": cover.asset->url,

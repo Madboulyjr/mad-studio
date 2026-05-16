@@ -704,63 +704,11 @@ function renderSectionForm(s) {
 
       ${isMusic ? renderMusicFields(s) : ''}
 
-      ${renderTypographyFields(s)}
-
       <div class="adm-form-actions">
         <button type="submit" class="adm-save">Save changes</button>
         <span class="adm-form-status" id="adm-form-status"></span>
       </div>
     </form>
-  `
-}
-
-/* ─── TYPOGRAPHY OVERRIDES (per-section) ────────────────────────────
- * Lets Ali tune the weight of headings, body and kicker text per
- * section without touching CSS. Leave blank to inherit the global
- * Site Settings defaults. Front-end injects these as CSS custom
- * properties on the detail-page / project-view container. */
-function renderTypographyFields(s) {
-  const t = s.typography || {}
-  const opt = (val, options, current) =>
-    options
-      .map(([v, label]) => `<option value="${v}" ${current === v ? 'selected' : ''}>${label}</option>`)
-      .join('')
-
-  return `
-    <fieldset class="adm-fields">
-      <legend>Typography (optional · per-section overrides)</legend>
-      <p class="adm-fields-hint">
-        Leave any field blank to inherit the global default. Overrides apply to this
-        section's detail page AND every project page inside it.
-      </p>
-
-      <label>Heading weight (manifesto · section title · project title)
-        <select class="adm-input" name="typo-headingWeight">
-          <option value="">— inherit global —</option>
-          ${opt('headingWeight',
-            [['300','300 · Light'],['400','400 · Regular'],['500','500 · Medium'],['700','700 · Bold'],['900','900 · Black']],
-            t.headingWeight || '')}
-        </select>
-      </label>
-
-      <label>Body weight (lead paragraphs, captions)
-        <select class="adm-input" name="typo-bodyWeight">
-          <option value="">— inherit global —</option>
-          ${opt('bodyWeight',
-            [['300','300 · Light'],['400','400 · Regular'],['500','500 · Medium'],['700','700 · Bold']],
-            t.bodyWeight || '')}
-        </select>
-      </label>
-
-      <label>Kicker weight (small caps labels, year, section labels)
-        <select class="adm-input" name="typo-kickerWeight">
-          <option value="">— inherit global —</option>
-          ${opt('kickerWeight',
-            [['500','500 · Medium'],['700','700 · Bold']],
-            t.kickerWeight || '')}
-        </select>
-      </label>
-    </fieldset>
   `
 }
 
@@ -1471,21 +1419,6 @@ function collectSectionPayload(data) {
     agencies: splitCsv(data.get('agencies')),
     worksLabel: data.get('worksLabel') || '',
     worksTitle: data.get('worksTitle') || '',
-  }
-
-  // Typography overrides — only include set values; if all three are
-  // blank, send null to clear the object on Sanity so the section
-  // cleanly inherits the global default again.
-  const headW = (data.get('typo-headingWeight') || '').trim()
-  const bodyW = (data.get('typo-bodyWeight') || '').trim()
-  const kickW = (data.get('typo-kickerWeight') || '').trim()
-  if (headW || bodyW || kickW) {
-    payload.typography = {}
-    if (headW) payload.typography.headingWeight = headW
-    if (bodyW) payload.typography.bodyWeight = bodyW
-    if (kickW) payload.typography.kickerWeight = kickW
-  } else {
-    payload.typography = null
   }
 
   // ─── MAD+ music fields ──────────────────────────────────────

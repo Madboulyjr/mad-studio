@@ -305,56 +305,6 @@ export const section = {
         },
       ],
     },
-
-    /* ─── TYPOGRAPHY OVERRIDES (optional, override siteSettings.typography per-section) ─── */
-    {
-      name: 'typography',
-      title: 'Typography overrides (per-section)',
-      type: 'object',
-      description:
-        'Optional — overrides the global Site Settings typography for this section only. Leave blank to inherit the global default.',
-      options: {collapsible: true, collapsed: true},
-      fields: [
-        {
-          name: 'headingWeight',
-          title: 'Heading weight',
-          type: 'string',
-          options: {
-            list: [
-              {title: '300 · Light', value: '300'},
-              {title: '400 · Regular', value: '400'},
-              {title: '500 · Medium', value: '500'},
-              {title: '700 · Bold', value: '700'},
-              {title: '900 · Black', value: '900'},
-            ],
-          },
-        },
-        {
-          name: 'bodyWeight',
-          title: 'Body weight',
-          type: 'string',
-          options: {
-            list: [
-              {title: '300 · Light', value: '300'},
-              {title: '400 · Regular', value: '400'},
-              {title: '500 · Medium', value: '500'},
-              {title: '700 · Bold', value: '700'},
-            ],
-          },
-        },
-        {
-          name: 'kickerWeight',
-          title: 'Kicker weight',
-          type: 'string',
-          options: {
-            list: [
-              {title: '500 · Medium', value: '500'},
-              {title: '700 · Bold', value: '700'},
-            ],
-          },
-        },
-      ],
-    },
   ],
   orderings: [
     {title: 'Display order', name: 'order', by: [{field: 'order', direction: 'asc'}]},

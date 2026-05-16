@@ -21,7 +21,6 @@ const ALLOWED = [
   'instagramMusic',
   'featuredRelease',
   'releases',
-  'typography',
 ]
 
 function pick(obj, keys) {
