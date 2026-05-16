@@ -1810,10 +1810,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
    classes that no longer exist in markup and the only consumers of
    Newsreader 300 / Roboto 200, which we no longer load. */
 .click-hint{
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:400;
   font-size:1.6rem;
+  font-style:italic;
 }
 
 /* NAV CARDS */
@@ -2301,7 +2301,10 @@ body{
   color:var(--accent);
   padding:0.42rem 0.85rem;
   border-radius:999px;
-  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  /* Speech-bubble cycles through full short phrases like "Coffee: too
+     many.", "Ask me anything." — those are sentences, not 1-2 word
+     accents, so they go in Roboto per the type rules. */
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.82rem;letter-spacing:-0.005em;line-height:1.2;
   white-space:normal;text-align:center;
   box-shadow:
@@ -2647,7 +2650,7 @@ body{
 
 /* lead with inline path chip */
 .nf-lead{
-  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;color:var(--accent);
   opacity:0.85;margin:0 0 4rem;max-width:48rem;
 }
@@ -3093,12 +3096,15 @@ body{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   letter-spacing:-0.01em;color:var(--cta);
 }
+/* Lead paragraph stays in Roboto (sans). Only the first-letter drop
+   cap gets Newsreader italic — that's the editorial accent, the
+   rest is body text and must stay sans. */
 .detail-lead{
-  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
   font-size:1.5rem;line-height:1.6;
-  color:var(--accent);opacity:0.85;
+  color:var(--accent);opacity:0.92;
 }
-.detail-lead strong{font-family:'Roboto', system-ui, sans-serif;font-weight:700;color:var(--accent)}
+.detail-lead strong{font-weight:700;color:var(--accent)}
 .detail-lead::first-letter{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   font-size:5rem;line-height:0.85;color:var(--cta);
@@ -3470,7 +3476,7 @@ body{
   color:var(--accent);margin:0 0 1.5rem;
 }
 .works-empty-lead{
-  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;
   color:var(--accent);opacity:0.85;
   margin:0 0 2.2rem;
@@ -3551,14 +3557,15 @@ body{
 }
 
 /* ─── CASE STUDY BLOCKS — render between hero and gallery ─── */
-/* Credits line: role + agency, sits under title */
+/* Credits line: role + agency. Roboto regular (was Newsreader italic
+   — but it's a one-line sentence, not an accent phrase, so it belongs
+   in sans per the type rules). */
 .p-credits{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:1.3rem;line-height:1.4;color:var(--accent);
   opacity:0.75;margin:0 0 1.5rem;
 }
 .p-credits strong{
-  font-family:'Roboto', system-ui, sans-serif;font-style:normal;
   font-weight:600;color:var(--cta);opacity:1;
 }
 /* Outcome stat row — biggest credibility unlock per case-study research */
@@ -3582,7 +3589,7 @@ body{
   margin-bottom:0.6rem;
 }
 .p-stat-label{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:1.05rem;line-height:1.35;color:var(--accent);opacity:0.85;
 }
 /* Generic case-study text block (problem, constraints, etc.) */
@@ -3593,7 +3600,7 @@ body{
   color:var(--accent-soft);margin-bottom:1rem;
 }
 .p-block-body{
-  font-family:'Newsreader',serif;font-weight:400;font-style:normal;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;color:var(--accent);
   opacity:0.9;max-width:48rem;margin:0;
 }
