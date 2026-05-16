@@ -2803,12 +2803,25 @@ window.addEventListener('mouseout', (e) => {
 window.addEventListener('mouseover', () => {
   if (!cursorFirstMove) cursor.classList.add('is-active')
 })
+/* Lerp factor controls how closely the cursor tracks the mouse on
+   each frame. 0.22 = noticeable "follow" lag (used to read as premium
+   but actually feels sluggish). 0.5 = snappy, still smoothed enough
+   to hide jitter on high-DPI displays.
+   Also: only run the avatar parallax when the landing is actually
+   visible. While a detail-page / project-view / manifesto overlay is
+   open, the avatar is offscreen — the parallax work was burning
+   frames for nothing. */
+const CURSOR_LERP = 0.5
 function rafCursor() {
-  cx += (tx - cx) * 0.22
-  cy += (ty - cy) * 0.22
+  cx += (tx - cx) * CURSOR_LERP
+  cy += (ty - cy) * CURSOR_LERP
   cursor.style.transform = `translate(${cx}px, ${cy}px) translate(-50%,-50%)`
-  // 3D-tilt parallax on illustration following cursor
-  updateAvatarParallax(tx, ty)
+  // Skip parallax when an overlay is on top — avatar isn't visible.
+  const overlayOpen =
+    (detailPage && detailPage.classList.contains('open')) ||
+    (projectView && projectView.classList.contains('open')) ||
+    (_manifestoEl && _manifestoEl.classList && _manifestoEl.classList.contains('open'))
+  if (!overlayOpen) updateAvatarParallax(tx, ty)
   requestAnimationFrame(rafCursor)
 }
 
