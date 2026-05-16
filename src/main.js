@@ -1682,11 +1682,13 @@ function buildDetail(id) {
           return `
         <article class="work-row" data-idx="${i}">
           <div class="work-cover">
-            ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
-            ${badgeHTML}
-            <div class="work-cover-overlay" aria-hidden="true">
-              <span class="work-open-pill">Open Case ↗</span>
+            <div class="work-cover-frame">
+              ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
+              <div class="work-cover-overlay" aria-hidden="true">
+                <span class="work-open-pill">Open Case ↗</span>
+              </div>
             </div>
+            ${badgeHTML}
           </div>
           <div class="work-info">
             <div class="work-info-top">

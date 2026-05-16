@@ -3168,9 +3168,18 @@ body{
    slightly lighter than page bg so very-dark Behance-screenshot covers
    still read as a card, not a void. While the image loads, a subtle
    shimmer skeleton plays on the background — better than a flat block. */
+/* .work-cover is now an UN-CLIPPED container so the award seal can
+   visually overflow into the page margin. The actual image clipping +
+   rounded corners + drop shadow + skeleton shimmer all live on the
+   inner .work-cover-frame. The seal sits as a direct child of
+   .work-cover (sibling of the frame), so it isn't subject to the
+   frame's overflow:hidden. */
 .work-row .work-cover{
   position:relative;
   aspect-ratio:16/10;
+}
+.work-row .work-cover-frame{
+  position:absolute;inset:0;
   background:linear-gradient(
     100deg,
     #1A1815 30%,
@@ -3190,13 +3199,14 @@ body{
   100%{background-position:-100% 0}
 }
 /* Stop shimmer once the image is loaded — img dispatches `load` event,
-   we add .is-loaded via JS in main.js and the bg returns to flat. */
-.work-row .work-cover.is-loaded{
+   main.js adds .is-loaded to img.parentElement (.work-cover-frame). */
+.work-row .work-cover-frame.is-loaded,
+.work-row .work-cover.is-loaded .work-cover-frame{
   animation:none;
   background:#1A1815;
 }
 @media (prefers-reduced-motion: reduce){
-  .work-row .work-cover{animation:none}
+  .work-row .work-cover-frame{animation:none}
 }
 .work-row .work-cover img{
   width:100%;height:100%;object-fit:cover;display:block;
@@ -3254,18 +3264,23 @@ body{
    <defs> via different gradient stops; the wrapper here just sizes
    and positions. */
 .work-row .work-award-seal{
-  position:absolute;top:1.1rem;right:1.1rem;
+  position:absolute;
+  /* Straddle the cover's top-right corner: pulled OUTSIDE the frame
+     by 30% of its own size so roughly half sits over the artwork,
+     half over the page background. Reads more like a stamped seal
+     pinned to the corner than a UI badge floating inside. */
+  top:-1.6rem;right:-1.6rem;
   display:block;
   width:5.6rem;height:5.6rem;
-  /* Anchor scaling at the top-right so the seal stays in its corner
-     as it grows on hover. */
-  transform-origin:100% 0%;
-  transform:rotate(-8deg) scale(0.6);
+  /* Anchor scaling at the centre now (no longer top-right) since the
+     seal already lives at the corner edge — scale grows symmetrically. */
+  transform-origin:50% 50%;
+  transform:rotate(-8deg) scale(0.7);
   pointer-events:auto;
-  z-index:4;
+  z-index:5; /* above frame's box-shadow */
   transition:transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  filter:drop-shadow(0 6px 14px rgba(0,0,0,0.4))
-         drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,0.45))
+         drop-shadow(0 2px 4px rgba(0,0,0,0.55));
   cursor:default;
 }
 .work-row .work-award-seal svg{
@@ -3305,22 +3320,23 @@ body{
   .work-row:hover .work-award-seal .seal-mark{transition:none}
 }
 
-/* Tablet + mobile — slightly smaller intrinsic box, same scale-up
-   on hover. */
+/* Tablet + mobile — slightly smaller intrinsic box; corner-straddle
+   offsets shrink proportionally so the seal stays anchored to the
+   cover edge. */
 @media (max-width: 900px){
   .work-row .work-award-seal{
     width:5rem;height:5rem;
-    top:0.85rem;right:0.85rem;
+    top:-1.4rem;right:-1.4rem;
   }
 }
 @media (max-width: 480px){
   .work-row .work-award-seal{
     width:4.2rem;height:4.2rem;
-    top:0.7rem;right:0.7rem;
+    top:-1.1rem;right:-1.1rem;
     /* On a phone, "hover" is rare — touch is the primary interaction.
-       Keep the seal at its full-size rest so users can read the rim
+       Keep the seal at near-full rest size so users can read the rim
        text without needing to long-press. */
-    transform:rotate(-4deg) scale(0.85);
+    transform:rotate(-4deg) scale(0.9);
   }
   .work-row .work-award-seal .seal-rim{opacity:0.95}
 }
