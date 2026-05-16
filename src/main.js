@@ -1577,10 +1577,35 @@ function buildDetail(id) {
           // last two parts as a single readable paragraph.
           const cap = (w.caption || '').replace(/\s+—\s+/g, ' ').trim()
           const num = String(i + 1).padStart(2, '0')
+          // Awards badge — parses caseStudy.awards strings for
+          // "shortlist"/"nominated"/"finalist" keywords to decide
+          // status. Won + shortlisted are merged into one badge.
+          const allAwards = (w.caseStudy && Array.isArray(w.caseStudy.awards)) ? w.caseStudy.awards : []
+          const wonAwards = allAwards.filter((a) => !/shortlist|nominat|finalist/i.test(String(a)))
+          const slAwards = allAwards.filter((a) => /shortlist|nominat|finalist/i.test(String(a)))
+          const badgeHTML = allAwards.length
+            ? `<span class="work-award-badge${wonAwards.length ? ' is-won' : ' is-shortlisted'}" aria-label="${
+                wonAwards.length && slAwards.length
+                  ? `${wonAwards.length} awarded, ${slAwards.length} shortlisted`
+                  : wonAwards.length
+                    ? `${wonAwards.length} award${wonAwards.length > 1 ? 's' : ''}`
+                    : `${slAwards.length} shortlisted`
+              }" title="${allAwards.map((a) => String(a).replace(/"/g, '&quot;')).join(' · ')}">
+                <span class="work-award-icon" aria-hidden="true">${wonAwards.length ? '★' : '○'}</span>
+                <span class="work-award-text">${
+                  wonAwards.length && slAwards.length
+                    ? `${wonAwards.length}+${slAwards.length}`
+                    : wonAwards.length
+                      ? `${wonAwards.length > 1 ? wonAwards.length + 'x ' : ''}Awarded`
+                      : `${slAwards.length > 1 ? slAwards.length + 'x ' : ''}Shortlist`
+                }</span>
+              </span>`
+            : ''
           return `
         <article class="work-row" data-idx="${i}">
           <div class="work-cover">
             ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
+            ${badgeHTML}
             <div class="work-cover-overlay" aria-hidden="true">
               <span class="work-open-pill">Open Case ↗</span>
             </div>
@@ -2020,19 +2045,23 @@ detailInner.addEventListener('click', (e) => {
   if (!p || !p.works.length) return
   const slug = p.works[idx] && p.works[idx].slug
   if (!slug) return
-  // Shared-element-feel transition: briefly expand+fade the clicked row
-  // before navigating, so the user perceives "the row IS becoming the
-  // project page". 200ms total. Uses View Transitions API where
-  // available, falls back to CSS animation otherwise.
+  // Shared-element-feel transition (cleaner hand-off): the cover zooms
+  // 1.06× + the row's info copy fades up + the project-view slides in
+  // from below — all on the SAME 0.28s ease-out curve so the three
+  // movements read as one coordinated gesture. Total perceived
+  // hand-off: ~300ms. Uses View Transitions API where available,
+  // falls back to the synchronized CSS animation otherwise.
   const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   const go = () => navigate({view: 'project', id, projectSlug: slug})
   if (reduced) return go()
   if (typeof document.startViewTransition === 'function') {
     document.startViewTransition(go)
   } else {
-    // Manual fallback: add class, wait 200ms, navigate
     row.classList.add('is-entering')
-    setTimeout(go, 220)
+    // Match the 0.28s keyframe + a 20ms cushion so the project view's
+    // own translateY(100%→0) animation can begin while the cover
+    // finishes its zoom — feels like one motion, not two.
+    setTimeout(go, 260)
   }
 })
 

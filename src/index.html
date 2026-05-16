@@ -1619,13 +1619,21 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   opacity:0;visibility:hidden;pointer-events:none;
-  transform:translateY(100%);
-  transition:opacity 0.55s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s linear 0.7s;
+  /* Reduced from translateY(100%) → translateY(8%) so the slide-in is
+     shorter + crisper. Combined with the faster duration (0.7s → 0.42s)
+     this syncs with the work-row entry animation (0.28s) — total
+     hand-off ~300ms instead of ~900ms before. */
+  transform:translateY(8%);
+  transition:opacity 0.35s cubic-bezier(0.32, 0.72, 0.16, 1),
+             transform 0.42s cubic-bezier(0.32, 0.72, 0.16, 1),
+             visibility 0s linear 0.42s;
   padding:3rem 4.29rem 0;
 }
 .project-view.open{
   opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);
-  transition:opacity 0.55s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1), visibility 0s;
+  transition:opacity 0.35s cubic-bezier(0.32, 0.72, 0.16, 1),
+             transform 0.42s cubic-bezier(0.32, 0.72, 0.16, 1),
+             visibility 0s;
 }
 .project-view .detail-topbar{margin-bottom:2rem}
 
@@ -3228,6 +3236,53 @@ body{
   font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
 }
 
+/* AWARD BADGE — top-right corner of the cover. Shows only when the
+   project has caseStudy.awards. Won = solid red (★), shortlisted =
+   outlined (○). Hover-stable: doesn't change on row hover so the
+   eye keeps tracking it. */
+.work-row .work-award-badge{
+  position:absolute;top:0.85rem;right:0.85rem;
+  display:inline-flex;align-items:center;gap:0.35rem;
+  padding:0.38rem 0.8rem;
+  font-family:'IBM Plex Mono',monospace;font-weight:600;
+  font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;
+  border-radius:999px;
+  pointer-events:auto; /* allow hover for the tooltip via title attr */
+  z-index:3;
+  /* Subtle drop so it floats above the cover image */
+  box-shadow:0 4px 12px rgba(0,0,0,0.35);
+  transition:transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+             background 0.2s ease;
+  cursor:default;
+}
+.work-row .work-award-badge.is-won{
+  background:#FF313B;
+  color:#F5F0E1;
+  border:0.06rem solid rgba(255,255,255,0.18);
+}
+.work-row .work-award-badge.is-shortlisted{
+  background:rgba(10,10,10,0.7);
+  -webkit-backdrop-filter:blur(16px) saturate(140%);
+  backdrop-filter:blur(16px) saturate(140%);
+  color:#F5F0E1;
+  border:0.08rem solid rgba(245,240,225,0.5);
+}
+.work-row .work-award-icon{
+  font-size:0.82rem;line-height:1;
+  /* Pull the star a hair up so it visually centers on the cap height */
+  margin-top:-0.05rem;
+}
+.work-row:hover .work-award-badge{
+  transform:scale(1.05);
+}
+@media (max-width: 768px){
+  .work-row .work-award-badge{
+    top:0.6rem;right:0.6rem;
+    padding:0.3rem 0.65rem;
+    font-size:0.6rem;letter-spacing:0.12em;
+  }
+}
+
 /* INFO — clean stacked typographic block */
 .work-row .work-info{
   display:flex;flex-direction:column;
@@ -3287,23 +3342,52 @@ body{
   opacity:1;color:var(--cta);transform:translateX(4px);
 }
 
-/* When user clicks a work-row, brief "expand outward" animation
-   suggests the row is morphing into the project page underneath.
-   Used as fallback when View Transitions API isn't available. */
+/* CLEANER ENTRY TRANSITION ─────────────────────────────────────────
+   When the user clicks a work-row:
+     1. The clicked row's COVER zooms (1 → 1.08) + neighboring rows dim
+     2. The row's info copy fades out
+     3. The project-view slides up from below to take over
+   Total perceived hand-off: ~280ms. Faster than before, more
+   coordinated, less "stuff dies first" — the cover almost looks like
+   it lands into the project hero. */
 .work-row.is-entering{
-  animation:workRowEnter 0.22s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  animation:workRowEnter 0.28s cubic-bezier(0.32, 0.72, 0.16, 1) forwards;
   pointer-events:none;
+  z-index:2;
+  position:relative;
+}
+.work-row.is-entering .work-cover{
+  /* Lift the cover toward camera while the rest of the row recedes */
+  transform:scale(1.025);
+  transition:transform 0.28s cubic-bezier(0.32, 0.72, 0.16, 1);
+  box-shadow:
+    inset 0 0 0 0.06rem rgba(245,240,225,0.12),
+    0 1.2rem 3rem rgba(0,0,0,0.55);
 }
 .work-row.is-entering .work-cover img{
-  animation:workRowEnterImg 0.22s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+  animation:workRowEnterImg 0.28s cubic-bezier(0.32, 0.72, 0.16, 1) forwards;
+}
+.work-row.is-entering .work-info{
+  /* Info text fades + slides up first — feels like it gets out of the
+     way of the cover that's about to expand into the project view */
+  animation:workRowInfoOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.work-row.is-entering .work-award-badge{
+  /* Badge floats off with the cover (no separate fade — keeps the
+     visual chain clean) */
+  animation:none;
 }
 @keyframes workRowEnter{
-  0%{opacity:1;transform:translateY(0) scale(1)}
-  100%{opacity:0;transform:translateY(-1.2rem) scale(1.03)}
+  0%{opacity:1}
+  100%{opacity:0.92}
 }
 @keyframes workRowEnterImg{
   0%{transform:scale(1)}
-  100%{transform:scale(1.08)}
+  100%{transform:scale(1.06)}
+}
+@keyframes workRowInfoOut{
+  0%{opacity:1;transform:translateY(0)}
+  100%{opacity:0;transform:translateY(-0.6rem)}
 }
 
 /* View Transitions API support (modern browsers) — names the cover
