@@ -2338,52 +2338,22 @@ function registerAvatarClick() {
   return false
 }
 
-/* Cartoon duck quack — sawtooth carrier swept downward with a fast
-   sine vibrato to get the buzzy "qua-ack" wobble. Lowpass filter
-   takes the harsh edge off. ~220ms. Web Audio synth → no MP3 asset
-   to ship. Pairs with the duck cursor + plays on every avatar tap. */
+/* Real-recording duck quack — Ali dropped /public/quack.mp3 (a clean
+   HD sound-effect clip). Plays via a single shared Audio element so
+   rapid avatar taps just rewind + replay the same sample (no overlap
+   stacking, no Audio Object per click). Falls back silently if the
+   file fails to load. */
+let _quackAudio = null
 function playDuckQuack() {
   try {
-    const Ctx = window.AudioContext || window.webkitAudioContext
-    if (!Ctx) return
-    if (!AVATAR_EE.audioCtx) AVATAR_EE.audioCtx = new Ctx()
-    const ctx = AVATAR_EE.audioCtx
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
-    const t0 = ctx.currentTime + 0.01
-    const dur = 0.22
-
-    // Buzzy carrier — sawtooth from 700Hz → 220Hz
-    const osc = ctx.createOscillator()
-    osc.type = 'sawtooth'
-    osc.frequency.setValueAtTime(700, t0)
-    osc.frequency.linearRampToValueAtTime(220, t0 + dur)
-
-    // Fast vibrato (LFO) for the "wobble" that reads as a quack
-    const lfo = ctx.createOscillator()
-    lfo.type = 'sine'
-    lfo.frequency.value = 28
-    const lfoGain = ctx.createGain()
-    lfoGain.gain.value = 80
-    lfo.connect(lfoGain).connect(osc.frequency)
-
-    // Lowpass to soften the sawtooth's harshness — also swept down
-    const lp = ctx.createBiquadFilter()
-    lp.type = 'lowpass'
-    lp.frequency.setValueAtTime(2500, t0)
-    lp.frequency.exponentialRampToValueAtTime(900, t0 + dur)
-    lp.Q.value = 3
-
-    // Amp envelope — quick attack, exponential decay
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0, t0)
-    gain.gain.linearRampToValueAtTime(0.22, t0 + 0.02)
-    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur)
-
-    osc.connect(lp).connect(gain).connect(ctx.destination)
-    osc.start(t0)
-    lfo.start(t0)
-    osc.stop(t0 + dur + 0.05)
-    lfo.stop(t0 + dur + 0.05)
+    if (!_quackAudio) {
+      _quackAudio = new Audio('/quack.mp3')
+      _quackAudio.preload = 'auto'
+      _quackAudio.volume = 0.85
+    }
+    _quackAudio.currentTime = 0
+    const p = _quackAudio.play()
+    if (p && typeof p.catch === 'function') p.catch(() => {})
   } catch (e) {}
 }
 
