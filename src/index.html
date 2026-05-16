@@ -216,7 +216,7 @@ body:not(.loading) .splash{
   transform:translateY(0.6rem);
 }
 .logo-studio{
-  font-family:'Newsreader',serif;
+  font-family:'Newsreader',serif;text-transform:capitalize;
   font-style:italic;
   font-weight:400;
   font-size:3.32rem;
@@ -226,16 +226,16 @@ body:not(.loading) .splash{
 }
 .header-right{
   text-align:right;
-  line-height:1.15;
-}
-.tagline{
+  lin
   display:block;
-  font-family:'Newsreader',serif;
+  font-family:'Newsreader',serif;text-transform:capitalize;
   font-style:italic;
   font-weight:400;
   font-size:1.85rem;
   color:var(--accent);
   transition:color var(--dur) ease;
+  margin-bottom:-0.2rem;
+
   margin-bottom:-0.2rem;
 }
 .website{
@@ -277,12 +277,13 @@ body:not(.loading) .splash{
   font-size:2.9rem;
   line-height:1.4;
   color:var(--accent);
-  transition:color var(--dur) ease, opacity .18s ease;
-}
-.subtitle em{
-  font-family:'Newsreader',serif;
+  transition:color
+  font-family:'Newsreader',serif;text-transform:capitalize;
   font-style:italic;
   font-weight:500;
+  font-size:3.9rem;
+  line-height:1;
+nt-weight:500;
   font-size:3.9rem;
   line-height:1;
 }
@@ -416,10 +417,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .detail-logo{
   display:flex;align-items:baseline;gap:0.7rem;
   color:var(--accent);
-}
-.logo-svg-d{height:3.2rem;width:auto;color:var(--accent)}
-.detail-logo .sub{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:2.2rem;letter-spacing:-0.01em;line-height:1;color:var(--accent);
+
   font-size:2.2rem;letter-spacing:-0.01em;line-height:1;color:var(--accent);
 }
 .detail-inner{
@@ -471,12 +472,11 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .detail-section-banner .detail-banner-logo,
 .mani-banner .detail-banner-logo{
-  height:2.6rem;width:auto;color:var(--accent);
-  flex-shrink:0;
-}
-.detail-section-banner .detail-banner-name,
-.mani-banner .detail-banner-name{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  height:2.6rem;width:auto;color:var(--a
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:1.8rem;letter-spacing:-0.01em;line-height:1;
+  color:var(--accent);
+italic;font-weight:500;
   font-size:1.8rem;letter-spacing:-0.01em;line-height:1;
   color:var(--accent);
 }
@@ -495,17 +495,18 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .manifesto em{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  letter-spacing:-0.01em;text-transform:none;
+  letter-spacing:-0.01em;text-transform:capitalize;
 }
 .detail-lead{
   font-family:'Roboto',sans-serif;font-weight:300;
   font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.92;
   margin-bottom:0;
 }
-.detail-lead strong{font-weight:700;font-style:normal}
-/* editorial drop cap — first letter of lead paragraph */
-.detail-lead::first-letter{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+.detail-le
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:6rem;line-height:0.85;
+  float:left;padding:0.4rem 1.2rem 0 0;color:var(--accent);
+font-style:italic;font-weight:500;
   font-size:6rem;line-height:0.85;
   float:left;padding:0.4rem 1.2rem 0 0;color:var(--accent);
 }
@@ -645,10 +646,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   margin-bottom:1.6rem;
 }
 .madplus-manifesto{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:5rem;line-height:0.96;letter-spacing:-0.025em;
-  color:#F5F0E1;
-  margin:0 auto 1.4rem;
+  font-family:'Roboto', system-ui, sans-serif;fon
+  font-family:'Newsreader',Georgia,serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;
+to 1.4rem;
   max-width:30ch;
 }
 .madplus-manifesto em{
@@ -1184,11 +1185,12 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   .release-hero-kicker::before{animation:none}
 }
 .release-hero-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
-  font-size:5.4rem;line-height:0.96;letter-spacing:-0.025em;
-  color:var(--accent);margin:0 0 0.8rem;
-}
-.release-hero-subtitle{
+  font-f
+  font-family:'Newsreader',Georgia,serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:1.7rem;line-height:1.3;
+  color:var(--accent);opacity:0.85;
+  margin-bottom:1rem;
+o-subtitle{
   font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:500;
   font-size:1.7rem;line-height:1.3;
   color:var(--accent);opacity:0.85;
@@ -1664,11 +1666,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   font-size:32rem;line-height:0.85;letter-spacing:-0.06em;
   color:var(--accent);opacity:0.06;
   z-index:1;pointer-events:none;
-  font-feature-settings:'tnum' 1;
-}
-.project-hero .p-meta-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;
-  padding-top:2.5rem;border-top:0.25rem solid var(--accent);
+  font-feature-s
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:400;
+  font-size:2.4rem;line-height:1.3;opacity:0.95;max-width:60rem;
+2.5rem;border-top:0.25rem solid var(--accent);
 }
 .project-hero .p-caption{
   font-family:'Newsreader',serif;font-style:italic;font-weight:400;
@@ -1749,9 +1750,10 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   font-size:9rem;line-height:0.9;letter-spacing:-0.03em;
   text-transform:uppercase;margin-bottom:2rem;
 }
-.collab-cta .collab-title em{
+.collab-cta .collab-tit
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  text-transform:none;letter-spacing:-0.01em;
+  text-transform:capitalize;letter-spacing:-0.01em;
+01em;
 }
 .collab-cta .collab-lead{
   font-family:'Roboto',sans-serif;font-weight:300;font-size:1.6rem;
@@ -1856,15 +1858,15 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   font-family:'Roboto',sans-serif;
   font-size:1.42rem;
   font-weight:400;
-  letter-spacing:0.02em;
+  letter-spacing
+  font-family:'Newsreader',serif;text-transform:capitalize;
+  font-style:italic;
+  font-weight:400;
+  font-size:1.5rem;
   display:block;
-  margin-bottom:0.6rem;
-}
-.c-title{
-  font-family:'Roboto', system-ui, sans-serif;
-  font-weight:900;
-  font-size:2.83rem;
-  letter-spacing:0;
+  line-height:1.2;
+  margin-top:0.5rem;
+etter-spacing:0;
   display:block;
   white-space:nowrap;
   line-height:1;
@@ -2028,10 +2030,11 @@ body::after{display:none}
     font-size:2.6rem;line-height:0.9;letter-spacing:-0.03em;
     font-weight:900;
   }
-  .nav-card .c-sub{
+  .nav-
     font-family:'Newsreader',serif;font-style:italic;font-weight:400;
-    font-size:1.1rem;line-height:1.25;text-transform:none;
+    font-size:1.1rem;line-height:1.25;text-transform:capitalize;
     opacity:0.85;letter-spacing:0;margin-top:0.4rem;
+  p:0.4rem;
   }
   .nav-card .c-icon{
     position:absolute;right:-3.5rem;bottom:-3rem;
@@ -2352,10 +2355,10 @@ body{
 }
 .hero-line{
   font-family:'Roboto', system-ui, sans-serif;
-  font-weight:500;font-size:3.4rem;line-height:1.08;
-  letter-spacing:-0.025em;color:var(--accent);
-  white-space:normal;text-transform:none;
-  margin-bottom:0.4rem;text-shadow:none;
+  font-weight:500;font-size:3.4rem;line-he
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;color:var(--cta);
+tom:0.4rem;text-shadow:none;
   max-width:78rem;text-wrap:balance;
 }
 .hero-line br{display:block;line-height:1.08}
@@ -2635,10 +2638,10 @@ body{
   text-wrap:balance;
 }
 
-/* headline — Roboto/Newsreader split */
-.nf-title{
-  font-family:'Roboto', system-ui, sans-serif;
-  font-weight:500;font-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
+/* hea
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;color:var(--cta);
+ont-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
   letter-spacing:-0.025em;color:var(--accent);
   margin:0 0 1.8rem;
   max-width:48rem;text-wrap:balance;
@@ -2692,12 +2695,11 @@ body{
 .nf-card:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
 .nf-card-num{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
-  color:var(--accent-soft);
-  margin-bottom:1.2rem;
-}
-.nf-card-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-s
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:400;
+  font-size:1rem;line-height:1.4;color:var(--accent);opacity:0.7;
+  margin:0;
+boto', system-ui, sans-serif;font-weight:600;
   font-size:1.6rem;letter-spacing:-0.015em;
   color:var(--accent);
   margin:0 0 0.3rem;line-height:1.1;
@@ -2873,8 +2875,10 @@ body{
 .mani-hero{margin:0 0 4.5rem;max-width:90rem}
 .mani-kicker{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
-  color:var(--accent);opacity:0.5;margin-bottom:1.6rem;
+  fon
+  font-family:'Newsreader',Georgia,serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;
+-bottom:1.6rem;
 }
 .mani-title{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
@@ -2991,11 +2995,9 @@ body{
   gap:1.6rem;align-items:baseline;
   padding:1rem 0;
   border-bottom:0.06rem solid rgba(245,240,225,0.08);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:1.15rem;
-  color:var(--accent);
-}
-.mani-press-item:last-child{border-bottom:none}
+  font-family:'Roboto', system-ui, sans-serif;font
+  font-family:'Newsreader',Georgia,serif;text-transform:capitalize;font-style:italic;font-weight:400;
+  opacity:0.7;font-size:1rem;
 .mani-press-link{
   color:var(--accent);text-decoration:none;
   border-bottom:0.06rem dotted rgba(245,240,225,0.3);
@@ -3070,9 +3072,10 @@ body{
 .detail-back{
   background:#1A1815;color:var(--accent);
   border:0.08rem solid var(--line);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.9rem;letter-spacing:0;text-transform:none;
-  padding:0.7rem 1.2rem;border-radius:999px;
+  font-family:'Roboto', system-ui, sans-serif;fo
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:1.2rem;color:var(--accent);
+:999px;
 }
 .detail-back:hover{background:var(--accent);color:var(--bg);border-color:transparent}
 .detail-back svg{width:1rem;height:1rem}
@@ -3080,10 +3083,10 @@ body{
 .logo-svg-d{height:1.8rem;color:var(--accent)}
 .detail-logo .sub{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  font-size:1.2rem;color:var(--accent);
-}
-.detail-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  fon
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  letter-spacing:-0.01em;color:var(--cta);
+00;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
@@ -3094,10 +3097,11 @@ body{
 }
 .manifesto em{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  letter-spacing:-0.01em;color:var(--cta);
-}
-/* Lead paragraph stays in Roboto (sans). Only the first-letter drop
-   cap gets Newsreader italic — that's the editorial accent, the
+  letter-spacing
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
+  font-size:5rem;line-height:0.85;color:var(--cta);
+  float:left;padding:0.3rem 1rem 0 0;
+the
    rest is body text and must stay sans. */
 .detail-lead{
   font-family:'Roboto', system-ui, sans-serif;font-weight:300;
@@ -3339,14 +3343,13 @@ body{
 .work-row .work-info-top{
   display:flex;justify-content:space-between;align-items:center;
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
-  color:var(--accent);opacity:0.55;
-  margin-bottom:1.2rem;
-  transition:opacity 0.3s ease;
-}
-.work-row:hover .work-info-top{opacity:0.85}
-.work-row .work-num{color:var(--cta)}
-.work-row .work-year{opacity:0.7}
+  font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercas
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:400;
+  font-size:1.2rem;line-height:1.5;letter-spacing:-0.005em;
+  color:var(--accent);opacity:0.82;
+  margin:0 0 1.8rem;
+  max-width:34rem;
+ity:0.7}
 .work-row .work-title{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:3.2rem;line-height:1;letter-spacing:-0.03em;
@@ -3512,9 +3515,10 @@ body{
   font-size:6rem;line-height:1.05;letter-spacing:-0.025em;
   text-transform:none;color:var(--accent);
 }
-.collab-cta .collab-title em{
+.collab-cta
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  letter-spacing:-0.01em;color:var(--cta);text-transform:none;
+  letter-spacing:-0.01em;color:var(--cta);text-transform:capitalize;
+t-transform:none;
 }
 .collab-cta .collab-lead{
   font-family:'Roboto', system-ui, sans-serif;font-weight:400;
@@ -3529,16 +3533,15 @@ body{
 .collab-btn:hover{background:#fff}
 
 /* ─── PROJECT VIEW — adapt palette ─── */
-.project-view{padding:2.5rem 2.4rem 12rem}
-.project-hero .p-top{
+.project-view{padding:2.5rem 2.4rem 12re
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
-  color:var(--accent-soft);border-color:var(--line);
-}
-.project-hero .p-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-size:0.85rem;letter-spacing:0.18em;te
+  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:400;
+  font-size:1.6rem;color:var(--accent);opacity:0.9;
+oto', system-ui, sans-serif;font-weight:500;
   font-size:9rem;line-height:1.0;letter-spacing:-0.035em;
-  text-transform:none;color:var(--accent);
+  text-transform:capitalize;color:var(--accent);
+ne;color:var(--accent);
 }
 .project-hero[data-num]::before{
   font-family:'Roboto', system-ui, sans-serif;font-weight:700;
