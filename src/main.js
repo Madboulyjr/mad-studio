@@ -1495,6 +1495,25 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
 }
 
 /**
+ * Caption helper — splits on the first em-dash. The text BEFORE the
+ * dash is wrapped in <em> (rendered as Newsreader italic via CSS).
+ * The text AFTER is body, with any remaining em-dashes flattened to
+ * spaces. Falls through cleanly if no em-dash exists.
+ *
+ *   "Ask Google — the launching campaign…"
+ *     → "<em>Ask Google</em> the launching campaign…"
+ */
+function formatCaption(raw) {
+  const s = String(raw || '').trim()
+  if (!s) return ''
+  const m = s.match(/^(.+?)\s+—\s+(.+)$/s)
+  if (!m) return s.replace(/\s+—\s+/g, ' ')
+  const accent = m[1].trim()
+  const body = m[2].replace(/\s+—\s+/g, ' ').trim()
+  return `<em>${accent}</em> ${body}`
+}
+
+/**
  * Gold "award seal" SVG generator — sits in the top-right corner of a
  * project's work-row cover when the project has caseStudy.awards.
  *
@@ -1661,10 +1680,12 @@ function buildDetail(id) {
       : `<div class="works-list">
       ${works
         .map((w, i) => {
-          // Caption is treated as ONE paragraph now. If it contains the
-          // legacy "Brief — About — Approach" format we just join the
-          // last two parts as a single readable paragraph.
-          const cap = (w.caption || '').replace(/\s+—\s+/g, ' ').trim()
+          // Caption typography: the FIRST phrase (before the first em-
+          // dash) is treated as a "campaign name" accent → wrapped in
+          // <em> so it renders in Newsreader italic. The rest is
+          // body text in Roboto Light. Subsequent em-dashes are still
+          // stripped (legacy "Brief — About — Approach" format).
+          const cap = formatCaption(w.caption || '')
           const num = String(i + 1).padStart(2, '0')
           // Awards badge — parses caseStudy.awards strings for
           // "shortlist"/"nominated"/"finalist" keywords to decide
@@ -2041,7 +2062,7 @@ function buildProject(works, idx, sectionId) {
       <h1 class="p-title">${w.title}</h1>
       ${credits ? `<div class="p-credits">${credits}${cs.client ? ` · for <strong>${cs.client}</strong>` : ''}</div>` : ''}
       <div class="p-meta-row">
-        ${w.caption ? `<p class="p-caption">${w.caption}</p>` : '<div></div>'}
+        ${w.caption ? `<p class="p-caption">${formatCaption(w.caption)}</p>` : '<div></div>'}
         <div class="p-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
       </div>
     </div>
