@@ -303,40 +303,24 @@ body:not(.loading) .splash{
 }
 .illustration:hover svg{transform:scale(1.04)}
 
-/* ── CURSORS — native everywhere, "VIEW" label-pill on avatar hover
-   Dropped the custom pixel arrow + hand PNGs because Ali wanted the
-   native OS cursor back (zero lag, same as any other system app).
-   The "VIEW mode" cue is now a small pill that follows the cursor —
-   it's purely decorative, not the pointer itself, so a tiny render
-   delay on it doesn't feel laggy the way a JS-driven cursor did. */
-.illustration{cursor: pointer}
-.nav-card, a, button, .work-row, [role="button"]{cursor: pointer}
+/* ── CURSORS — native everywhere, rock-on hand on avatar hover ──────
+   Native OS cursor as the default (zero lag, identical to every other
+   app). On the avatar, swap to a pixel-art "rock on" hand cursor that
+   Ali picked from cursors-4u.com — same gesture as the rock-and-roll
+   horns. Browser/OS handles the swap natively, no JS, no lag.
 
-/* View-mode pill — fixed-positioned, transform-driven, follows the
-   cursor when hovering the avatar. JS sets the .is-visible class on
-   mouseenter/leave and writes the transform on mousemove. */
-.view-pill{
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 9998;
-  padding: 0.55rem 1.15rem 0.5rem;
-  background: var(--cta);
-  color: #1A1815;
-  font-family: 'Roboto', system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border-radius: 1.5rem;
-  opacity: 0;
-  transform: translate3d(-9999px, -9999px, 0);
-  transition: opacity 0.15s ease;
-  will-change: transform, opacity;
+   Files mirrored locally in /public so we don't depend on an external
+   CDN staying online:
+     cursor-rock-on.png   →  96×96 PNG (universal support)
+     cursor-rock-on.webp  →  96×96 WebP (modern browsers, sharper)
+
+   Hotspot (37, 32) matches the index-fingertip in the 96×96 canvas. */
+.nav-card, a, button, .work-row, [role="button"]{cursor: pointer}
+.illustration{
+  cursor: url('/cursor-rock-on.webp') 37 32, url('/cursor-rock-on.png') 37 32, pointer;
 }
-.view-pill.is-visible{opacity: 1}
 @media (hover: none){
-  .view-pill{display: none}
+  .illustration{cursor: auto}
 }
 
 /* ── DETAIL PAGE OVERLAY ─── */

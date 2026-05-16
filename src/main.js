@@ -2815,59 +2815,18 @@ window.addEventListener('popstate', (e) => {
   else document.title = titleForRoute(initRoute)
 }
 
-/* ─── Cursor tracking (parallax) + VIEW pill on avatar hover ────────
+/* ─── Cursor tracking (for the avatar 3D parallax only) ─────────────
    The OS cursor stays native — zero lag, no JS in the pointer path.
-   The "VIEW" pill is a small follow-along label that only appears
-   when hovering the avatar. Since it's decorative (not the pointer
-   itself) a tiny ms of render delay doesn't read as lag.
-
-   - tx/ty: pointer position, also feeds the avatar 3D parallax
-   - viewPill: small pill DOM element, hidden until needed
-   - _viewPillActive: gate so we only write the pill's transform when
-     it's actually visible — saves a per-frame DOM write off the
-     landing page. */
+   The "rock on" hover cursor on the avatar is swapped natively by
+   the browser via the CSS `cursor: url(...)` rule on .illustration
+   (see index.html). This listener just keeps tx/ty fresh for the
+   3D parallax tilt that follows the pointer. */
 let tx = -100,
   ty = -100
-const viewPill = document.createElement('div')
-viewPill.className = 'view-pill'
-viewPill.textContent = 'View'
-document.body.appendChild(viewPill)
-let _viewPillActive = false
-
 window.addEventListener('mousemove', (e) => {
   tx = e.clientX
   ty = e.clientY
-  if (_viewPillActive) {
-    // Offset 18px right + 18px down from the pointer so the pill
-    // sits in the standard "cursor label" zone (mirrors how OS
-    // tooltips appear). translate3d → GPU compositor layer, no
-    // layout work.
-    viewPill.style.transform = `translate3d(${tx + 18}px, ${ty + 18}px, 0)`
-  }
 }, {passive: true})
-
-/* Wire the pill to the avatar. Only on the landing page — once you
-   enter a detail or project view the avatar is offscreen, so the
-   gating in updateAvatarParallax (overlay-skip) is enough; the
-   mouseenter never fires when the avatar isn't visible. */
-function _showViewPill() {
-  if (_viewPillActive) return
-  _viewPillActive = true
-  // Prime the position so the pill doesn't briefly appear at the
-  // last cached transform.
-  viewPill.style.transform = `translate3d(${tx + 18}px, ${ty + 18}px, 0)`
-  viewPill.classList.add('is-visible')
-}
-function _hideViewPill() {
-  if (!_viewPillActive) return
-  _viewPillActive = false
-  viewPill.classList.remove('is-visible')
-}
-const _illusForPill = document.getElementById('illustration')
-if (_illusForPill) {
-  _illusForPill.addEventListener('mouseenter', _showViewPill)
-  _illusForPill.addEventListener('mouseleave', _hideViewPill)
-}
 /* rAF loop now ONLY drives the avatar parallax (which still needs the
    smoothed lerp for a natural 3D-tilt feel). The cursor itself is
    updated synchronously inside the mousemove handler above — instant,
