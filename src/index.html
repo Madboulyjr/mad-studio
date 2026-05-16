@@ -298,16 +298,21 @@ body:not(.loading) .splash{
   align-items:center;
   justify-content:center;
   pointer-events:auto;
-  cursor:pointer;
+  /* Cursor lives on .avatar3d, not the container — that way the
+     rock-on hand only shows over the actual avatar pixels, not the
+     empty space around it (~38% of viewport that was triggering it
+     before). */
   overflow:visible;
 }
 .illustration:hover svg{transform:scale(1.04)}
 
-/* ── CURSORS — native everywhere, rock-on hand on avatar hover ──────
+/* ── CURSORS — native everywhere, rock-on hand on the avatar pixels
    Native OS cursor as the default (zero lag, identical to every other
-   app). On the avatar, swap to a pixel-art "rock on" hand cursor that
-   Ali picked from cursors-4u.com — same gesture as the rock-and-roll
-   horns. Browser/OS handles the swap natively, no JS, no lag.
+   app). The rock-on swap is scoped to `.avatar3d` (the actual avatar
+   PNG inside the illustration container) — NOT the parent .illustration
+   which spans ~38% of the viewport. That way the cursor only changes
+   when you're really hovering the avatar itself, not the empty stage
+   around it.
 
    Files mirrored locally in /public so we don't depend on an external
    CDN staying online:
@@ -316,11 +321,11 @@ body:not(.loading) .splash{
 
    Hotspot (37, 32) matches the index-fingertip in the 96×96 canvas. */
 .nav-card, a, button, .work-row, [role="button"]{cursor: pointer}
-.illustration{
+.avatar3d{
   cursor: url('/cursor-rock-on.webp') 37 32, url('/cursor-rock-on.png') 37 32, pointer;
 }
 @media (hover: none){
-  .illustration{cursor: auto}
+  .avatar3d{cursor: auto}
 }
 
 /* ── DETAIL PAGE OVERLAY ─── */
