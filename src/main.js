@@ -1494,6 +1494,78 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
   `
 }
 
+/**
+ * Gold "award seal" SVG generator — sits in the top-right corner of a
+ * project's work-row cover when the project has caseStudy.awards.
+ * Two variants:
+ *   - won → glossy gold gradient
+ *   - shortlisted → muted silver/cream gradient
+ * Curved text around the rim ("★ AWARDED · 2024 · X3" etc.), the MAD
+ * M-mark in the center (matches the favicon). Unique <defs> IDs per
+ * card so multiple seals on one page don't collide.
+ */
+function buildAwardSeal({idx, status, count, year, allText}) {
+  const uid = `seal-${idx}`
+  const isWon = status === 'won'
+  // Build the rim text. We loop the same phrase twice with a separator
+  // dot so it fully wraps around the seal — gives a "stamp" feel.
+  const stamp = isWon ? 'AWARDED' : 'SHORTLISTED'
+  const countLabel = count > 1 ? ` × ${count}` : ''
+  const yearLabel = year ? ` · ${year}` : ''
+  const phrase = `★ ${stamp}${countLabel}${yearLabel} `
+  const rimText = (phrase + '· ').repeat(2).trim()
+
+  // Gradient stops differ by status. Won = gold, shortlist = muted
+  // platinum so awarded projects clearly outrank shortlisted ones.
+  const stops = isWon
+    ? '<stop offset="0%" stop-color="#FAEAB0"/><stop offset="38%" stop-color="#E6C77A"/><stop offset="58%" stop-color="#C9A14D"/><stop offset="100%" stop-color="#E8CF85"/>'
+    : '<stop offset="0%" stop-color="#F1EEE3"/><stop offset="42%" stop-color="#C9C4B5"/><stop offset="60%" stop-color="#A29D8E"/><stop offset="100%" stop-color="#D8D2C3"/>'
+
+  // Aria label + hover tooltip (full award titles via title attr)
+  const escHover = String(allText || '').replace(/"/g, '&quot;')
+  const aria = `${count} ${isWon ? 'award' : 'shortlist'}${count > 1 ? 's' : ''}${year ? ` (${year})` : ''}`
+
+  return `
+    <span class="work-award-seal ${isWon ? 'is-won' : 'is-shortlisted'}"
+          role="img" aria-label="${aria}" title="${escHover}">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+          <!-- Rim circle path for the curved text (clockwise from 12 o'clock) -->
+          <path id="${uid}-rim"
+                d="M 50 50 m 0 -36 a 36 36 0 1 1 -0.001 0"
+                fill="none"/>
+          <linearGradient id="${uid}-fill" x1="0" y1="0" x2="1" y2="1">${stops}</linearGradient>
+          <!-- Subtle radial highlight for a foiled-metal sheen -->
+          <radialGradient id="${uid}-shine" cx="30%" cy="25%" r="60%">
+            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"/>
+            <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- Outer dark ring (depth) -->
+        <circle cx="50" cy="50" r="49" fill="#0A0A0A"/>
+        <!-- Foiled disc -->
+        <circle cx="50" cy="50" r="46" fill="url(#${uid}-fill)"/>
+        <!-- Highlight sheen -->
+        <circle cx="50" cy="50" r="46" fill="url(#${uid}-shine)"/>
+        <!-- Inner hairline for definition -->
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#1A1815" stroke-width="0.6" stroke-opacity="0.35"/>
+        <!-- Curved rim text -->
+        <text fill="#1A1815"
+              font-family="'IBM Plex Mono', monospace"
+              font-weight="700"
+              font-size="7.8"
+              letter-spacing="1.4">
+          <textPath href="#${uid}-rim" startOffset="0">${rimText}</textPath>
+        </text>
+        <!-- Center MAD-M letterform (same path as favicon) -->
+        <g transform="translate(50 50) scale(0.062) translate(-138 -400)" fill="#1A1815">
+          <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+        </g>
+      </svg>
+    </span>
+  `
+}
+
 function buildDetail(id) {
   const p = PAGES[id]
   if (!p) return
@@ -1579,27 +1651,18 @@ function buildDetail(id) {
           const num = String(i + 1).padStart(2, '0')
           // Awards badge — parses caseStudy.awards strings for
           // "shortlist"/"nominated"/"finalist" keywords to decide
-          // status. Won + shortlisted are merged into one badge.
+          // status. Won status wins if any award was won.
           const allAwards = (w.caseStudy && Array.isArray(w.caseStudy.awards)) ? w.caseStudy.awards : []
           const wonAwards = allAwards.filter((a) => !/shortlist|nominat|finalist/i.test(String(a)))
           const slAwards = allAwards.filter((a) => /shortlist|nominat|finalist/i.test(String(a)))
           const badgeHTML = allAwards.length
-            ? `<span class="work-award-badge${wonAwards.length ? ' is-won' : ' is-shortlisted'}" aria-label="${
-                wonAwards.length && slAwards.length
-                  ? `${wonAwards.length} awarded, ${slAwards.length} shortlisted`
-                  : wonAwards.length
-                    ? `${wonAwards.length} award${wonAwards.length > 1 ? 's' : ''}`
-                    : `${slAwards.length} shortlisted`
-              }" title="${allAwards.map((a) => String(a).replace(/"/g, '&quot;')).join(' · ')}">
-                <span class="work-award-icon" aria-hidden="true">${wonAwards.length ? '★' : '○'}</span>
-                <span class="work-award-text">${
-                  wonAwards.length && slAwards.length
-                    ? `${wonAwards.length}+${slAwards.length}`
-                    : wonAwards.length
-                      ? `${wonAwards.length > 1 ? wonAwards.length + 'x ' : ''}Awarded`
-                      : `${slAwards.length > 1 ? slAwards.length + 'x ' : ''}Shortlist`
-                }</span>
-              </span>`
+            ? buildAwardSeal({
+                idx: i,
+                status: wonAwards.length ? 'won' : 'shortlisted',
+                count: allAwards.length,
+                year: w.year || '',
+                allText: allAwards.map((a) => String(a)).join(' · '),
+              })
             : ''
           return `
         <article class="work-row" data-idx="${i}">
