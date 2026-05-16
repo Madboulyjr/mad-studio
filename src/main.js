@@ -2338,22 +2338,44 @@ function registerAvatarClick() {
   return false
 }
 
-/* Real-recording duck quack — Ali dropped /public/quack.mp3 (a clean
-   HD sound-effect clip). Plays via a single shared Audio element so
-   rapid avatar taps just rewind + replay the same sample (no overlap
-   stacking, no Audio Object per click). Falls back silently if the
-   file fails to load. */
-let _quackAudio = null
-function playDuckQuack() {
+/* Real-recording duck quack — Ali dropped /public/quack.mp3. The first
+   pass used a single HTMLAudioElement and rewound it on each click,
+   but that has perceptible latency on first play (the file has to
+   fetch + decode before audio can start). Now: fetch + decode the
+   MP3 into an AudioBuffer eagerly on module load, then on click
+   just spin up a BufferSourceNode → near-zero latency, plays even
+   if the previous quack is still ringing out.
+   Volume bumped down to 0.68 (20% quieter than the old 0.85) per
+   Ali's "waty sothaaa 20%". */
+let _quackBuffer = null
+let _quackCtx = null
+;(async function preloadQuack() {
   try {
-    if (!_quackAudio) {
-      _quackAudio = new Audio('/quack.mp3')
-      _quackAudio.preload = 'auto'
-      _quackAudio.volume = 0.85
-    }
-    _quackAudio.currentTime = 0
-    const p = _quackAudio.play()
-    if (p && typeof p.catch === 'function') p.catch(() => {})
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    if (!Ctx) return
+    _quackCtx = new Ctx()
+    const res = await fetch('/quack.mp3')
+    if (!res.ok) return
+    const arr = await res.arrayBuffer()
+    _quackBuffer = await _quackCtx.decodeAudioData(arr)
+  } catch (e) {
+    // Silent — if preload fails the click handler simply skips audio.
+  }
+})()
+
+function playDuckQuack() {
+  if (!_quackBuffer || !_quackCtx) return
+  try {
+    // Browser autoplay policy parks new AudioContexts in 'suspended'
+    // until a user gesture. The avatar click IS that gesture, so
+    // this resume() is a no-op on every subsequent click.
+    if (_quackCtx.state === 'suspended') _quackCtx.resume().catch(() => {})
+    const src = _quackCtx.createBufferSource()
+    src.buffer = _quackBuffer
+    const gain = _quackCtx.createGain()
+    gain.gain.value = 0.68
+    src.connect(gain).connect(_quackCtx.destination)
+    src.start(0)
   } catch (e) {}
 }
 
