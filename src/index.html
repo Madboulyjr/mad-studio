@@ -3237,58 +3237,92 @@ body{
 }
 
 /* AWARD SEAL — gold circular stamp in the top-right of the cover.
-   Inspired by the Framer "Site of the Year" coin: curved text wrapping
-   the rim, foiled metallic gradient, brand mark in the centre.
-   Two variants (.is-won = gold, .is-shortlisted = platinum) handled
-   inside the SVG's <defs> — the wrapper just sizes + positions. */
+   Two distinct states, mirroring the user's Framer reference:
+
+   REST (default):
+     - small disc (60% of the SVG's intrinsic 5.6rem box)
+     - tilted -8° so it reads like a stamp, not a UI chip
+     - rim text HIDDEN — only the centred M is visible (clean coin)
+
+   HOVER:
+     - scales up to full size
+     - straightens to 0° rotation
+     - rim text fades in (revealing the actual award titles editable
+       from /admin → caseStudy.awards)
+
+   Variants (.is-won / .is-shortlisted) handled inside the SVG's
+   <defs> via different gradient stops; the wrapper here just sizes
+   and positions. */
 .work-row .work-award-seal{
   position:absolute;top:1.1rem;right:1.1rem;
   display:block;
   width:5.6rem;height:5.6rem;
-  pointer-events:auto; /* enable hover for the title tooltip */
+  /* Anchor scaling at the top-right so the seal stays in its corner
+     as it grows on hover. */
+  transform-origin:100% 0%;
+  transform:rotate(-8deg) scale(0.6);
+  pointer-events:auto;
   z-index:4;
-  /* Slight rotation so it reads like a stamped seal rather than a
-     mechanical UI element. The seal itself spins on hover. */
-  transform:rotate(-8deg);
-  transition:transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
-  filter:drop-shadow(0 8px 18px rgba(0,0,0,0.45))
+  transition:transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,0.4))
          drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   cursor:default;
 }
 .work-row .work-award-seal svg{
   width:100%;height:100%;display:block;
-  /* Slow continuous rotation — disabled at rest, enabled on hover.
-     CSS variable lets us run the rim text around the disc smoothly. */
-  animation:none;
 }
-.work-row:hover .work-award-seal{
-  transform:rotate(0deg) scale(1.05);
+/* Rim text is rendered into the SVG but kept invisible until hover.
+   Smooth fade timed slightly after the size change so the eye reads
+   "small coin → big coin with text" as a clean two-step gesture. */
+.work-row .work-award-seal .seal-rim{
+  opacity:0;
+  transition:opacity 0.25s ease 0.05s;
 }
-.work-row:hover .work-award-seal svg{
-  animation:awardSealSpin 9s linear infinite;
-}
-@keyframes awardSealSpin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
-@media (prefers-reduced-motion: reduce){
-  .work-row .work-award-seal{transform:none}
-  .work-row:hover .work-award-seal{transform:scale(1.04)}
-  .work-row:hover .work-award-seal svg{animation:none}
+/* Slightly shrink the M when the seal is at full size so it doesn't
+   crowd the freshly-revealed rim text. Keeps the centred mark from
+   visually colliding with the curved type. */
+.work-row .work-award-seal .seal-mark{
+  transition:transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Tablet + mobile */
+.work-row:hover .work-award-seal{
+  transform:rotate(0deg) scale(1);
+}
+.work-row:hover .work-award-seal .seal-rim{
+  opacity:1;
+  transition:opacity 0.3s ease 0.15s;
+}
+.work-row:hover .work-award-seal .seal-mark{
+  /* SVG transform attribute set on the group — overridden here via
+     CSS transform property at a smaller scale around the same origin. */
+  transform:translate(50px, 50px) scale(0.072) translate(-138px, -400px);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .work-row .work-award-seal{transform:scale(0.65)}
+  .work-row:hover .work-award-seal{transform:scale(1)}
+  .work-row .work-award-seal .seal-mark,
+  .work-row:hover .work-award-seal .seal-mark{transition:none}
+}
+
+/* Tablet + mobile — slightly smaller intrinsic box, same scale-up
+   on hover. */
 @media (max-width: 900px){
   .work-row .work-award-seal{
-    width:4.4rem;height:4.4rem;
-    top:0.8rem;right:0.8rem;
+    width:5rem;height:5rem;
+    top:0.85rem;right:0.85rem;
   }
 }
 @media (max-width: 480px){
   .work-row .work-award-seal{
-    width:3.4rem;height:3.4rem;
-    top:0.65rem;right:0.65rem;
+    width:4.2rem;height:4.2rem;
+    top:0.7rem;right:0.7rem;
+    /* On a phone, "hover" is rare — touch is the primary interaction.
+       Keep the seal at its full-size rest so users can read the rim
+       text without needing to long-press. */
+    transform:rotate(-4deg) scale(0.85);
   }
+  .work-row .work-award-seal .seal-rim{opacity:0.95}
 }
 
 /* INFO — clean stacked typographic block */

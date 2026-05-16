@@ -1497,23 +1497,35 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
 /**
  * Gold "award seal" SVG generator — sits in the top-right corner of a
  * project's work-row cover when the project has caseStudy.awards.
- * Two variants:
- *   - won → glossy gold gradient
- *   - shortlisted → muted silver/cream gradient
- * Curved text around the rim ("★ AWARDED · 2024 · X3" etc.), the MAD
- * M-mark in the center (matches the favicon). Unique <defs> IDs per
- * card so multiple seals on one page don't collide.
+ *
+ * Rest state (no hover): small disc + just the centred M, slightly
+ * tilted like a stamped seal. The rim text is rendered but kept at
+ * opacity 0 by the CSS, so the rest state reads as a clean coin with
+ * only the brand mark.
+ *
+ * Hover state: scales up + rim text fades in to reveal the actual
+ * award titles (taken from the user's caseStudy.awards array — fully
+ * editable via /admin → Originals → <project> → Case study → Awards).
+ *
+ * Unique <defs> IDs per card so multiple seals on one page don't
+ * collide.
  */
-function buildAwardSeal({idx, status, count, year, allText}) {
+function buildAwardSeal({idx, status, awards}) {
   const uid = `seal-${idx}`
   const isWon = status === 'won'
-  // Build the rim text. We loop the same phrase twice with a separator
-  // dot so it fully wraps around the seal — gives a "stamp" feel.
-  const stamp = isWon ? 'AWARDED' : 'SHORTLISTED'
-  const countLabel = count > 1 ? ` × ${count}` : ''
-  const yearLabel = year ? ` · ${year}` : ''
-  const phrase = `★ ${stamp}${countLabel}${yearLabel} `
-  const rimText = (phrase + '· ').repeat(2).trim()
+
+  // Rim text comes straight from the award strings the user types
+  // into Sanity. Uppercased + joined with " · " for readability around
+  // the rim. We pad with a leading star and (for short text) repeat
+  // the phrase so it fills the full circumference like a real seal.
+  const safeAwards = Array.isArray(awards) ? awards.filter(Boolean).map(String) : []
+  const phrase = safeAwards.length
+    ? safeAwards.map((a) => a.toUpperCase()).join(' · ')
+    : (isWon ? 'AWARDED' : 'SHORTLISTED')
+  const padded = `★ ${phrase} `
+  // Repeat short phrases so the whole rim is covered. ~32 chars covers
+  // half the circumference at our font size; below that we double it.
+  const rimText = padded.length < 32 ? (padded + '· ').repeat(2).trim() : padded.trim()
 
   // Gradient stops differ by status. Won = gold, shortlist = muted
   // platinum so awarded projects clearly outrank shortlisted ones.
@@ -1521,9 +1533,9 @@ function buildAwardSeal({idx, status, count, year, allText}) {
     ? '<stop offset="0%" stop-color="#FAEAB0"/><stop offset="38%" stop-color="#E6C77A"/><stop offset="58%" stop-color="#C9A14D"/><stop offset="100%" stop-color="#E8CF85"/>'
     : '<stop offset="0%" stop-color="#F1EEE3"/><stop offset="42%" stop-color="#C9C4B5"/><stop offset="60%" stop-color="#A29D8E"/><stop offset="100%" stop-color="#D8D2C3"/>'
 
-  // Aria label + hover tooltip (full award titles via title attr)
-  const escHover = String(allText || '').replace(/"/g, '&quot;')
-  const aria = `${count} ${isWon ? 'award' : 'shortlist'}${count > 1 ? 's' : ''}${year ? ` (${year})` : ''}`
+  // Hover tooltip = the full award titles, exact strings.
+  const escHover = safeAwards.join(' · ').replace(/"/g, '&quot;')
+  const aria = `${safeAwards.length} ${isWon ? 'award' : 'shortlist'}${safeAwards.length > 1 ? 's' : ''}`
 
   return `
     <span class="work-award-seal ${isWon ? 'is-won' : 'is-shortlisted'}"
@@ -1549,16 +1561,21 @@ function buildAwardSeal({idx, status, count, year, allText}) {
         <circle cx="50" cy="50" r="46" fill="url(#${uid}-shine)"/>
         <!-- Inner hairline for definition -->
         <circle cx="50" cy="50" r="42" fill="none" stroke="#1A1815" stroke-width="0.6" stroke-opacity="0.35"/>
-        <!-- Curved rim text -->
-        <text fill="#1A1815"
-              font-family="'IBM Plex Mono', monospace"
-              font-weight="700"
-              font-size="7.8"
-              letter-spacing="1.4">
-          <textPath href="#${uid}-rim" startOffset="0">${rimText}</textPath>
-        </text>
-        <!-- Center MAD-M letterform (same path as favicon) -->
-        <g transform="translate(50 50) scale(0.062) translate(-138 -400)" fill="#1A1815">
+        <!-- Curved rim text — wrapped in a group so CSS can fade it
+             in only on hover (default state shows just the M centred) -->
+        <g class="seal-rim">
+          <text fill="#1A1815"
+                font-family="'IBM Plex Mono', monospace"
+                font-weight="700"
+                font-size="7.2"
+                letter-spacing="1.4">
+            <textPath href="#${uid}-rim" startOffset="0">${rimText}</textPath>
+          </text>
+        </g>
+        <!-- Centre MAD-M letterform — bigger than before (scale 0.062
+             → 0.09) so the rest state reads like a brand coin with
+             the M as the dominant element. Same path as the favicon. -->
+        <g class="seal-mark" transform="translate(50 50) scale(0.09) translate(-138 -400)" fill="#1A1815">
           <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
         </g>
       </svg>
@@ -1659,9 +1676,7 @@ function buildDetail(id) {
             ? buildAwardSeal({
                 idx: i,
                 status: wonAwards.length ? 'won' : 'shortlisted',
-                count: allAwards.length,
-                year: w.year || '',
-                allText: allAwards.map((a) => String(a)).join(' · '),
+                awards: allAwards,
               })
             : ''
           return `
