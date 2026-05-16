@@ -36,7 +36,8 @@ const QUERY = `{
     },
     "releases": releases[]{
       title, year, kind, listenUrl,
-      "coverUrl": cover.asset->url
+      "coverUrl": cover.asset->url,
+      "previewAudioUrl": previewAudio.asset->url
     }
   },
   "projects": *[_type == "project" && published == true] | order(section->order asc, order asc){

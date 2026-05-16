@@ -1335,7 +1335,7 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
       subtitle: r.kind || '',
       coverUrl: r.coverUrl || '',
       listenUrl: r.listenUrl || '',
-      previewUrl: '', // wall items don't have preview MP3s seeded
+      previewUrl: r.previewAudioUrl || '',
     })
   }
   if (!deck.length) {

@@ -294,6 +294,13 @@ export const section = {
               type: 'image',
               options: {hotspot: true},
             },
+            {
+              name: 'previewAudio',
+              title: 'Preview audio (30s MP3)',
+              type: 'file',
+              description: 'Upload a 30-second MP3 preview so this track plays inline in the carousel. Without this, the play button is disabled — only the Listen pill (Spotify link) will work.',
+              options: {accept: 'audio/mpeg, audio/mp3'},
+            },
             {name: 'listenUrl', title: 'Primary listen URL', type: 'url', description: 'Spotify or Apple Music link — opens on tap.'},
           ],
           preview: {
