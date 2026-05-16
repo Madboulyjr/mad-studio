@@ -260,8 +260,8 @@ body:not(.loading) .splash{
   z-index:2;
 }
 .headline{
-  font-family:'Roboto',sans-serif;
-  font-weight:900;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:var(--mad-heading-weight, 900);
   font-size:18.02rem;
   line-height:0.826;
   letter-spacing:-0.02em;
@@ -482,14 +482,14 @@ italic;font-weight:500;
 }
 
 .detail-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-kicker-weight, 700);
   font-size:0.85rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:1.8rem;opacity:0.55;
   color:var(--accent);
 }
 .detail-kicker::before{content:'— '}
 .manifesto{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 900);
   font-size:12rem;line-height:0.92;letter-spacing:-0.03em;
   text-transform:uppercase;margin-bottom:3.5rem;
 }
@@ -498,15 +498,14 @@ italic;font-weight:500;
   letter-spacing:-0.01em;text-transform:capitalize;
 }
 .detail-lead{
-  font-family:'Roboto',sans-serif;font-weight:300;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-body-weight, 300);
   font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.92;
   margin-bottom:0;
 }
-.detail-le
-  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
-  font-size:6rem;line-height:0.85;
-  float:left;padding:0.4rem 1.2rem 0 0;color:var(--accent);
-font-style:italic;font-weight:500;
+.detail-lead strong{font-weight:700;font-style:normal}
+.detail-lead::first-letter{
+  font-family:'Newsreader',serif;font-style:italic;font-weight:500;
+  text-transform:capitalize;
   font-size:6rem;line-height:0.85;
   float:left;padding:0.4rem 1.2rem 0 0;color:var(--accent);
 }
@@ -1607,7 +1606,7 @@ o-subtitle{
 }
 .detail-section-label::before{content:'— '}
 .section-title{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 900);
   font-size:8rem;line-height:1;letter-spacing:-0.02em;
   text-transform:uppercase;margin-bottom:5rem;
 }
@@ -1653,7 +1652,7 @@ o-subtitle{
 .project-hero .p-index{opacity:0.7}
 .project-hero .p-year-top{opacity:0.9}
 .project-hero .p-title{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 900);
   font-size:18rem;line-height:0.88;letter-spacing:-0.035em;
   text-transform:uppercase;margin:4rem 0 3rem;
   position:relative;z-index:2;
@@ -1860,18 +1859,10 @@ o-subtitle{
 
 .c-info{flex:1;min-width:0;position:relative;z-index:2}
 .c-num{
-  font-family:'Roboto',sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-size:1.42rem;
   font-weight:400;
-  letter-spacing
-  font-family:'Newsreader',serif;text-transform:capitalize;
-  font-style:italic;
-  font-weight:400;
-  font-size:1.5rem;
-  display:block;
-  line-height:1.2;
-  margin-top:0.5rem;
-etter-spacing:0;
+  letter-spacing:0;
   display:block;
   white-space:nowrap;
   line-height:1;
@@ -1880,6 +1871,7 @@ etter-spacing:0;
   font-family:'Newsreader',serif;
   font-style:italic;
   font-weight:400;
+  text-transform:capitalize;
   font-size:1.5rem;
   display:block;
   line-height:1.2;
@@ -2643,10 +2635,10 @@ tom:0.4rem;text-shadow:none;
   text-wrap:balance;
 }
 
-/* hea
-  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
-  letter-spacing:-0.01em;color:var(--cta);
-ont-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
+/* headline — Roboto/Newsreader split */
+.nf-title{
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 900);
+  font-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
   letter-spacing:-0.025em;color:var(--accent);
   margin:0 0 1.8rem;
   max-width:48rem;text-wrap:balance;
@@ -3096,20 +3088,19 @@ boto', system-ui, sans-serif;font-weight:600;
   color:var(--accent-soft);opacity:1;
 }
 .manifesto{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 500);
   font-size:5rem;line-height:1.05;letter-spacing:-0.03em;
   text-transform:none;color:var(--accent);
 }
 .manifesto em{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
-  letter-spacing
-  font-family:'Newsreader',serif;text-transform:capitalize;font-style:italic;font-weight:500;
-  font-size:5rem;line-height:0.85;color:var(--cta);
-  float:left;padding:0.3rem 1rem 0 0;
-the
+  letter-spacing:-0.01em;text-transform:capitalize;
+}
+/* Lead paragraph stays in Roboto (sans). Only the first-letter drop
+   cap gets Newsreader italic — that's the editorial accent, the
    rest is body text and must stay sans. */
 .detail-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-body-weight, 300);
   font-size:1.5rem;line-height:1.6;
   color:var(--accent);opacity:0.92;
 }
@@ -3120,7 +3111,7 @@ the
   float:left;padding:0.3rem 1rem 0 0;
 }
 .section-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:var(--mad-heading-weight, 500);
   font-size:3.6rem;line-height:1.05;letter-spacing:-0.02em;
   text-transform:none;color:var(--accent);
 }

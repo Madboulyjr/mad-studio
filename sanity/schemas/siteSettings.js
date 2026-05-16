@@ -42,6 +42,59 @@ export const siteSettings = {
       ],
     },
 
+    /* ─── TYPOGRAPHY (global defaults · per-section overrides live on section docs) ─── */
+    {
+      name: 'typography',
+      title: 'Typography defaults',
+      type: 'object',
+      description:
+        'Global font weights applied across the site. Per-section overrides can be set on each section doc — those win when set.',
+      options: {collapsible: true, collapsed: true},
+      fields: [
+        {
+          name: 'headingWeight',
+          title: 'Heading weight (big display: manifesto, section title, project title)',
+          type: 'string',
+          options: {
+            list: [
+              {title: '300 · Light', value: '300'},
+              {title: '400 · Regular', value: '400'},
+              {title: '500 · Medium', value: '500'},
+              {title: '700 · Bold', value: '700'},
+              {title: '900 · Black (default)', value: '900'},
+            ],
+            layout: 'radio',
+          },
+        },
+        {
+          name: 'bodyWeight',
+          title: 'Body weight (leads, paragraphs, captions)',
+          type: 'string',
+          options: {
+            list: [
+              {title: '300 · Light (default)', value: '300'},
+              {title: '400 · Regular', value: '400'},
+              {title: '500 · Medium', value: '500'},
+              {title: '700 · Bold', value: '700'},
+            ],
+            layout: 'radio',
+          },
+        },
+        {
+          name: 'kickerWeight',
+          title: 'Kicker weight (small uppercase labels, year, section labels)',
+          type: 'string',
+          options: {
+            list: [
+              {title: '500 · Medium', value: '500'},
+              {title: '700 · Bold (default)', value: '700'},
+            ],
+            layout: 'radio',
+          },
+        },
+      ],
+    },
+
     /* ─── MANIFESTO PAGE — opened via the bottomnav primary CTA ─── */
     {
       name: 'manifestoTitle',

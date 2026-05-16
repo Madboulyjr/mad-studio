@@ -225,6 +225,7 @@ const PAGES = Object.fromEntries(
         works,
         musicPlatforms: s.musicPlatforms || [],
         instagramMusic: s.instagramMusic || null,
+        typography: s.typography || null,
         featuredRelease: s.featuredRelease || null,
         releases: s.releases || [],
       },
@@ -248,6 +249,43 @@ function findNextProject(sectionId, projectSlug) {
 }
 
 const SITE = content.siteSettings || {}
+
+/* ─── TYPOGRAPHY — global default + per-section override ────────────
+ * Reads weight values from Sanity (siteSettings.typography for global
+ * + section.typography per-section) and applies them as CSS custom
+ * properties on the appropriate container. CSS selectors read those
+ * variables via `var(--mad-heading-weight, 900)` so the hardcoded
+ * defaults still hold when no override is set.
+ *
+ * Defaults (kept in sync with CSS fallbacks):
+ *   --mad-heading-weight  → 900
+ *   --mad-body-weight     → 300
+ *   --mad-kicker-weight   → 700
+ */
+const TYPO_DEFAULTS = {headingWeight: '900', bodyWeight: '300', kickerWeight: '700'}
+
+function resolveTypography(perSectionOverride) {
+  const global = SITE.typography || {}
+  const local = perSectionOverride || {}
+  return {
+    headingWeight: local.headingWeight || global.headingWeight || TYPO_DEFAULTS.headingWeight,
+    bodyWeight: local.bodyWeight || global.bodyWeight || TYPO_DEFAULTS.bodyWeight,
+    kickerWeight: local.kickerWeight || global.kickerWeight || TYPO_DEFAULTS.kickerWeight,
+  }
+}
+
+function applyTypography(el, perSectionOverride) {
+  if (!el) return
+  const t = resolveTypography(perSectionOverride)
+  el.style.setProperty('--mad-heading-weight', t.headingWeight)
+  el.style.setProperty('--mad-body-weight', t.bodyWeight)
+  el.style.setProperty('--mad-kicker-weight', t.kickerWeight)
+}
+
+// Apply the global defaults on the body once — landing page + manifesto
+// + any container without its own override inherits these via the
+// CSS cascade.
+applyTypography(document.body, null)
 
 /* ─── Landing page state & rendering ─────────────────────────────── */
 let current = 0
@@ -1818,6 +1856,9 @@ function openDetailDOM(id) {
   detailPage.classList.add('open')
   detailPage.setAttribute('aria-hidden', 'false')
   detailPage.dataset.sectionId = id
+  // Per-section typography override (falls back to global default
+  // when the section doesn't set one)
+  applyTypography(detailPage, p.typography)
   document.body.style.overflow = 'hidden'
   setEnterPillVisible(false)
   // reset progress bar to 0 on fresh open
@@ -2114,6 +2155,9 @@ function openProjectDOM(works, idx, sectionId) {
     projectView.classList.add('open')
     projectView.setAttribute('aria-hidden', 'false')
     projectView.dataset.sectionId = sectionId
+    // Project pages inherit their parent section's typography override
+    const section = PAGES[sectionId]
+    applyTypography(projectView, section && section.typography)
     projectView.scrollTo(0, 0)
     projectViewInner.classList.remove('is-fading')
     if (projectProgressUpdate) projectProgressUpdate()
