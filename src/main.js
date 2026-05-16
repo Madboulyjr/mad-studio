@@ -1006,6 +1006,17 @@ function bindMadplusStage(scopeEl) {
 
     playerBar.dataset.listenUrl = listenUrl
     playerBar.dataset.previewUrl = previewUrl
+    // Reflect "no inline preview available" on the play button so the
+    // user sees a disabled state instead of getting yanked to Spotify
+    // on click. Tracks without a previewAudioUrl uploaded in Sanity get
+    // a dimmed, non-clickable play button; the separate Listen button
+    // still routes to Spotify if the user explicitly wants it.
+    if (playBtn) {
+      const hasPreview = !!previewUrl
+      playBtn.classList.toggle('mp-play--disabled', !hasPreview)
+      playBtn.setAttribute('aria-disabled', hasPreview ? 'false' : 'true')
+      if (!hasPreview) playBtn.setAttribute('aria-label', 'Preview unavailable — use the Listen button to open on Spotify')
+    }
 
     // If the active track changes mid-playback, stop the current audio.
     if (_audioState.audio && _audioState.currentSrc !== previewUrl) {
@@ -1077,10 +1088,11 @@ function bindMadplusStage(scopeEl) {
   /* Play/pause logic */
   function toggleActivePlayback() {
     const previewUrl = playerBar.dataset.previewUrl || ''
-    const listenUrl = playerBar.dataset.listenUrl || ''
     if (!previewUrl) {
-      // No inline preview → fall back to opening the listen URL in Spotify
-      if (listenUrl) window.open(listenUrl, '_blank', 'noopener')
+      // No inline preview uploaded for this track in Sanity. Don't
+      // yank the user to Spotify — just stay put. The disabled-state
+      // styling on the button + the separate Listen pill makes the
+      // out-of-app jump explicit and opt-in.
       return
     }
     let a = _audioState.audio
