@@ -303,77 +303,27 @@ body:not(.loading) .splash{
 }
 .illustration:hover svg{transform:scale(1.04)}
 
-/* ── CUSTOM CURSOR (solid dot + hover pill) ─── */
-html, body, .illustration, .nav-card, a, button{cursor:none}
-.cursor{
-  position:fixed;
-  top:0;left:0;
-  /* Two passes of -20% (1.65rem → 1.32rem → 1.05rem) — the dot
-     should be felt, not noticed; especially light over project covers */
-  width:1.05rem;height:1.05rem;
-  pointer-events:none;
-  z-index:9999;
-  /* NOTE: previously used `mix-blend-mode:difference` for auto-contrast
-     against any background. It looks great but is the #1 cause of laggy
-     custom cursors — every frame the compositor has to re-blend the
-     cursor pixels against the entire stacked viewport underneath.
-     Removed in favor of solid colors that flip per-palette via
-     `.cursor-ring{background: …}` overrides (cream on dark sections,
-     ink on cream/light sections — see further down). */
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  /* Promote to its own compositor layer so cursor movement never
-     invalidates the rest of the page. */
-  will-change:transform;
-  transform:translateZ(0);
-  /* Hidden until the first real mousemove snaps it to the user's
-     actual pointer position. JS adds .is-active on first move (and
-     re-adds on mouseover after a mouseout) — fixes the "ghost cursor
-     parked on the avatar" issue right after page reload. */
-  opacity:0;
-  transition:opacity 0.2s ease,
-             width 0.3s cubic-bezier(.2,.7,.2,1),
-             height 0.3s cubic-bezier(.2,.7,.2,1),
-             border-radius 0.3s cubic-bezier(.2,.7,.2,1);
+/* ── CUSTOM CURSOR — pixel-art rubber duck ──────────────────────────
+   Switched from JS-driven crosshair to a native CSS cursor because no
+   matter how cheap the rAF/transform write was, a JS cursor always
+   trails the OS pointer by at least one frame — that's where the
+   "laggy" feeling came from. Native `cursor: url(...)` is rendered
+   by the browser/OS at the compositor level, exactly the same path
+   as the system arrow. Zero lag.
+
+   Two files in /public:
+     cursor-duck.png  →  primary (works everywhere, incl. Safari)
+     cursor-duck.svg  →  served as a fallback hint (not used here —
+                          PNG cursors are more reliable cross-browser)
+
+   32×32 source, hotspot (16, 16) so the duck sits centered on the
+   pointer. Falls back to `auto` (native arrow) on touch devices via
+   the `@media (hover: none)` block. */
+html, body, .illustration, .nav-card, a, button{
+  cursor: url('/cursor-duck.png') 16 16, auto;
 }
-.cursor.is-active{opacity:1}
-/* solid filled dot */
-.cursor-ring{
-  position:absolute;
-  inset:0;
-  background:#fff;
-  border-radius:50%;
-  transition:background 0.25s ease, border-radius 0.3s cubic-bezier(.2,.7,.2,1);
-}
-/* label (hidden by default) */
-.cursor-label{
-  position:relative;
-  font-family:'Roboto', system-ui, sans-serif;
-  font-weight:700;
-  font-size:0.78rem;
-  letter-spacing:0.18em;
-  text-transform:uppercase;
-  color:#000;
-  white-space:nowrap;
-  opacity:0;
-  transition:opacity 0.2s ease 0.1s;
-  z-index:1;
-}
-/* hover state: morph into pill with label — tightened from 10.8rem×4.5rem
-   per user feedback (was visually overpowering, esp. over project covers) */
-.cursor.hover{
-  width:5.4rem;height:2rem;
-  border-radius:1rem;
-}
-.cursor.hover .cursor-ring{
-  border-radius:1rem;
-  background:#fff;
-}
-.cursor.hover .cursor-label{opacity:1}
 @media (hover: none){
-  html, body, .illustration, .nav-card, a, button{cursor:auto}
-  .cursor{display:none}
+  html, body, .illustration, .nav-card, a, button{cursor: auto}
 }
 
 /* ── DETAIL PAGE OVERLAY ─── */

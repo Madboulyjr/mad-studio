@@ -2304,6 +2304,11 @@ document.getElementById('illustration').addEventListener('click', (e) => {
     e.clientY >= bb.minY &&
     e.clientY <= bb.maxY
   ) {
+    // Quack on every avatar tap — pairs with the duck cursor for a
+    // tiny moment of personality before the section opens. Web Audio
+    // synth, no asset, no payload.
+    playDuckQuack()
+
     // Track easter-egg trigger BEFORE navigating. Five rapid clicks (<2s)
     // on the avatar before the detail page loads = MAD jingle + glitch.
     if (registerAvatarClick()) {
@@ -2331,6 +2336,55 @@ function registerAvatarClick() {
     return true
   }
   return false
+}
+
+/* Cartoon duck quack — sawtooth carrier swept downward with a fast
+   sine vibrato to get the buzzy "qua-ack" wobble. Lowpass filter
+   takes the harsh edge off. ~220ms. Web Audio synth → no MP3 asset
+   to ship. Pairs with the duck cursor + plays on every avatar tap. */
+function playDuckQuack() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext
+    if (!Ctx) return
+    if (!AVATAR_EE.audioCtx) AVATAR_EE.audioCtx = new Ctx()
+    const ctx = AVATAR_EE.audioCtx
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {})
+    const t0 = ctx.currentTime + 0.01
+    const dur = 0.22
+
+    // Buzzy carrier — sawtooth from 700Hz → 220Hz
+    const osc = ctx.createOscillator()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(700, t0)
+    osc.frequency.linearRampToValueAtTime(220, t0 + dur)
+
+    // Fast vibrato (LFO) for the "wobble" that reads as a quack
+    const lfo = ctx.createOscillator()
+    lfo.type = 'sine'
+    lfo.frequency.value = 28
+    const lfoGain = ctx.createGain()
+    lfoGain.gain.value = 80
+    lfo.connect(lfoGain).connect(osc.frequency)
+
+    // Lowpass to soften the sawtooth's harshness — also swept down
+    const lp = ctx.createBiquadFilter()
+    lp.type = 'lowpass'
+    lp.frequency.setValueAtTime(2500, t0)
+    lp.frequency.exponentialRampToValueAtTime(900, t0 + dur)
+    lp.Q.value = 3
+
+    // Amp envelope — quick attack, exponential decay
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0, t0)
+    gain.gain.linearRampToValueAtTime(0.22, t0 + 0.02)
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur)
+
+    osc.connect(lp).connect(gain).connect(ctx.destination)
+    osc.start(t0)
+    lfo.start(t0)
+    osc.stop(t0 + dur + 0.05)
+    lfo.stop(t0 + dur + 0.05)
+  } catch (e) {}
 }
 
 function playMadJingle() {
@@ -2769,49 +2823,18 @@ window.addEventListener('popstate', (e) => {
   else document.title = titleForRoute(initRoute)
 }
 
-/* ─── Custom cursor ─────────────────────────────── */
-const cursor = document.createElement('div')
-cursor.className = 'cursor'
-cursor.innerHTML = '<div class="cursor-ring"></div><div class="cursor-label">View</div>'
-document.body.appendChild(cursor)
-
-// Start the cursor off-screen + hidden so it doesn't park itself on the
-// avatar at viewport-center until the user actually moves the mouse.
-// First mousemove snaps it to the real pointer, adds `.is-active`
-// (CSS fade-in), and from then on every pointer event writes the
-// transform directly — no rAF, no lerp, no smoothing. The lerp loop
-// used to add ~50ms of trailing lag that read as "premium" but
-// actually just felt sluggish.
-let cx = -100,
-  cy = -100
-let tx = cx,
-  ty = cy
-let cursorFirstMove = true
-function writeCursorTransform() {
-  // translate3d forces a GPU compositor layer (along with the
-  // will-change/translateZ in the .cursor CSS rule) so movement
-  // never touches layout or paint.
-  cursor.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%,-50%)`
-}
+/* ─── Cursor tracking (for the avatar 3D parallax only) ─────────────
+   The custom cursor div was removed in favor of a native CSS cursor
+   (see `cursor: url('/cursor-duck.png')…` in index.html) — JS cursors
+   always trail the OS pointer by ≥1 frame, which is the "laggy"
+   feeling we kept chasing. The mousemove listener stays because the
+   avatar parallax still needs to know where the pointer is. */
+let tx = -100,
+  ty = -100
 window.addEventListener('mousemove', (e) => {
   tx = e.clientX
   ty = e.clientY
-  cx = tx
-  cy = ty
-  writeCursorTransform()
-  if (cursorFirstMove) {
-    cursor.classList.add('is-active')
-    cursorFirstMove = false
-  }
 }, {passive: true})
-// Hide again if the cursor leaves the window so it doesn't sit at the
-// last known position when the user is doing something else.
-window.addEventListener('mouseout', (e) => {
-  if (!e.relatedTarget && !e.toElement) cursor.classList.remove('is-active')
-})
-window.addEventListener('mouseover', () => {
-  if (!cursorFirstMove) cursor.classList.add('is-active')
-})
 /* rAF loop now ONLY drives the avatar parallax (which still needs the
    smoothed lerp for a natural 3D-tilt feel). The cursor itself is
    updated synchronously inside the mousemove handler above — instant,
@@ -2934,26 +2957,10 @@ const mo = new MutationObserver(() => {
 })
 mo.observe(illusEl, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-id']})
 
-window.addEventListener('mousemove', (e) => {
-  let hover = false
-  const t = e.target
-  if (t && t.closest && t.closest('.work-row')) {
-    hover = true
-  } else if (!detailPage.classList.contains('open') && !projectView.classList.contains('open')) {
-    if (!bbox) bbox = charBBox()
-    if (
-      bbox &&
-      e.clientX >= bbox.minX &&
-      e.clientX <= bbox.maxX &&
-      e.clientY >= bbox.minY &&
-      e.clientY <= bbox.maxY
-    ) {
-      hover = true
-    }
-  }
-  if (hover) cursor.classList.add('hover')
-  else cursor.classList.remove('hover')
-})
+/* Hover-state cursor morph removed along with the JS cursor itself —
+   native CSS cursors can't animate. We kept the bbox utility above
+   because the avatar's click target still uses it (illustration click
+   handler in the navigation section). */
 
 /* ─── Apply site settings to static header ─────────────── */
 if (SITE.tagline) {
