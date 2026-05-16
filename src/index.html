@@ -38,9 +38,12 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Trimmed: Hanken (400/500/600/700) · Newsreader (normal 400 + italic 400/500) · IBM Plex Mono (500/700).
-     Cuts ~5 unused Google Fonts variants (300, 800, 0,500, 1,600, mono 400) — saves ~80KB on first paint. -->
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;1,400;1,500&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Two-family stack: Roboto (300/400/500/600/700/900) for everything
+     sans (body, UI, kickers, big display) · Newsreader (italic 400/500
+     only) for editorial em accents. Dropped Hanken Grotesk + IBM Plex
+     Mono entirely — Roboto fills both roles with upper-case + letter-
+     spacing tricks for the former mono kickers. ~90KB total. -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;900&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -63,7 +66,7 @@ html,body{width:100%;height:100%;overflow:hidden}
 }
 
 body{
-  font-family:'Hanken Grotesk', system-ui, sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight: 400;
   letter-spacing: -0.01em;
   background:var(--bg);
@@ -82,7 +85,7 @@ body{
   z-index:10000;
   background:var(--cta);color:#1A1815;
   padding:0.7rem 1.4rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:0.9rem;text-decoration:none;
   /* Hidden offscreen until focused */
   transform:translateY(-200%);
@@ -236,8 +239,8 @@ body:not(.loading) .splash{
   margin-bottom:-0.2rem;
 }
 .website{
-  font-family:'Roboto',sans-serif;
-  font-weight:800;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:700;
   font-size:1.84rem;
   text-decoration:underline;
   color:var(--accent);
@@ -336,8 +339,8 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 /* label (hidden by default) */
 .cursor-label{
   position:relative;
-  font-family:'IBM Plex Mono',monospace;
-  font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:700;
   font-size:0.78rem;
   letter-spacing:0.18em;
   text-transform:uppercase;
@@ -402,7 +405,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   display:inline-flex;align-items:center;gap:0.8rem;
   background:var(--bg);border:0.15rem solid var(--accent);
   color:var(--accent);
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:1.1rem;letter-spacing:0.18em;text-transform:uppercase;
   padding:0.9rem 1.6rem;border-radius:2rem;
   cursor:pointer;
@@ -461,7 +464,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 /* Section index — "01 / 04" mono kicker on the far right */
 .detail-banner-index{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
   flex-shrink:0;
@@ -479,7 +482,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 
 .detail-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:1.8rem;opacity:0.55;
   color:var(--accent);
@@ -620,7 +623,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
    stage ever removes the editorial copy. Otherwise the .madplus-copy
    block below takes over. */
 .madplus-brandmark{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.32em;text-transform:uppercase;
   color:#F5F0E1;opacity:0.55;
   margin:1rem 0 2rem;
@@ -636,13 +639,13 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   color:#F5F0E1;
 }
 .madplus-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
   color:#F5F0E1;opacity:0.6;
   margin-bottom:1.6rem;
 }
 .madplus-manifesto{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:5rem;line-height:0.96;letter-spacing:-0.025em;
   color:#F5F0E1;
   margin:0 auto 1.4rem;
@@ -653,7 +656,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   letter-spacing:-0.01em;
 }
 .madplus-lead{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:1.2rem;line-height:1.55;
   color:#F5F0E1;opacity:0.75;
   max-width:50rem;margin:0 auto;
@@ -778,14 +781,14 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   z-index:2;
 }
 .madplus-card-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1rem;line-height:1.15;letter-spacing:-0.01em;
   color:#F5F0E1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   max-width:100%;
 }
 .madplus-card-sub{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:0.8rem;line-height:1.2;
   color:#F5F0E1;opacity:0.65;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -895,13 +898,13 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   line-height:1.18;gap:0.05rem;
 }
 .mp-now-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:0.95rem;color:#F5F0E1;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   letter-spacing:-0.005em;
 }
 .mp-now-sub{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:0.78rem;color:#F5F0E1;opacity:0.55;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
@@ -1159,7 +1162,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .release-hero-kicker{
   display:inline-flex;align-items:center;gap:0.6rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--cta);
   margin-bottom:1.4rem;
@@ -1181,7 +1184,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   .release-hero-kicker::before{animation:none}
 }
 .release-hero-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:5.4rem;line-height:0.96;letter-spacing:-0.025em;
   color:var(--accent);margin:0 0 0.8rem;
 }
@@ -1192,7 +1195,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   margin-bottom:1rem;
 }
 .release-hero-meta{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
   margin-bottom:2.2rem;
@@ -1228,7 +1231,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .release-player-head{
   display:flex;align-items:baseline;justify-content:space-between;
   gap:1rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;
   color:var(--accent);
 }
@@ -1367,7 +1370,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .release-player[data-state="error"] .release-scrub::before{
   content:"Preview unavailable";
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;
   color:var(--accent);opacity:0.4;
   background:none;height:auto;
@@ -1389,7 +1392,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   border-bottom:0.08rem solid rgba(245,240,225,0.1);
 }
 .releases-wall-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
 }
@@ -1446,14 +1449,14 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .release-tile[href]:hover .release-tile-overlay{opacity:1}
 .release-tile-pill{
-  font-family:'IBM Plex Mono',monospace;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   color:#0A0A0A;background:var(--cta);
   padding:0.4rem 0.8rem;border-radius:999px;
 }
 .release-tile-body{padding:1rem 1.2rem 1.2rem}
 .release-tile-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1.15rem;line-height:1.2;letter-spacing:-0.01em;
   margin-bottom:0.3rem;
   /* clamp to 2 lines so meta stays aligned */
@@ -1461,7 +1464,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   overflow:hidden;
 }
 .release-tile-meta{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
 }
@@ -1476,7 +1479,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   margin:0 0 5rem;
 }
 .music-platforms-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:1.4rem;
@@ -1491,7 +1494,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   border:0.08rem solid var(--line);
   border-radius:999px;
   color:var(--accent);
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.95rem;letter-spacing:0;text-decoration:none;
   transition:background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, padding 0.25s ease;
 }
@@ -1584,7 +1587,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   animation:agencyScroll 30s linear infinite;
 }
 .agencies-track span{
-  font-family:'Roboto',sans-serif;font-weight:800;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:900;
   font-size:3rem;letter-spacing:-0.01em;text-transform:uppercase;
   display:inline-flex;align-items:center;gap:5rem;
 }
@@ -1596,7 +1599,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 
 /* works list */
 .detail-section-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:1.3rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:1.5rem;opacity:0.6;
 }
@@ -1642,7 +1645,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .project-hero .p-top{
   display:flex;justify-content:space-between;align-items:baseline;
   padding-bottom:1.5rem;border-bottom:0.1rem solid rgba(255,49,59,0.35);
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:1.3rem;letter-spacing:0.28em;text-transform:uppercase;
 }
 .project-hero .p-index{opacity:0.7}
@@ -1673,7 +1676,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 }
 .project-hero .p-tags{
   display:flex;flex-wrap:wrap;gap:0.7rem;justify-content:flex-end;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1.05rem;letter-spacing:0.22em;text-transform:uppercase;
 }
 .project-hero .p-tags span{border:0.1rem solid var(--accent);padding:0.55rem 1.1rem;border-radius:1.4rem;opacity:0.85}
@@ -1701,7 +1704,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   border-top:0.2rem solid var(--accent);
 }
 .project-nav-next .pn-block{max-width:80%}
-.project-nav-next .pn-label{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.15rem;letter-spacing:0.3em;opacity:0.6;text-transform:uppercase}
+.project-nav-next .pn-label{font-family:'Roboto', system-ui, sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:0.3em;opacity:0.6;text-transform:uppercase}
 .project-nav-next .pn-title{font-family:'Roboto',sans-serif;font-weight:900;font-size:7rem;line-height:0.95;letter-spacing:-0.025em;text-transform:uppercase;margin-top:1rem;cursor:pointer;transition:opacity 0.25s ease, transform 0.35s cubic-bezier(.2,.7,.2,1);display:inline-block}
 .project-nav-next .pn-title:hover{opacity:0.75;transform:translateX(0.6rem)}
 .project-nav-next .pn-arrow{
@@ -1737,7 +1740,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   text-align:center;
 }
 .collab-cta .collab-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:1.05rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:2rem;opacity:0.7;
 }
@@ -1757,7 +1760,7 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
 .collab-btn{
   display:inline-flex;align-items:center;gap:1rem;
   background:var(--accent);color:var(--bg);
-  font-family:'IBM Plex Mono',monospace;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   font-size:1.2rem;letter-spacing:0.2em;text-transform:uppercase;
   padding:1.4rem 2.8rem;border-radius:3rem;text-decoration:none;
   transition:transform 0.25s ease, background 0.25s ease;
@@ -1803,30 +1806,9 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   color:var(--accent);
   transition:color var(--dur) ease;
 }
-.pick-label{
-  display:block;
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:300;
-  font-size:1.88rem;
-  margin-bottom:0.3rem;
-}
-.pick-label::before{
-  content:'— ';
-  font-family:'Roboto',sans-serif;
-  font-style:normal;
-  font-weight:500;
-}
-.counter-num{
-  display:block;
-  font-family:'Roboto',sans-serif;
-  font-weight:200;
-  font-size:2.6rem;
-  transition:color var(--dur) ease;
-}
-.counter-num .counter-section{
-  font-weight:500;
-}
+/* Legacy .pick-label + .counter-num rules removed — they referenced
+   classes that no longer exist in markup and the only consumers of
+   Newsreader 300 / Roboto 200, which we no longer load. */
 .click-hint{
   font-family:'Newsreader',serif;
   font-style:italic;
@@ -1879,8 +1861,8 @@ html, body, .illustration, .nav-card, a, button{cursor:none}
   margin-bottom:0.6rem;
 }
 .c-title{
-  font-family:'Roboto',sans-serif;
-  font-weight:800;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:900;
   font-size:2.83rem;
   letter-spacing:0;
   display:block;
@@ -2038,7 +2020,7 @@ body::after{display:none}
     position:relative;z-index:3;
   }
   .nav-card .c-num{
-    font-family:'IBM Plex Mono',monospace;font-weight:700;
+    font-family:'Roboto', system-ui, sans-serif;font-weight:700;
     font-size:0.85rem;letter-spacing:0.3em;opacity:0.85;
     text-transform:uppercase;margin-bottom:0.2rem;
   }
@@ -2061,7 +2043,7 @@ body::after{display:none}
   .nav-card .c-enter{
     position:absolute;left:1.5rem;bottom:1.3rem;
     z-index:3;display:flex;align-items:center;gap:0.4rem;
-    font-family:'IBM Plex Mono',monospace;font-weight:700;
+    font-family:'Roboto', system-ui, sans-serif;font-weight:700;
     font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;
     opacity:0.85;
   }
@@ -2169,7 +2151,7 @@ body::after{display:none}
    ═══════════════════════════════════════════════════════ */
 html, body{overflow:hidden;height:100vh;max-height:100vh}
 body{
-  font-family:'Hanken Grotesk', system-ui, sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:400;
   background:var(--bg) !important;
   color:var(--accent) !important;
@@ -2277,7 +2259,8 @@ body{
 .illustration.avatar-burst::after{
   content:"MAD!";
   position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
-  font-family:'Hanken Grotesk',sans-serif;font-weight:800;font-style:italic;
+  /* 800 wasn't loaded in the new 2-family stack — bumped to 900 (loaded) */
+  font-family:'Roboto', system-ui, sans-serif;font-weight:900;font-style:italic;
   font-size:clamp(2rem,6vw,4.5rem);
   color:#FF313B;
   text-shadow:0 0 18px rgba(255,49,59,0.65);
@@ -2365,7 +2348,7 @@ body{
   max-width:62rem;
 }
 .hero-line{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:500;font-size:3.4rem;line-height:1.08;
   letter-spacing:-0.025em;color:var(--accent);
   white-space:normal;text-transform:none;
@@ -2397,7 +2380,7 @@ body{
   border:0.06rem solid rgba(255, 255, 255, 0.18);
   border-radius:999px;
   padding:0.7rem 1.2rem;
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:500;font-size:0.95rem;letter-spacing:-0.005em;
   transition:background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   white-space:nowrap;
@@ -2425,7 +2408,7 @@ body{
   border:0 !important;
   border-radius:999px;
   padding:0.5rem 1rem;
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:500;font-size:0.9rem;letter-spacing:-0.005em;
   display:inline-flex;align-items:center;gap:0.4rem;
   min-height:auto;max-height:none;flex:0 0 auto;
@@ -2580,7 +2563,7 @@ body{
 .lightbox-next svg{width:1.2rem;height:1.2rem}
 .lightbox-counter{
   position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.65;
   background:rgba(245, 240, 225, 0.06);
@@ -2625,7 +2608,7 @@ body{
 /* terminal-style stamp line */
 .nf-stamp{
   display:flex;align-items:center;gap:1rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);
   padding-bottom:1.2rem;border-bottom:0.08rem solid var(--line);
@@ -2642,16 +2625,16 @@ body{
 
 /* the giant 404 — display-scale brutalist */
 .nf-num{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:700;font-size:clamp(10rem, 24vw, 22rem);line-height:0.85;
   letter-spacing:-0.06em;color:var(--cta);
   margin:0 0 0.4rem;
   text-wrap:balance;
 }
 
-/* headline — Hanken/Newsreader split */
+/* headline — Roboto/Newsreader split */
 .nf-title{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:500;font-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
   letter-spacing:-0.025em;color:var(--accent);
   margin:0 0 1.8rem;
@@ -2670,7 +2653,7 @@ body{
 }
 .nf-path-inline{
   display:inline-block;
-  font-family:'IBM Plex Mono',monospace;font-style:normal;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-style:normal;font-weight:500;
   font-size:0.95em;letter-spacing:0;
   background:#1A1815;color:var(--accent);
   padding:0.15rem 0.6rem;border-radius:0.4rem;
@@ -2705,13 +2688,13 @@ body{
 }
 .nf-card:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
 .nf-card-num{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent-soft);
   margin-bottom:1.2rem;
 }
 .nf-card-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1.6rem;letter-spacing:-0.015em;
   color:var(--accent);
   margin:0 0 0.3rem;line-height:1.1;
@@ -2723,7 +2706,7 @@ body{
 }
 .nf-card-arrow{
   align-self:flex-end;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1.2rem;color:var(--cta);
   margin-top:1rem;
   transition:transform 0.2s ease;
@@ -2738,7 +2721,7 @@ body{
 }
 .nf-home{
   background:var(--cta);color:#1A1815;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1rem;letter-spacing:0;
   padding:1rem 2rem;border-radius:999px;border:0;cursor:pointer;
   transition:background 0.2s ease, transform 0.2s ease;
@@ -2746,7 +2729,7 @@ body{
 .nf-home:hover{background:#fff;transform:translateY(-1px)}
 .nf-home:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .nf-email{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1rem;color:var(--accent);text-decoration:none;
   opacity:0.75;transition:opacity 0.2s ease, color 0.2s ease;
 }
@@ -2783,7 +2766,7 @@ body{
   backdrop-filter:blur(36px) saturate(200%) brightness(115%);
   border:0.06rem solid rgba(255, 255, 255, 0.18);
   color:var(--accent);
-  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-weight:500;font-size:0.95rem;letter-spacing:-0.005em;
   cursor:pointer;
   white-space:nowrap;
@@ -2797,7 +2780,7 @@ body{
 }
 .enter-pill .enter-pill-label{
   text-transform:uppercase;letter-spacing:0.18em;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:0.78rem;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;font-size:0.78rem;
 }
 .enter-pill .enter-pill-arrow{
   display:inline-block;font-size:1.05rem;line-height:1;
@@ -2886,12 +2869,12 @@ body{
 
 .mani-hero{margin:0 0 4.5rem;max-width:90rem}
 .mani-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;margin-bottom:1.6rem;
 }
 .mani-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:clamp(3.5rem, 8vw, 8rem);
   line-height:0.96;letter-spacing:-0.025em;
   color:var(--accent);
@@ -2903,7 +2886,7 @@ body{
 }
 .mani-body{
   max-width:62rem;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:1.3rem;line-height:1.55;
   color:var(--accent);opacity:0.85;
 }
@@ -2926,12 +2909,12 @@ body{
 }
 .mani-stat:last-child{border-right:none}
 .mani-stat-num{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:3.6rem;line-height:1;letter-spacing:-0.02em;
   color:var(--accent);margin-bottom:0.6rem;
 }
 .mani-stat-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
 }
@@ -2946,18 +2929,18 @@ body{
   margin-bottom:1.6rem;
 }
 .mani-section-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   flex-shrink:0;
 }
 .mani-section-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:clamp(2rem, 4vw, 3.4rem);letter-spacing:-0.02em;
   color:var(--accent);margin:0;flex:1;
 }
 .mani-section-count{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.16em;
   color:var(--accent);opacity:0.5;font-variant-numeric:tabular-nums;
 }
@@ -2977,13 +2960,13 @@ body{
 .mani-award:last-child{border-bottom:none}
 .mani-award:hover{background:rgba(245,240,225,0.025)}
 .mani-award-year{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.12em;
   color:var(--accent);opacity:0.55;
   font-variant-numeric:tabular-nums;
 }
 .mani-award-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1.4rem;line-height:1.25;letter-spacing:-0.01em;
   color:var(--accent);
 }
@@ -2993,7 +2976,7 @@ body{
 }
 .mani-award-title-link:hover{border-color:var(--accent);color:var(--cta)}
 .mani-award-meta{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:0.95rem;line-height:1.35;
   color:var(--accent);opacity:0.6;
   text-align:right;
@@ -3005,7 +2988,7 @@ body{
   gap:1.6rem;align-items:baseline;
   padding:1rem 0;
   border-bottom:0.06rem solid rgba(245,240,225,0.08);
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1.15rem;
   color:var(--accent);
 }
@@ -3021,7 +3004,7 @@ body{
   opacity:0.7;font-size:1rem;
 }
 .mani-press-year{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.12em;
   opacity:0.55;text-align:right;
   font-variant-numeric:tabular-nums;
@@ -3036,13 +3019,13 @@ body{
 }
 .mani-empty-kicker{
   display:block;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:0.8rem;
 }
 .mani-empty p{
-  font-family:'Hanken Grotesk',sans-serif;
+  font-family:'Roboto', system-ui, sans-serif;
   font-size:1rem;color:var(--accent);opacity:0.7;
   margin:0;
 }
@@ -3084,7 +3067,7 @@ body{
 .detail-back{
   background:#1A1815;color:var(--accent);
   border:0.08rem solid var(--line);
-  font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;letter-spacing:0;text-transform:none;
   padding:0.7rem 1.2rem;border-radius:999px;
 }
@@ -3097,12 +3080,12 @@ body{
   font-size:1.2rem;color:var(--accent);
 }
 .detail-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .manifesto{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:5rem;line-height:1.05;letter-spacing:-0.03em;
   text-transform:none;color:var(--accent);
 }
@@ -3115,23 +3098,23 @@ body{
   font-size:1.5rem;line-height:1.6;
   color:var(--accent);opacity:0.85;
 }
-.detail-lead strong{font-family:'Hanken Grotesk',sans-serif;font-weight:700;color:var(--accent)}
+.detail-lead strong{font-family:'Roboto', system-ui, sans-serif;font-weight:700;color:var(--accent)}
 .detail-lead::first-letter{
   font-family:'Newsreader',serif;font-style:italic;font-weight:500;
   font-size:5rem;line-height:0.85;color:var(--cta);
   float:left;padding:0.3rem 1rem 0 0;
 }
 .section-title{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:3.6rem;line-height:1.05;letter-spacing:-0.02em;
   text-transform:none;color:var(--accent);
 }
 .detail-section-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
-.agencies-track span{font-family:'Hanken Grotesk',sans-serif;font-weight:500;font-size:1.3rem;color:var(--accent)}
+.agencies-track span{font-family:'Roboto', system-ui, sans-serif;font-weight:500;font-size:1.3rem;color:var(--accent)}
 .agencies-track span::after{color:var(--cta);opacity:0.6}
 .agencies{border-color:var(--line)}
 
@@ -3242,7 +3225,7 @@ body{
   border:0.06rem solid rgba(245, 240, 225, 0.22);
   border-radius:999px;
   color:var(--accent);
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
 }
 
@@ -3349,7 +3332,7 @@ body{
 }
 .work-row .work-info-top{
   display:flex;justify-content:space-between;align-items:center;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:1.2rem;
@@ -3359,7 +3342,7 @@ body{
 .work-row .work-num{color:var(--cta)}
 .work-row .work-year{opacity:0.7}
 .work-row .work-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:3.2rem;line-height:1;letter-spacing:-0.03em;
   text-transform:none;color:var(--accent);
   margin:0 0 1.2rem;
@@ -3384,13 +3367,13 @@ body{
 .work-row .work-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.32rem 0.85rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0;text-transform:none;
   transition:background 0.2s ease;
 }
 .work-row:hover .work-tags span{background:#23201B}
 .work-row .work-cta{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   white-space:nowrap;flex-shrink:0;
@@ -3477,12 +3460,12 @@ body{
 }
 .works-empty-icon svg{width:100%;height:100%}
 .works-empty-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);margin-bottom:1.4rem;
 }
 .works-empty-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:4rem;line-height:1.05;letter-spacing:-0.025em;
   color:var(--accent);margin:0 0 1.5rem;
 }
@@ -3495,7 +3478,7 @@ body{
 .works-empty-cta{
   display:inline-flex;align-items:center;
   background:var(--cta);color:#1A1815;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1rem;text-decoration:none;
   padding:1rem 2rem;border-radius:999px;
   transition:background 0.2s ease, transform 0.2s ease;
@@ -3514,12 +3497,12 @@ body{
   text-align:center;
 }
 .collab-cta .collab-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .collab-cta .collab-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:6rem;line-height:1.05;letter-spacing:-0.025em;
   text-transform:none;color:var(--accent);
 }
@@ -3528,12 +3511,12 @@ body{
   letter-spacing:-0.01em;color:var(--cta);text-transform:none;
 }
 .collab-cta .collab-lead{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   color:var(--accent);opacity:0.85;
 }
 .collab-btn{
   background:var(--cta);color:#1A1815;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1rem;letter-spacing:0;text-transform:none;
   padding:1rem 2rem;border-radius:999px;
 }
@@ -3542,17 +3525,17 @@ body{
 /* ─── PROJECT VIEW — adapt palette ─── */
 .project-view{padding:2.5rem 2.4rem 12rem}
 .project-hero .p-top{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);border-color:var(--line);
 }
 .project-hero .p-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:9rem;line-height:1.0;letter-spacing:-0.035em;
   text-transform:none;color:var(--accent);
 }
 .project-hero[data-num]::before{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:700;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
   color:var(--accent);opacity:0.05;
 }
 .project-hero .p-meta-row{border-top:0.15rem solid var(--accent)}
@@ -3563,7 +3546,7 @@ body{
 .project-hero .p-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.4rem 0.95rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.82rem;letter-spacing:0;text-transform:none;
 }
 
@@ -3575,7 +3558,7 @@ body{
   opacity:0.75;margin:0 0 1.5rem;
 }
 .p-credits strong{
-  font-family:'Hanken Grotesk',sans-serif;font-style:normal;
+  font-family:'Roboto', system-ui, sans-serif;font-style:normal;
   font-weight:600;color:var(--cta);opacity:1;
 }
 /* Outcome stat row — biggest credibility unlock per case-study research */
@@ -3593,7 +3576,7 @@ body{
   padding:2rem 1.6rem;
 }
 .p-stat-num{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:3.6rem;line-height:0.9;letter-spacing:-0.04em;
   color:var(--cta);
   margin-bottom:0.6rem;
@@ -3605,7 +3588,7 @@ body{
 /* Generic case-study text block (problem, constraints, etc.) */
 .p-block{margin:0 0 3.5rem}
 .p-block-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);margin-bottom:1rem;
 }
@@ -3618,12 +3601,12 @@ body{
 .p-constraint-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.5rem 1rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;
 }
 .p-award-list{display:flex;flex-wrap:wrap;gap:0.6rem 1.4rem}
 .p-award-list span{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1.05rem;color:var(--cta);
 }
 /* External case-study link (bottom of project page, before next-nav) */
@@ -3633,7 +3616,7 @@ body{
   padding:1rem 2rem;
   background:transparent;color:var(--accent);
   border:0.08rem solid var(--line);border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:1rem;text-decoration:none;
   transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
@@ -3661,12 +3644,12 @@ body{
 }
 .project-nav-next{border-top:0.15rem solid var(--accent)}
 .project-nav-next .pn-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .project-nav-next .pn-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:4.5rem;letter-spacing:-0.03em;text-transform:none;
   color:var(--accent);
 }
@@ -3680,7 +3663,7 @@ body{
 .pn-kbd-hint{
   display:flex;align-items:center;gap:0.5rem;
   margin-top:1.4rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--accent-soft);opacity:0.65;
 }
@@ -3690,7 +3673,7 @@ body{
   padding:0 0.45rem;
   background:#1A1815;color:var(--accent);
   border:0.06rem solid var(--line);border-radius:0.3rem;
-  font-family:'IBM Plex Mono',monospace;font-size:0.85rem;
+  font-family:'Roboto', system-ui, sans-serif;font-size:0.85rem;
   letter-spacing:0;text-transform:none;
   box-shadow:inset 0 -1px 0 rgba(0,0,0,0.4);
 }
@@ -3805,7 +3788,7 @@ body{
     .splash{display:none !important}
     body{
       background:#0A0A0A;color:#F5F0E1;
-      font-family:'Hanken Grotesk',system-ui,sans-serif;
+      font-family:'Roboto', system-ui, sans-serif;
       display:flex !important;flex-direction:column;
       align-items:center;justify-content:center;
       min-height:100vh;padding:2rem;text-align:center;

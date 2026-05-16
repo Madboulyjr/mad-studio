@@ -1800,7 +1800,7 @@ function injectStyles() {
   position:fixed;inset:0;z-index:500;
   display:none;background:#0A0A0A;color:#F5F0E1;
   overflow-y:auto;
-  font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
 }
 .admin-root.open{display:block}
 /* While admin is open: hide the custom site cursor (the dot + "VIEW" pill)
@@ -1840,7 +1840,7 @@ body.is-admin,
 .adm-topbar-actions{display:flex;gap:1rem;align-items:center}
 .adm-link{
   background:transparent;border:0;cursor:pointer;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:#F5F0E1;text-decoration:none;opacity:0.65;
   transition:opacity 0.2s ease, color 0.2s ease;
@@ -1855,12 +1855,12 @@ body.is-admin,
   border-radius:1rem;background:#161310;
 }
 .adm-login-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;margin-bottom:1rem;
 }
 .adm-login-title{
-  font-family:'Hanken Grotesk',system-ui,sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:3rem;letter-spacing:-0.025em;line-height:1;
   margin:0 0 1rem;color:#F5F0E1;
 }
@@ -1874,7 +1874,7 @@ body.is-admin,
 .adm-login-form input,
 .adm-login-form button{
   height:3rem;padding:0 1.2rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-size:1rem;
+  font-family:'Roboto', system-ui, sans-serif;font-size:1rem;
   border:0.08rem solid rgba(245,240,225,0.2);background:#0A0A0A;
   color:#F5F0E1;
 }
@@ -1888,7 +1888,7 @@ body.is-admin,
 .adm-login-form button:hover:not(:disabled){background:#fff;transform:translateY(-1px)}
 .adm-login-form button:disabled{opacity:0.5;cursor:not-allowed}
 .adm-login-hint{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.75rem;letter-spacing:0.16em;text-transform:uppercase;
   opacity:0.6;
 }
@@ -1897,7 +1897,7 @@ body.is-admin,
 /* DASHBOARD */
 .adm-dashboard{display:flex;flex-direction:column;gap:3rem}
 .adm-dash-kicker{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;margin-bottom:1.2rem;
 }
@@ -1916,7 +1916,7 @@ body.is-admin,
   border-color:rgba(245,240,225,0.35);background:#1A1714;
 }
 .adm-search-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;flex-shrink:0;
 }
@@ -1933,7 +1933,7 @@ body.is-admin,
   mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='black' d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/></svg>") center/contain no-repeat;
 }
 .adm-search-count{
-  font-family:'IBM Plex Mono',monospace;font-size:0.78rem;
+  font-family:'Roboto', system-ui, sans-serif;font-size:0.78rem;
   letter-spacing:0.06em;opacity:0.55;flex-shrink:0;
   font-variant-numeric:tabular-nums;
 }
@@ -1953,12 +1953,12 @@ body.is-admin,
 }
 .adm-card:hover{background:#23201B;border-color:rgba(245,240,225,0.3);transform:translateY(-2px)}
 .adm-card-num{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.22em;opacity:0.55;
   color:#D0FA51;margin-bottom:0.5rem;
 }
 .adm-card-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
   font-size:1.25rem;line-height:1.1;margin-bottom:0.3rem;
 }
 .adm-card-sub{
@@ -1966,7 +1966,7 @@ body.is-admin,
   font-size:0.9rem;opacity:0.65;margin-bottom:0.8rem;
 }
 .adm-card-edit{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.6;margin-top:auto;align-self:flex-end;
 }
@@ -2021,7 +2021,7 @@ body.is-admin,
   background:transparent;border:0;cursor:pointer;
   color:#F5F0E1;flex-shrink:0;
   padding:0.4rem 0.7rem;border-radius:0.4rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;
   transition:opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -2033,7 +2033,7 @@ body.is-admin,
 .adm-tag{
   background:rgba(245,240,225,0.06);
   padding:0.18rem 0.55rem;border-radius:999px;
-  font-family:'Hanken Grotesk',sans-serif;font-size:0.72rem;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-size:0.72rem;font-weight:500;
 }
 .adm-tag-warn{background:rgba(208,250,81,0.18);color:#D0FA51}
 .adm-empty{
@@ -2081,12 +2081,12 @@ body.is-admin,
   border-bottom:0.08rem solid rgba(245,240,225,0.08);
 }
 .adm-preview-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;
   color:#D0FA51;
 }
 .adm-preview-url{
-  font-family:'IBM Plex Mono',monospace;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:0.78rem;
   color:#F5F0E1;opacity:0.6;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -2119,12 +2119,12 @@ body.is-admin,
 /* EDIT FORM */
 .adm-edit{max-width:60rem}
 .adm-edit-title{
-  font-family:'Hanken Grotesk',sans-serif;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:2.4rem;letter-spacing:-0.025em;line-height:1;
   margin:0 0 0.5rem;
 }
 .adm-edit-meta{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.5;margin-bottom:2.4rem;
 }
@@ -2136,13 +2136,13 @@ body.is-admin,
   display:flex;flex-direction:column;gap:1rem;
 }
 .adm-fields legend{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.22em;text-transform:uppercase;
   color:#D0FA51;padding:0 0.5rem;
 }
 .adm-form label{
   display:flex;flex-direction:column;gap:0.4rem;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;
   opacity:0.7;
 }
@@ -2153,20 +2153,20 @@ body.is-admin,
   background:#0A0A0A;border:0.08rem solid rgba(245,240,225,0.18);
   color:#F5F0E1;
   padding:0.7rem 0.95rem;border-radius:0.5rem;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:400;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
   font-size:0.95rem;letter-spacing:0;text-transform:none;
   outline:none;
   transition:border-color 0.2s ease;
 }
 .adm-input:focus,.adm-textarea:focus{border-color:#D0FA51}
-.adm-textarea{resize:vertical;min-height:5rem;font-family:'Hanken Grotesk',sans-serif}
+.adm-textarea{resize:vertical;min-height:5rem;font-family:'Roboto', system-ui, sans-serif}
 .adm-form input[type="checkbox"]{
   width:1.1rem;height:1.1rem;accent-color:#D0FA51;
 }
 .adm-outcome-block{margin-top:0.5rem}
 .adm-outcome-label{
   display:flex;justify-content:space-between;align-items:center;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.16em;text-transform:uppercase;
   opacity:0.7;margin-bottom:0.5rem;
 }
@@ -2179,13 +2179,13 @@ body.is-admin,
 .adm-save{
   height:3rem;padding:0 2rem;border-radius:999px;border:0;
   background:#D0FA51;color:#1A1815;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:1rem;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;font-size:1rem;
   cursor:pointer;
   transition:background 0.2s ease, transform 0.2s ease;
 }
 .adm-save:hover{background:#fff;transform:translateY(-1px)}
 .adm-form-status{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;
   opacity:0.7;
 }
@@ -2207,7 +2207,7 @@ body.is-admin,
   border-radius:0.6rem;padding:0.9rem;
 }
 .adm-music-asset-label{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;
 }
@@ -2236,7 +2236,7 @@ body.is-admin,
 .adm-platform-row select.adm-input{padding:0.55rem 0.7rem}
 .adm-add-platform, .adm-add-release{
   align-self:flex-start;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;
   background:none;border:0.08rem solid rgba(208,250,81,0.4);
   color:#D0FA51;
@@ -2366,7 +2366,7 @@ body.is-admin,
   display:flex;align-items:center;gap:0.8rem;
 }
 .adm-crop-zoom-label,.adm-crop-percent{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   opacity:0.55;
 }
@@ -2391,7 +2391,7 @@ body.is-admin,
   cursor:grab;
 }
 .adm-crop-hint{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
   opacity:0.5;
 }
@@ -2410,20 +2410,20 @@ body.is-admin,
   display:inline-flex;align-items:center;
   padding:0.55rem 1.1rem;border-radius:999px;
   background:#D0FA51;color:#1A1815;
-  font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:0.9rem;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;font-size:0.9rem;
   cursor:pointer;
   transition:background 0.2s ease, transform 0.2s ease;
 }
 .adm-cover-btn:hover{background:#fff;transform:translateY(-1px)}
 .adm-cover-status{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;
   opacity:0.7;min-height:1rem;
 }
 
 /* ─── GALLERY GRID ─── */
 .adm-gallery-hint{
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
   opacity:0.5;margin-bottom:0.2rem;
 }
@@ -2451,7 +2451,7 @@ body.is-admin,
 .adm-thumb-empty{
   display:flex;align-items:center;justify-content:center;
   width:100%;height:100%;
-  font-family:'IBM Plex Mono',monospace;font-size:0.7rem;
+  font-family:'Roboto', system-ui, sans-serif;font-size:0.7rem;
   text-transform:uppercase;letter-spacing:0.14em;opacity:0.4;
 }
 .adm-thumb-video{
@@ -2464,7 +2464,7 @@ body.is-admin,
   position:absolute;bottom:0;left:0;right:0;
   background:rgba(0,0,0,0.7);
   padding:0.3rem 0.5rem;
-  font-family:'IBM Plex Mono',monospace;font-size:0.6rem;
+  font-family:'Roboto', system-ui, sans-serif;font-size:0.6rem;
   letter-spacing:0.1em;text-transform:uppercase;opacity:0.85;
 }
 .adm-thumb-remove{
@@ -2484,7 +2484,7 @@ body.is-admin,
   aspect-ratio:1;
   border:0.08rem dashed rgba(245,240,225,0.2);border-radius:0.5rem;
   cursor:pointer;
-  font-family:'IBM Plex Mono',monospace;font-weight:500;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;
   color:#F5F0E1;opacity:0.65;
   transition:border-color 0.2s ease, opacity 0.2s ease, color 0.2s ease;

@@ -1565,7 +1565,7 @@ function buildAwardSeal({idx, status, awards}) {
              in only on hover (default state shows just the M centred) -->
         <g class="seal-rim">
           <text fill="#1A1815"
-                font-family="'IBM Plex Mono', monospace"
+                font-family="'Roboto', system-ui, sans-serif"
                 font-weight="700"
                 font-size="7.2"
                 letter-spacing="1.4">
@@ -2052,7 +2052,7 @@ function buildProject(works, idx, sectionId) {
       ${
         media.length
           ? media.map((m, gi) => renderGalleryItem(m, gi)).join('')
-          : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'IBM Plex Mono',monospace;letter-spacing:0.2em;text-transform:uppercase;">No images yet · draft</div>`
+          : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'Roboto', system-ui, sans-serif;letter-spacing:0.2em;text-transform:uppercase;">No images yet · draft</div>`
       }
     </div>
     ${awardsHTML}
