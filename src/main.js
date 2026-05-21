@@ -1957,13 +1957,20 @@ projectViewInner.addEventListener('click', (e) => {
 
 function renderGalleryItem(item, gi) {
   if (item._type === 'videoItem' && item.playbackId) {
+    // `autoplay` flag in the schema only controls whether the clip
+    // starts muted on its own — controls are ALWAYS shown now so the
+    // visitor can unmute, scrub, pause, and go fullscreen. Browsers
+    // block sound-on autoplay anyway, so the muted+loop intro + a
+    // visible unmute button is the most we can do automatically.
     const autoplay = item.autoplay !== false
+    const autoAttrs = autoplay ? 'autoplay muted loop playsinline' : ''
     return `<div class="g-item g-video g-wide" style="--gi:${gi}">
       <mux-player
         playback-id="${item.playbackId}"
         stream-type="on-demand"
-        ${autoplay ? 'autoplay muted loop playsinline' : 'controls'}
-        style="width:100%;aspect-ratio:16/9;display:block;--controls:${autoplay ? 'none' : ''}"
+        controls
+        ${autoAttrs}
+        style="width:100%;aspect-ratio:16/9;display:block;"
       ></mux-player>
     </div>`
   }
