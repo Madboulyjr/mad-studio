@@ -635,7 +635,7 @@ function renderProjectForm(p) {
       <fieldset class="adm-fields adm-fields-gallery">
         <legend>Project gallery (${(p.media || []).length} items)</legend>
         <div class="adm-gallery-hint">
-          Drag to reorder · click × to remove · add images or videos at the end
+          Drag to reorder · click × to remove · use the buttons below to add more
         </div>
         <div class="adm-gallery-grid" id="adm-gallery-grid">
           ${(p.media || []).map((m, i) => renderGalleryThumb(m, i)).join('')}
@@ -644,10 +644,24 @@ function renderProjectForm(p) {
             <span class="adm-gallery-add-icon" aria-hidden="true">+</span>
             <span class="adm-gallery-add-label">Add images</span>
           </label>
-          <label class="adm-gallery-add adm-gallery-add-video">
+        </div>
+        <div class="adm-gallery-actions">
+          <label class="adm-gallery-action-btn">
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" hidden id="adm-gallery-input-2" multiple>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21,15 16,10 5,21"/>
+            </svg>
+            <span>Add images</span>
+          </label>
+          <label class="adm-gallery-action-btn adm-gallery-action-btn-video">
             <input type="file" accept="video/mp4,video/quicktime,video/webm,video/mov,video/*" hidden id="adm-gallery-video-input">
-            <span class="adm-gallery-add-icon" aria-hidden="true">▶</span>
-            <span class="adm-gallery-add-label">Add video</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+            <span>Add video</span>
           </label>
         </div>
         <div class="adm-cover-status" id="adm-gallery-status"></div>
@@ -1149,35 +1163,40 @@ function clamp01(n) {
 /* GALLERY — add/remove/reorder + video upload via Mux */
 function bindGallery(projectId) {
   const grid = rootEl.querySelector('#adm-gallery-grid')
-  const input = rootEl.querySelector('#adm-gallery-input')
+  // Two image inputs now: the small "+" tile inside the grid AND the
+  // larger prominent button below the grid. Both run the same handler.
+  const imageInputs = [
+    rootEl.querySelector('#adm-gallery-input'),
+    rootEl.querySelector('#adm-gallery-input-2'),
+  ].filter(Boolean)
   const videoInput = rootEl.querySelector('#adm-gallery-video-input')
   const status = rootEl.querySelector('#adm-gallery-status')
   if (!grid) return
 
-  // Add new images via input
-  if (input) {
-    input.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files || [])
-      if (!files.length) return
-      for (const file of files) {
-        status.textContent = `Uploading ${file.name}…`
-        try {
-          const asset = await uploadFile(file)
-          mediaState.push({
-            _type: 'image',
-            _key: Math.random().toString(36).slice(2, 12),
-            assetId: asset._id,
-            url: asset.url,
-          })
-        } catch (err) {
-          status.textContent = '✗ ' + err.message
-        }
+  // Add new images — shared handler across both image inputs.
+  async function handleImageInput(e) {
+    const inputEl = e.currentTarget
+    const files = Array.from(inputEl.files || [])
+    if (!files.length) return
+    for (const file of files) {
+      status.textContent = `Uploading ${file.name}…`
+      try {
+        const asset = await uploadFile(file)
+        mediaState.push({
+          _type: 'image',
+          _key: Math.random().toString(36).slice(2, 12),
+          assetId: asset._id,
+          url: asset.url,
+        })
+      } catch (err) {
+        status.textContent = '✗ ' + err.message
       }
-      status.textContent = `✓ Added ${files.length} image${files.length > 1 ? 's' : ''} — click "Save changes" to apply`
-      reRenderGallery()
-      input.value = '' // reset so same file can be re-added
-    })
+    }
+    status.textContent = `✓ Added ${files.length} image${files.length > 1 ? 's' : ''} — click "Save changes" to apply`
+    reRenderGallery()
+    inputEl.value = '' // reset so same file can be re-added
   }
+  imageInputs.forEach((el) => el.addEventListener('change', handleImageInput))
 
   // Add new video via Mux direct upload
   if (videoInput) {
@@ -2496,6 +2515,45 @@ body.is-admin,
   border-color:#FF5577;color:#FF5577;
 }
 .adm-gallery-add-icon{font-size:1.6rem;margin-bottom:0.2rem;opacity:0.7}
+
+/* Prominent action bar BELOW the thumb grid — pulled the upload
+   buttons out of the grid so the video button isn't lost as a tiny
+   dashed square next to image thumbs. */
+.adm-gallery-actions{
+  display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:1rem;
+}
+.adm-gallery-action-btn{
+  flex:1 1 14rem;min-width:0;
+  display:inline-flex;align-items:center;justify-content:center;gap:0.7rem;
+  padding:0.95rem 1.2rem;
+  background:rgba(245,240,225,0.04);
+  border:0.08rem solid rgba(245,240,225,0.16);
+  border-radius:0.6rem;
+  cursor:pointer;
+  font-family:'Roboto', system-ui, sans-serif;
+  font-weight:600;font-size:0.85rem;letter-spacing:0.12em;
+  text-transform:uppercase;color:#F5F0E1;
+  transition:background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+.adm-gallery-action-btn:hover{
+  background:rgba(208,250,81,0.08);
+  border-color:#D0FA51;color:#D0FA51;
+  transform:translateY(-1px);
+}
+.adm-gallery-action-btn svg{width:1.25rem;height:1.25rem;flex-shrink:0}
+.adm-gallery-action-btn-video{
+  /* Video gets the warm-red accent so it stands apart from the
+     image button — same color the section ticker + work-row underline
+     use elsewhere. */
+  background:rgba(255,49,59,0.08);
+  border-color:rgba(255,49,59,0.45);
+  color:#FF5577;
+}
+.adm-gallery-action-btn-video:hover{
+  background:rgba(255,49,59,0.18);
+  border-color:#FF5577;color:#FFEDF0;
+}
+
 .adm-gallery-note{
   font-family:'Newsreader',serif;font-style:italic;font-size:0.85rem;
   opacity:0.7;margin-top:0.5rem;
