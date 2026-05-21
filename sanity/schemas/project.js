@@ -169,8 +169,9 @@ export const project = {
             {
               name: 'autoplay',
               title: 'Autoplay muted',
+              description: 'Off by default — leave off so the visitor presses play themselves. Tick this only for short ambient clips you want auto-running (muted, looping).',
               type: 'boolean',
-              initialValue: true,
+              initialValue: false,
             },
             // Denormalised Mux identifiers so the public frontend doesn't
             // have to traverse the mux.videoAsset wrapper doc (Sanity now

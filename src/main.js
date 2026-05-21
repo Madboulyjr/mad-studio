@@ -1957,18 +1957,22 @@ projectViewInner.addEventListener('click', (e) => {
 
 function renderGalleryItem(item, gi) {
   if (item._type === 'videoItem' && item.playbackId) {
-    // `autoplay` flag in the schema only controls whether the clip
-    // starts muted on its own — controls are ALWAYS shown now so the
-    // visitor can unmute, scrub, pause, and go fullscreen. Browsers
-    // block sound-on autoplay anyway, so the muted+loop intro + a
-    // visible unmute button is the most we can do automatically.
-    const autoplay = item.autoplay !== false
+    // Defaults flipped: no video autoplays anymore. A video only
+    // autoplays (muted, looping, inline) if `autoplay` is EXPLICITLY
+    // set to true on the videoItem — otherwise it shows the Mux
+    // first-frame poster + controls and waits for a play click.
+    const autoplay = item.autoplay === true
     const autoAttrs = autoplay ? 'autoplay muted loop playsinline' : ''
+    // Mux generates a free poster thumbnail at time=0 from the
+    // playback ID — gives the player a real first-frame to display
+    // before the user hits play (no black box).
+    const poster = `https://image.mux.com/${item.playbackId}/thumbnail.jpg?time=0&width=1600`
     return `<div class="g-item g-video g-wide" style="--gi:${gi}">
       <mux-player
         playback-id="${item.playbackId}"
         stream-type="on-demand"
         controls
+        poster="${poster}"
         ${autoAttrs}
         style="width:100%;aspect-ratio:16/9;display:block;"
       ></mux-player>

@@ -76,7 +76,10 @@ function normaliseMediaItem(item) {
       _key: item._key || cryptoRandom(),
       video: item.video || null,
       caption: item.caption ? String(item.caption).slice(0, 300) : '',
-      autoplay: item.autoplay !== false,
+      // Default is OFF — only autoplay (muted, looping) when the
+      // editor has explicitly turned the toggle on. Anything other
+      // than literal `true` is treated as off.
+      autoplay: item.autoplay === true,
     }
     if (item.playbackId) out.playbackId = String(item.playbackId).slice(0, 64)
     if (item.assetId) out.assetId = String(item.assetId).slice(0, 64)

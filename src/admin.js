@@ -1247,7 +1247,10 @@ function bindGallery(projectId) {
           playbackId: fin.videoAsset.playbackId,
           assetId: fin.videoAsset.assetId,
           caption: '',
-          autoplay: true,
+          // Default to NO autoplay — visitor presses play themselves.
+          // Editor can flip this on in Sanity Studio for short ambient
+          // clips they want auto-running (muted, looping).
+          autoplay: false,
         })
         status.textContent = `✓ Video processed — click "Save changes" to apply`
         reRenderGallery()
