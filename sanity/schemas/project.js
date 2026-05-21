@@ -172,6 +172,25 @@ export const project = {
               type: 'boolean',
               initialValue: true,
             },
+            // Denormalised Mux identifiers so the public frontend doesn't
+            // have to traverse the mux.videoAsset wrapper doc (Sanity now
+            // returns `reason: permission` for those anonymously). Set by
+            // the /api/admin/video-finalize → admin upload flow OR by the
+            // sanity/scripts/backfill-mux-playback.mjs script.
+            {
+              name: 'playbackId',
+              title: 'Playback ID (auto)',
+              type: 'string',
+              readOnly: true,
+              hidden: true,
+            },
+            {
+              name: 'assetId',
+              title: 'Asset ID (auto)',
+              type: 'string',
+              readOnly: true,
+              hidden: true,
+            },
           ],
           preview: {
             select: {caption: 'caption'},

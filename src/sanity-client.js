@@ -52,8 +52,14 @@ const QUERY = `{
       _type,
       _key,
       asset->{_id, url, metadata{dimensions}},
-      "playbackId": video.asset->playbackId,
-      "assetId": video.asset->assetId
+      // Prefer the inline playbackId baked onto the videoItem (set by
+      // the admin upload flow or the backfill script). Fall back to
+      // traversing the mux.videoAsset wrapper — only works for assets
+      // created BEFORE Sanity flipped mux.videoAsset to permission:
+      // private. Pre-pending the inline coalesce keeps new uploads
+      // working without needing the wrapper to be public.
+      "playbackId": coalesce(playbackId, video.asset->playbackId),
+      "assetId": coalesce(assetId, video.asset->assetId)
     }
   }
 }`

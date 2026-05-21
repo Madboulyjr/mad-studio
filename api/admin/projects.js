@@ -65,17 +65,22 @@ function normaliseMediaItem(item) {
     if (item.caption) img.caption = String(item.caption).slice(0, 300)
     return img
   }
-  // Video item — keep existing video reference if provided as-is (we
-  // don't yet support uploading video via /admin; user does that in
-  // Sanity Studio). Allow PATCH to keep / reorder existing items.
+  // Video item — keep existing video reference plus the denormalised
+  // playbackId + assetId baked onto the item. The frontend GROQ reads
+  // those inline values because Sanity flags mux.videoAsset wrapper
+  // docs as `reason: permission` for anonymous reads, so traversing
+  // `video.asset->playbackId` returns null on the public site.
   if (item._type === 'videoItem') {
-    return {
+    const out = {
       _type: 'videoItem',
       _key: item._key || cryptoRandom(),
       video: item.video || null,
       caption: item.caption ? String(item.caption).slice(0, 300) : '',
       autoplay: item.autoplay !== false,
     }
+    if (item.playbackId) out.playbackId = String(item.playbackId).slice(0, 64)
+    if (item.assetId) out.assetId = String(item.assetId).slice(0, 64)
+    return out
   }
   return null
 }

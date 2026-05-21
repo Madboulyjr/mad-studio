@@ -1208,7 +1208,15 @@ function bindGallery(projectId) {
         // Step 1: get Mux upload URL
         const initR = await fetch(API.videoInit, {method: 'POST', credentials: 'same-origin'})
         const init = await initR.json()
-        if (!initR.ok || !init.ok) throw new Error(init.error || 'Mux init failed')
+        if (!initR.ok || !init.ok) {
+          // Surface auth failures explicitly — easy to confuse a 401
+          // from Mux with a generic "upload failed" otherwise.
+          const msg = init.error || ''
+          if (msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('credentials')) {
+            throw new Error('Mux unauthorized — MUX_TOKEN_ID / MUX_TOKEN_SECRET in Vercel env are wrong or expired')
+          }
+          throw new Error(msg || 'Mux init failed')
+        }
 
         // Step 2: PUT the file to Mux directly
         status.textContent = `Uploading ${file.name} to Mux…`
@@ -1225,7 +1233,10 @@ function bindGallery(projectId) {
         const fin = await finR.json()
         if (!finR.ok || !fin.ok) throw new Error(fin.error || 'Mux finalize failed')
 
-        // Add as videoItem to mediaState
+        // Add as videoItem to mediaState — bake playbackId + assetId
+        // directly onto the item so the public frontend doesn't have
+        // to traverse the mux.videoAsset wrapper doc (which Sanity
+        // now flags as `reason: permission` for anonymous reads).
         mediaState.push({
           _type: 'videoItem',
           _key: fin._key,
@@ -1233,6 +1244,8 @@ function bindGallery(projectId) {
             _type: 'mux.video',
             asset: {_type: 'reference', _ref: fin.videoAsset._id},
           },
+          playbackId: fin.videoAsset.playbackId,
+          assetId: fin.videoAsset.assetId,
           caption: '',
           autoplay: true,
         })
