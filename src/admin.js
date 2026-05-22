@@ -2063,10 +2063,11 @@ body.is-admin,
   display:flex;flex-direction:column;
 }
 .adm-edit-main{
-  /* Centered form pane. 56rem ≈ 896px reads comfortably for a long
-     editorial form without each field becoming a horizon-spanning bar.
-     auto on both sides keeps it centered as the viewport widens. */
-  max-width:56rem;
+  /* Centered form pane. Bumped to 80rem (~1280px) so wide monitors
+     don't waste half the viewport on dead side-padding. Caption +
+     case-study textareas read well at this width without each short
+     input becoming a horizon-spanning bar. */
+  max-width:80rem;
   width:100%;
   margin:0 auto;
   flex:1;
