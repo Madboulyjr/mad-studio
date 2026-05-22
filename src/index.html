@@ -1680,7 +1680,7 @@ body:not(.loading) .splash{
      measured the live stack and called the 160px above "NEXT PROJECT"
      still a chasm. New rhythm: 40px before the divider line, 40px
      above the label — tight editorial breathing instead of a void. */
-  margin:2.5rem 0 0;padding:2.5rem 0 0.5rem;
+  margin:1.5rem 0 0;padding:2rem 0 0.5rem;
   display:flex;justify-content:space-between;align-items:center;
   border-top:0.2rem solid var(--accent);
 }
@@ -3589,11 +3589,10 @@ body{
 }
 /* Generic case-study text block (problem, constraints, etc.) */
 .p-block{margin:0 0 3.5rem}
-/* Last p-block in the case-study stack drops its own margin so the
-   .project-nav-next margin-top owns the rhythm to the footer.
-   :last-child doesn't match here because .project-nav-next is a
-   subsequent sibling, so we use :has(~ .p-block) negation to find
-   the .p-block with no following .p-block sibling. */
+/* Awards is always the last .p-block (rendered after the gallery).
+   Zero its margin directly — no :has() needed, works everywhere. */
+.p-block.p-awards{margin-bottom:0}
+/* Fallback for browsers that support :has() in case other blocks land last */
 .p-block:not(:has(~ .p-block)){margin-bottom:0}
 .p-block-label{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
