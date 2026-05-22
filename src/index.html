@@ -3590,8 +3590,10 @@ body{
 /* Generic case-study text block (problem, constraints, etc.) */
 .p-block{margin:0 0 3.5rem}
 /* Awards is always the last .p-block (rendered after the gallery).
-   Zero its margin directly — no :has() needed, works everywhere. */
-.p-block.p-awards{margin-bottom:0}
+   Top margin: breathing room between the gallery (often ends on a video)
+   and the "— Recognition" label. Bottom margin: zero, so the divider
+   line sits tight after the awards row. */
+.p-block.p-awards{margin:4rem 0 0}
 /* Fallback for browsers that support :has() in case other blocks land last */
 .p-block:not(:has(~ .p-block)){margin-bottom:0}
 .p-block-label{
@@ -3642,7 +3644,7 @@ body{
   .p-stat-num{font-size:2.4rem;margin-bottom:0.4rem}
   .p-stat-label{font-size:0.9rem}
   .p-block{margin-bottom:2.5rem}
-  .p-block.p-awards{margin-bottom:0}
+  .p-block.p-awards{margin:3rem 0 0}
   .p-block-body{font-size:1.15rem}
   .p-award-list span{font-size:0.95rem}
   .p-external{font-size:0.9rem;padding:0.85rem 1.4rem}
