@@ -504,8 +504,9 @@ function setupReorder(list) {
 function renderEdit() {
   const {kind, doc} = state.editing
   const isProject = kind === 'project'
-  // Project page URL for live preview iframe (/<section-public-slug>/<project-slug>)
-  // Map music → madplus per the public URL scheme
+  // Project page URL — used only for the "Open on site" link in the
+  // topbar. The live-preview iframe was removed per Ali's request;
+  // editors now jump to the real site in a new tab to verify.
   const PUBLIC_SECTION = {music: 'madplus', originals: 'originals', bubble: 'bubble', vision: 'vision'}
   const previewUrl = isProject && doc.slug && doc.sectionSlug
     ? `/${PUBLIC_SECTION[doc.sectionSlug] || doc.sectionSlug}/${doc.slug}`
@@ -526,45 +527,18 @@ function renderEdit() {
           <span>Studio · Admin · Edit</span>
         </a>
         <div class="adm-topbar-actions">
-          <button class="adm-link" id="adm-preview-reload" title="Reload preview">⟳ Reload preview</button>
-          <a class="adm-link" href="${previewUrl}" target="_blank" rel="noopener">Open in new tab ↗</a>
+          <a class="adm-link" href="${previewUrl}" target="_blank" rel="noopener">Open on site ↗</a>
         </div>
       </header>
-      <div class="adm-split">
-        <div class="adm-split-form">
-          ${isProject ? renderProjectForm(doc) : renderSectionForm(doc)}
-        </div>
-        <div class="adm-split-preview">
-          <div class="adm-preview-bar">
-            <span class="adm-preview-label">LIVE PREVIEW</span>
-            <span class="adm-preview-url">${escapeHtml(previewUrl)}</span>
-          </div>
-          <iframe
-            class="adm-preview-frame"
-            id="adm-preview-frame"
-            src="${escapeAttr(previewUrl)}"
-            title="Live preview"
-            loading="lazy"
-            allow="autoplay">
-          </iframe>
-          <div class="adm-preview-hint">
-            Save changes → preview reloads. Live data via Sanity CDN cache (~60s).
-          </div>
-        </div>
-      </div>
+      <main class="adm-edit-main">
+        ${isProject ? renderProjectForm(doc) : renderSectionForm(doc)}
+      </main>
     </div>
   `
   rootEl.querySelector('#adm-back').addEventListener('click', () => {
     state.editing = null
     render()
   })
-  const reloadBtn = rootEl.querySelector('#adm-preview-reload')
-  if (reloadBtn) {
-    reloadBtn.addEventListener('click', () => {
-      const f = rootEl.querySelector('#adm-preview-frame')
-      if (f) f.src = f.src // force reload
-    })
-  }
   bindEditFormHandlers(kind, doc._id)
 }
 
@@ -1367,15 +1341,11 @@ function bindEditFormHandlers(kind, id) {
     try {
       const payload = kind === 'project' ? collectProjectPayload(data, form) : collectSectionPayload(data)
       await saveDoc(kind, id, payload)
-      status.textContent = '✓ Saved — reloading preview…'
       await refreshLists()
-      // Reload the preview iframe so user sees new content immediately
-      // (small delay to give Sanity CDN a moment to invalidate)
-      setTimeout(() => {
-        const f = rootEl.querySelector('#adm-preview-frame')
-        if (f) f.src = f.src
-        status.textContent = '✓ Saved. Preview reloaded.'
-      }, 800)
+      // Live-preview iframe was removed — Sanity CDN takes ~10-60s to
+      // propagate the change to the public site. The "Open on site"
+      // link in the topbar opens the project in a new tab.
+      status.textContent = '✓ Saved. Open on site to verify (cache may take ~60s).'
     } catch (err) {
       status.textContent = '✗ ' + (err.message || 'Save failed')
     }
@@ -2082,75 +2052,31 @@ body.is-admin,
 }
 
 /* SPLIT PANE — edit form left, live iframe preview right */
-/* Shell-edit takes the full small-viewport height (100svh respects
-   iOS URL bar collapse). Padding kept tight so the iframe gets max
-   vertical room. */
-.adm-shell-edit{max-width:none;padding:1rem 1.4rem 0;height:100vh;height:100svh;display:flex;flex-direction:column}
-.adm-split{
-  display:grid;
-  /* Form pane shrinks slightly (38% → 32%) so the live preview gets
-     more horizontal room — was making the iframe feel cramped. */
-  grid-template-columns:minmax(26rem, 32%) 1fr;
-  gap:1.2rem;
-  flex:1;min-height:0;
-  margin-bottom:1.5rem;
-}
-.adm-split-form{
-  overflow-y:auto;
-  padding-right:0.5rem;
-  /* hide native scrollbar but keep functional */
-  scrollbar-width:thin;
-}
-.adm-split-form::-webkit-scrollbar{width:6px}
-.adm-split-form::-webkit-scrollbar-thumb{background:rgba(245,240,225,0.15);border-radius:3px}
-.adm-split-preview{
+/* Edit shell — single-column form layout, centered with a comfortable
+   reading max-width. Live preview iframe was removed; editors verify
+   on the live site via the "Open on site ↗" link in the topbar.
+   100svh still respects iOS URL-bar collapse so the page never jumps. */
+.adm-shell-edit{
+  max-width:none;
+  padding:1rem 1.4rem 5rem;
+  min-height:100vh;min-height:100svh;
   display:flex;flex-direction:column;
-  background:#0A0A0A;
-  border:0.08rem solid rgba(245,240,225,0.1);
-  border-radius:0.8rem;
-  overflow:hidden;
-  min-height:0;
 }
-.adm-preview-bar{
-  display:flex;align-items:center;gap:0.8rem;
-  padding:0.7rem 1rem;
-  background:#161310;
-  border-bottom:0.08rem solid rgba(245,240,225,0.08);
+.adm-edit-main{
+  /* Centered form pane. 56rem ≈ 896px reads comfortably for a long
+     editorial form without each field becoming a horizon-spanning bar.
+     auto on both sides keeps it centered as the viewport widens. */
+  max-width:56rem;
+  width:100%;
+  margin:0 auto;
+  flex:1;
 }
-.adm-preview-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
-  font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;
-  color:#D0FA51;
-}
-.adm-preview-url{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
-  font-size:0.78rem;
-  color:#F5F0E1;opacity:0.6;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.adm-preview-frame{
-  flex:1;width:100%;border:0;
-  background:#0A0A0A;
-  /* Force a generous minimum height so the iframe never collapses to
-     a tiny strip even when the form column happens to be short.
-     Uses calc(100vh - top/bar/hint allowance) so it scales with the
-     viewport. */
-  min-height:calc(100vh - 12rem);
-}
-.adm-preview-hint{
-  padding:0.6rem 1rem;
-  background:#161310;
-  border-top:0.08rem solid rgba(245,240,225,0.06);
-  font-family:'Newsreader',serif;font-style:italic;
-  font-size:0.78rem;opacity:0.55;
-}
-
-/* Stack on narrow widths */
 @media (max-width: 1100px){
-  .adm-shell-edit{height:auto;padding:1rem 1.25rem 5rem}
-  .adm-split{grid-template-columns:1fr;gap:1.5rem}
-  .adm-split-form{overflow:visible;padding-right:0}
-  .adm-split-preview{height:60vh}
+  .adm-shell-edit{padding:1rem 1.25rem 5rem}
+}
+@media (max-width: 768px){
+  .adm-shell-edit{padding:0.6rem 1rem 5rem}
+  .adm-edit-main{max-width:100%}
 }
 
 /* EDIT FORM */
