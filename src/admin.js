@@ -326,7 +326,7 @@ function renderDashboard() {
                     </span>
                   </button>
                   <button class="adm-row-action adm-row-edit-btn" data-action="edit" data-id="${p._id}" title="Edit">Edit ↗</button>
-                  <button class="adm-row-action adm-row-delete-btn" data-action="delete" data-id="${p._id}" data-title="${escapeAttr(p.title)}" title="Delete">×</button>
+                  <button class="adm-row-action adm-row-delete-btn" data-action="delete" data-id="${p._id}" data-title="${escapeAttr(p.title)}" aria-label="Delete ${escapeAttr(p.title)}" title="Delete">×</button>
                 </div>
               `,
                   )
@@ -837,7 +837,7 @@ function renderReleaseRow(r, i) {
         </div>
         <input class="adm-input" name="rl-listenUrl-${i}" value="${escapeAttr(r.listenUrl || '')}" placeholder="Primary listen URL" type="url">
       </div>
-      <button type="button" class="adm-link adm-release-remove" data-i="${i}" title="Remove release">×</button>
+      <button type="button" class="adm-link adm-release-remove" data-i="${i}" aria-label="Remove this release" title="Remove release">×</button>
     </div>
   `
 }
@@ -872,7 +872,7 @@ function bindCoverUpload(projectId) {
       attachCropTool()
       status.textContent = '✓ Uploaded — drag the rect to crop, then save'
     } catch (err) {
-      status.textContent = '✗ ' + err.message
+      status.textContent = '✗ ' + err.message + ' · Click Replace cover ↑ to try again'
     }
   })
 
@@ -1165,7 +1165,7 @@ function bindGallery(projectId) {
           url: asset.url,
         })
       } catch (err) {
-        status.textContent = '✗ ' + err.message
+        status.textContent = '✗ ' + err.message + ' · Click Add images to retry'
       }
     }
     status.textContent = `✓ Added ${files.length} image${files.length > 1 ? 's' : ''} — click "Save changes" to apply`
@@ -1231,7 +1231,7 @@ function bindGallery(projectId) {
         status.textContent = `✓ Video processed — click "Save changes" to apply`
         reRenderGallery()
       } catch (err) {
-        status.textContent = '✗ Video upload failed: ' + err.message
+        status.textContent = '✗ Video upload failed: ' + err.message + ' · Click Add video to retry'
       }
       videoInput.value = ''
     })
@@ -1351,7 +1351,7 @@ function bindEditFormHandlers(kind, id) {
       // link in the topbar opens the project in a new tab.
       status.textContent = '✓ Saved. Open on site to verify (cache may take ~60s).'
     } catch (err) {
-      status.textContent = '✗ ' + (err.message || 'Save failed')
+      status.textContent = '✗ ' + (err.message || 'Save failed') + ' · Click Save changes to retry'
     } finally {
       if (submitBtn) submitBtn.disabled = false
     }
@@ -1681,7 +1681,7 @@ function bindMusicForm() {
         }
         status.textContent = '✓ Uploaded'
       } catch (err) {
-        status.textContent = '✗ ' + (err.message || 'Upload failed')
+        status.textContent = '✗ ' + (err.message || 'Upload failed') + ' · Pick another file to retry'
       }
     })
   }
@@ -1710,7 +1710,7 @@ function bindMusicForm() {
         }
         status.textContent = '✓ Uploaded'
       } catch (err) {
-        status.textContent = '✗ ' + (err.message || 'Upload failed')
+        status.textContent = '✗ ' + (err.message || 'Upload failed') + ' · Pick another file to retry'
       }
     })
   }
@@ -2580,6 +2580,21 @@ body.is-admin,
   .adm-thumb-remove::before{
     content:'';position:absolute;inset:-0.7rem;
   }
+}
+
+/* ── A11Y: respect prefers-reduced-motion in the admin too ──────────
+   Vestibular triggers don't stop at the public site. Strip transitions
+   + transforms inside .admin-root when the OS reports reduce. */
+@media (prefers-reduced-motion: reduce){
+  .admin-root *,
+  .admin-root *::before,
+  .admin-root *::after{
+    animation-duration:0.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:0.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .admin-root .adm-save:hover{transform:none}
 }
 `
   const style = document.createElement('style')
