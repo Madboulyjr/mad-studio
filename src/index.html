@@ -3507,7 +3507,12 @@ body{
 .collab-btn:hover{background:#fff}
 
 /* ─── PROJECT VIEW — adapt palette ─── */
-.project-view{padding:2.5rem 2.4rem 12rem}
+/* Bottom padding reduced 12rem → 6rem. Just enough to clear the
+   floating bottom-pill nav (lives at bottom: 1.5rem, ~5rem tall) +
+   keep the last block from kissing the viewport edge. The old 12rem
+   was leaving a ~190px chasm below RECOGNITION on projects with
+   case-study blocks at the bottom. */
+.project-view{padding:2.5rem 2.4rem 6rem}
 .project-hero .p-top{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
@@ -3577,6 +3582,10 @@ body{
 }
 /* Generic case-study text block (problem, constraints, etc.) */
 .p-block{margin:0 0 3.5rem}
+/* Last block in the case-study stack drops its own margin so the
+   .project-view padding owns the bottom rhythm — was double-counting
+   ~56px under the final block (e.g. RECOGNITION on Google Arabia). */
+.p-block:last-child{margin-bottom:0}
 .p-block-label{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
@@ -3759,7 +3768,7 @@ body{
   .work-row .work-cta{font-size:0.7rem}
   /* Disable scroll-reveal stagger on mobile (saves perf, less janky) */
   .work-row{transition-duration:0.4s}
-  .project-view{padding:2rem 1.25rem 10rem}
+  .project-view{padding:2rem 1.25rem 5rem}
   .project-hero .p-title{font-size:4rem}
   .collab-cta .collab-title{font-size:3.5rem}
   .project-nav-next .pn-title{font-size:2.6rem}
