@@ -1996,7 +1996,7 @@ function renderGalleryItem(item, gi) {
         controls
         poster="${poster}"
         ${autoAttrs}
-        style="width:100%;aspect-ratio:16/9;display:block;"
+        style="width:100%;height:100%;display:block;"
       ></mux-player>
     </div>`
   }

@@ -1680,7 +1680,7 @@ body:not(.loading) .splash{
      measured the live stack and called the 160px above "NEXT PROJECT"
      still a chasm. New rhythm: 40px before the divider line, 40px
      above the label — tight editorial breathing instead of a void. */
-  margin:2.5rem 0 0;padding:2.5rem 0 1.5rem;
+  margin:2.5rem 0 0;padding:2.5rem 0 0.5rem;
   display:flex;justify-content:space-between;align-items:center;
   border-top:0.2rem solid var(--accent);
 }
@@ -2109,7 +2109,7 @@ body::after{display:none}
   .project-gallery .g-item.g-wide{grid-column:1}
 
   .project-nav-next{
-    margin-top:1.5rem;padding:2rem 0 1rem;
+    margin-top:1.5rem;padding:2rem 0 0.5rem;
     flex-direction:column;align-items:flex-start;gap:2rem;
   }
   .project-nav-next .pn-block{max-width:100%}
@@ -2572,6 +2572,10 @@ body{
 
 /* tap on gallery images opens lightbox */
 .project-gallery .g-item:not(.g-video){cursor:zoom-in}
+/* Video container owns the 16/9 box; mux-player fills it.
+   line-height:0 kills any inline whitespace gap below the element. */
+.g-item.g-video{aspect-ratio:16/9;line-height:0;font-size:0}
+.g-item.g-video mux-player{width:100%;height:100%;display:block}
 
 /* ─── 404 PAGE — full-viewport editorial brutalist ─── */
 .not-found{
@@ -3515,7 +3519,7 @@ body{
    project-view overlay (z-stacked below it) so the wide clearance
    isn't doing any work here — was just leaving a 96px black strip
    under the kbd-hint. */
-.project-view{padding:2.5rem 2.4rem 3rem}
+.project-view{padding:2.5rem 2.4rem 1.5rem}
 .project-hero .p-top{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
@@ -3773,7 +3777,7 @@ body{
   .work-row .work-cta{font-size:0.7rem}
   /* Disable scroll-reveal stagger on mobile (saves perf, less janky) */
   .work-row{transition-duration:0.4s}
-  .project-view{padding:2rem 1.25rem 2.5rem}
+  .project-view{padding:2rem 1.25rem 1.5rem}
   .project-hero .p-title{font-size:4rem}
   .collab-cta .collab-title{font-size:3.5rem}
   .project-nav-next .pn-title{font-size:2.6rem}
