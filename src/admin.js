@@ -516,6 +516,7 @@ function renderEdit() {
 
   rootEl.innerHTML = `
     <div class="adm-shell adm-shell-edit">
+      <a class="adm-skip-link" href="#adm-edit-form">Skip to form</a>
       <header class="adm-topbar">
         <button class="adm-link" id="adm-back">← Back</button>
         <a class="adm-brand" href="/">
@@ -530,7 +531,7 @@ function renderEdit() {
           <a class="adm-link" href="${previewUrl}" target="_blank" rel="noopener">Open on site ↗</a>
         </div>
       </header>
-      <main class="adm-edit-main">
+      <main class="adm-edit-main" id="adm-edit-form" tabindex="-1">
         ${isProject ? renderProjectForm(doc) : renderSectionForm(doc)}
       </main>
     </div>
@@ -1195,9 +1196,17 @@ function bindGallery(projectId) {
         }
 
         // Step 2: PUT the file to Mux directly
-        status.textContent = `Uploading ${file.name} to Mux…`
+        // Show a visual progress bar so big files (the most likely
+        // case for video) don't look frozen at "Uploading…" text.
+        status.innerHTML = `Uploading ${escapeHtml(file.name)}…
+          <span class="adm-progress" aria-hidden="true"><span class="adm-progress-fill" style="width:0%"></span></span>
+          <span class="adm-progress-pct">0%</span>`
+        const fillEl = status.querySelector('.adm-progress-fill')
+        const pctEl = status.querySelector('.adm-progress-pct')
         await xhrUpload(init.uploadUrl, file, (pct) => {
-          status.textContent = `Uploading ${file.name}: ${Math.round(pct)}%`
+          const r = Math.round(pct)
+          if (fillEl) fillEl.style.width = r + '%'
+          if (pctEl) pctEl.textContent = r + '%'
         })
 
         // Step 3: poll for processing + Sanity wrapping
@@ -1846,6 +1855,45 @@ body.is-admin,
   outline-offset:0;
   border-color:#D0FA51;
 }
+
+/* Skip-to-form link — visually hidden until a keyboard user tabs to
+   it. Lets them bypass the topbar (BACK + brand + Open on site) and
+   jump straight into the editing form. Standard a11y pattern. */
+.adm-skip-link{
+  position:absolute;left:0.6rem;top:0.6rem;
+  transform:translateY(-150%);
+  padding:0.6rem 1rem;border-radius:0.5rem;
+  background:#D0FA51;color:#1A1815;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-size:0.85rem;letter-spacing:0.16em;text-transform:uppercase;
+  text-decoration:none;
+  z-index:9999;
+  transition:transform 0.18s ease;
+}
+.adm-skip-link:focus,
+.adm-skip-link:focus-visible{transform:translateY(0)}
+
+/* Upload progress bar — used inside .adm-cover-status during direct
+   Mux upload (xhrUpload). Static text was reading as "frozen" on
+   large files. */
+.adm-progress{
+  display:inline-block;
+  width:10rem;height:0.45rem;
+  background:rgba(245,240,225,0.12);
+  border-radius:999px;overflow:hidden;
+  vertical-align:middle;margin:0 0.5rem;
+}
+.adm-progress-fill{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,#D0FA51,#FF313B);
+  transition:width 0.15s ease;
+  border-radius:inherit;
+}
+.adm-progress-pct{
+  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-size:0.75rem;color:#D0FA51;
+  font-variant-numeric:tabular-nums;
+}
 .admin-root input,
 .admin-root textarea{cursor:text}
 .admin-root .adm-crop-rect{cursor:move}
@@ -2085,6 +2133,8 @@ body.is-admin,
   padding:1rem 1.4rem 5rem;
   min-height:100vh;min-height:100svh;
   display:flex;flex-direction:column;
+  /* Containing block for the absolutely-positioned .adm-skip-link */
+  position:relative;
 }
 .adm-edit-main{
   /* Centered form pane. Bumped to 80rem (~1280px) so wide monitors
