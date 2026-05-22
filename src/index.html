@@ -453,7 +453,12 @@ body:not(.loading) .splash{
 .manifesto{
   font-family:'Roboto',sans-serif;font-weight:900;
   font-size:12rem;line-height:0.92;letter-spacing:-0.03em;
-  text-transform:uppercase;margin-bottom:3.5rem;
+  text-transform:uppercase;
+  /* Pulled in from 3.5rem → 1.4rem per Ali — at 12rem font-size the
+     line-box already includes a generous descender zone, so the extra
+     56px of margin read as a chasm between the heading and the lead.
+     1.4rem (~22px) keeps the line-grid breathing without floating. */
+  margin-bottom:1.4rem;
 }
 .manifesto em{
   font-family:'Newsreader',serif;font-style:italic;font-weight:700;
