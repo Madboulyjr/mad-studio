@@ -83,6 +83,12 @@ function normaliseMediaItem(item) {
     }
     if (item.playbackId) out.playbackId = String(item.playbackId).slice(0, 64)
     if (item.assetId) out.assetId = String(item.assetId).slice(0, 64)
+    // Optional poster frame timestamp — Mux supports any positive
+    // number of seconds. Clamp to 6 decimals + non-negative.
+    if (item.posterTime != null && item.posterTime !== '') {
+      const t = Number(item.posterTime)
+      if (Number.isFinite(t) && t >= 0) out.posterTime = Math.max(0, Math.round(t * 1000) / 1000)
+    }
     return out
   }
   return null

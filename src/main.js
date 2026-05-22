@@ -1981,10 +1981,14 @@ function renderGalleryItem(item, gi) {
     // first-frame poster + controls and waits for a play click.
     const autoplay = item.autoplay === true
     const autoAttrs = autoplay ? 'autoplay muted loop playsinline' : ''
-    // Mux generates a free poster thumbnail at time=0 from the
-    // playback ID — gives the player a real first-frame to display
-    // before the user hits play (no black box).
-    const poster = `https://image.mux.com/${item.playbackId}/thumbnail.jpg?time=0&width=1600`
+    // Mux generates a free poster thumbnail at the requested time
+    // from the playback ID. posterTime (Sanity field) lets editors
+    // pick a later second when the first frame is a black intro card.
+    // Default to 0 (first frame).
+    const posterSecs = Number.isFinite(Number(item.posterTime)) && Number(item.posterTime) >= 0
+      ? Number(item.posterTime)
+      : 0
+    const poster = `https://image.mux.com/${item.playbackId}/thumbnail.jpg?time=${posterSecs}&width=1600`
     return `<div class="g-item g-video g-wide" style="--gi:${gi}">
       <mux-player
         playback-id="${item.playbackId}"

@@ -173,6 +173,13 @@ export const project = {
               type: 'boolean',
               initialValue: false,
             },
+            {
+              name: 'posterTime',
+              title: 'Poster frame (seconds)',
+              description: 'Which second of the video Mux should snapshot for the poster image. Default is 0 (first frame). If your clip opens on a black/title card, set this to a later second (e.g. 2 or 5) to pick a better thumbnail.',
+              type: 'number',
+              validation: (Rule) => Rule.min(0).precision(2),
+            },
             // Denormalised Mux identifiers so the public frontend doesn't
             // have to traverse the mux.videoAsset wrapper doc (Sanity now
             // returns `reason: permission` for those anonymously). Set by
