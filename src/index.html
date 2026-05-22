@@ -1676,7 +1676,11 @@ body:not(.loading) .splash{
 .project-gallery .g-item.g-wide{grid-column:1 / -1}
 .project-gallery .g-item img{width:100%;height:auto;display:block;object-fit:cover}
 .project-nav-next{
-  margin:10rem 0 0;padding:5rem 0 6rem;
+  /* Bottom padding pulled 6rem → 1.5rem. The `.project-view` container
+     already owns the page's bottom rhythm (6rem after the last fix),
+     so this block was double-counting and leaving a dead strip below
+     "NEXT PROJECT". */
+  margin:10rem 0 0;padding:5rem 0 1.5rem;
   display:flex;justify-content:space-between;align-items:center;
   border-top:0.2rem solid var(--accent);
 }
@@ -2105,7 +2109,7 @@ body::after{display:none}
   .project-gallery .g-item.g-wide{grid-column:1}
 
   .project-nav-next{
-    margin-top:6rem;padding:3rem 0 4rem;
+    margin-top:6rem;padding:3rem 0 1rem;
     flex-direction:column;align-items:flex-start;gap:2rem;
   }
   .project-nav-next .pn-block{max-width:100%}
