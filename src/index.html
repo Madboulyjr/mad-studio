@@ -1676,11 +1676,11 @@ body:not(.loading) .splash{
 .project-gallery .g-item.g-wide{grid-column:1 / -1}
 .project-gallery .g-item img{width:100%;height:auto;display:block;object-fit:cover}
 .project-nav-next{
-  /* Bottom padding pulled 6rem → 1.5rem. The `.project-view` container
-     already owns the page's bottom rhythm (6rem after the last fix),
-     so this block was double-counting and leaving a dead strip below
-     "NEXT PROJECT". */
-  margin:10rem 0 0;padding:5rem 0 1.5rem;
+  /* margin-top pulled 10rem → 5rem so the gap between the last case-
+     study block (or gallery) and the divider line isn't a chasm.
+     padding-bottom kept tight (1.5rem) — the container's own
+     padding-bottom (6rem) owns the page-bottom rhythm. */
+  margin:5rem 0 0;padding:5rem 0 1.5rem;
   display:flex;justify-content:space-between;align-items:center;
   border-top:0.2rem solid var(--accent);
 }
@@ -2109,7 +2109,7 @@ body::after{display:none}
   .project-gallery .g-item.g-wide{grid-column:1}
 
   .project-nav-next{
-    margin-top:6rem;padding:3rem 0 1rem;
+    margin-top:3rem;padding:3rem 0 1rem;
     flex-direction:column;align-items:flex-start;gap:2rem;
   }
   .project-nav-next .pn-block{max-width:100%}
@@ -3586,10 +3586,12 @@ body{
 }
 /* Generic case-study text block (problem, constraints, etc.) */
 .p-block{margin:0 0 3.5rem}
-/* Last block in the case-study stack drops its own margin so the
-   .project-view padding owns the bottom rhythm — was double-counting
-   ~56px under the final block (e.g. RECOGNITION on Google Arabia). */
-.p-block:last-child{margin-bottom:0}
+/* Last p-block in the case-study stack drops its own margin so the
+   .project-nav-next margin-top owns the rhythm to the footer.
+   :last-child doesn't match here because .project-nav-next is a
+   subsequent sibling, so we use :has(~ .p-block) negation to find
+   the .p-block with no following .p-block sibling. */
+.p-block:not(:has(~ .p-block)){margin-bottom:0}
 .p-block-label{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
