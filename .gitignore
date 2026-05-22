@@ -8,3 +8,6 @@ dist/
 .sanity/
 .turbo/
 *.log
+
+# graphify knowledge graph — rebuilt locally, not source
+graphify-out/

@@ -587,7 +587,9 @@ function renderProjectForm(p) {
         <legend>Basics</legend>
         <label>Title <input class="adm-input" name="title" value="${escapeAttr(p.title || '')}" required></label>
         <label>Year <input class="adm-input" name="year" value="${escapeAttr(p.year || '')}" placeholder="e.g. 2024"></label>
-        <label>Caption <textarea class="adm-textarea" name="caption" rows="3">${escapeHtml(p.caption || '')}</textarea></label>
+        <label>Caption <textarea class="adm-textarea" name="caption" rows="3">${escapeHtml(p.caption || '')}</textarea>
+          <span class="adm-help">Body text renders in Roboto. Wrap an accent phrase in *asterisks* to italicize it in Newsreader — e.g. <code>*Premium RED*</code>. Keep accents to 1-3 words.</span>
+        </label>
         <label>Tags (comma-separated) <input class="adm-input" name="tags" value="${escapeAttr((p.tags || []).join(', '))}"></label>
         <label class="adm-checkbox"><input type="checkbox" name="published" ${p.published !== false ? 'checked' : ''}> Published</label>
       </fieldset>
@@ -2195,6 +2197,17 @@ body.is-admin,
 }
 .adm-input:focus,.adm-textarea:focus{border-color:#D0FA51}
 .adm-textarea{resize:vertical;min-height:5rem;font-family:'Roboto', system-ui, sans-serif}
+.adm-help{
+  display:block;margin-top:0.4rem;
+  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-size:0.78rem;line-height:1.5;letter-spacing:0;
+  color:#B8B0A0;opacity:0.85;
+}
+.adm-help code{
+  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  background:rgba(208,250,81,0.08);color:#D0FA51;
+  padding:0.05rem 0.4rem;border-radius:0.25rem;
+}
 .adm-form input[type="checkbox"]{
   width:1.1rem;height:1.1rem;accent-color:#D0FA51;
 }

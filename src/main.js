@@ -482,6 +482,24 @@ function escMusic(s) {
     .replace(/"/g, '&quot;')
 }
 
+/* Caption renderer — body text stays Roboto; phrases the editor wraps
+   in `*asterisks*` become <em> tags, which the CSS styles in Newsreader
+   italic + capitalize. Convention chosen because the admin textarea is
+   plain text — `*phrase*` is the simplest markdown-style accent marker
+   that survives copy-paste and storage cleanly. */
+function formatCaption(raw) {
+  let s = String(raw == null ? '' : raw)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+  // Non-greedy *…* → <em>…</em>. Caps at 80 chars per phrase to keep
+  // accents short — anything longer almost certainly means a typo
+  // (lone asterisk) rather than a real accent.
+  s = s.replace(/\*([^*\n]{1,80}?)\*/g, '<em>$1</em>')
+  return s
+}
+
 /**
  * Featured release hero card. Returns empty string when nothing is
  * configured so the section page just skips the block entirely.
@@ -1708,7 +1726,7 @@ function buildDetail(id) {
               <span class="work-year">${w.year || ''}</span>
             </div>
             <h3 class="work-title">${w.title}.</h3>
-            ${cap ? `<p class="work-caption">${cap}</p>` : ''}
+            ${cap ? `<p class="work-caption">${formatCaption(cap)}</p>` : ''}
             <div class="work-info-bottom">
               <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
               <span class="work-cta" aria-hidden="true">View project ↗</span>
@@ -2064,7 +2082,7 @@ function buildProject(works, idx, sectionId) {
       <h1 class="p-title">${w.title}</h1>
       ${credits ? `<div class="p-credits">${credits}${cs.client ? ` · for <strong>${cs.client}</strong>` : ''}</div>` : ''}
       <div class="p-meta-row">
-        ${w.caption ? `<p class="p-caption">${w.caption}</p>` : '<div></div>'}
+        ${w.caption ? `<p class="p-caption">${formatCaption(w.caption)}</p>` : '<div></div>'}
         <div class="p-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
       </div>
     </div>
