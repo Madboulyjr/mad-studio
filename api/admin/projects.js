@@ -131,9 +131,17 @@ export default async function handler(req, res) {
           media[]{
             ...,
             _type, _key,
-            "assetId": asset._ref,
+            // For images: asset._ref is the right id; for video items
+            // it's undefined, so we fall back to the inline assetId
+            // baked on the videoItem (set by the upload flow / backfill).
+            // The mux.videoAsset traversal is a last resort and usually
+            // null because Sanity flags those docs as permission-private
+            // for anonymous reads — but `client` here is authed so it
+            // works too. The coalesce chain is what prevents the admin
+            // round-trip from wiping the inline playbackId field on save.
+            "assetId": coalesce(assetId, asset._ref, video.asset->assetId),
             "url": asset->url,
-            "playbackId": video.asset->playbackId
+            "playbackId": coalesce(playbackId, video.asset->playbackId)
           }
         }`,
         {id},
