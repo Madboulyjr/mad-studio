@@ -1337,7 +1337,11 @@ function bindEditFormHandlers(kind, id) {
     e.preventDefault()
     const data = new FormData(form)
     const status = rootEl.querySelector('#adm-form-status')
+    const submitBtn = form.querySelector('.adm-save')
     status.textContent = 'Saving…'
+    // Disable the submit button while the PATCH is in flight — blocks
+    // double submits that would race the same doc + signals async work.
+    if (submitBtn) submitBtn.disabled = true
     try {
       const payload = kind === 'project' ? collectProjectPayload(data, form) : collectSectionPayload(data)
       await saveDoc(kind, id, payload)
@@ -1348,6 +1352,8 @@ function bindEditFormHandlers(kind, id) {
       status.textContent = '✓ Saved. Open on site to verify (cache may take ~60s).'
     } catch (err) {
       status.textContent = '✗ ' + (err.message || 'Save failed')
+    } finally {
+      if (submitBtn) submitBtn.disabled = false
     }
   })
 }
@@ -1824,6 +1830,22 @@ body.is-admin,
 .admin-root label.adm-cover-btn,
 .admin-root .adm-gallery-add,
 .admin-root .adm-link{cursor:pointer}
+
+/* Keyboard accessibility — every interactive element gets a visible
+   focus ring in MAD's accent green. Scoped to .admin-root so the
+   public site keeps its existing :focus-visible treatment. */
+.admin-root :focus-visible{
+  outline:2px solid #D0FA51;
+  outline-offset:2px;
+  border-radius:0.2rem;
+}
+.admin-root input:focus-visible,
+.admin-root textarea:focus-visible,
+.admin-root select:focus-visible{
+  outline-color:#D0FA51;
+  outline-offset:0;
+  border-color:#D0FA51;
+}
 .admin-root input,
 .admin-root textarea{cursor:text}
 .admin-root .adm-crop-rect{cursor:move}
@@ -2030,10 +2052,12 @@ body.is-admin,
   padding:0.4rem 0.7rem;border-radius:0.4rem;
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
-  opacity:0.55;
+  /* Bumped 0.55 → 0.72 — at 0.7rem font on #0A0A0A the lower value
+     was borderline for WCAG AA contrast. */
+  opacity:0.72;
   transition:opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
-.adm-row:hover .adm-row-action{opacity:0.85}
+.adm-row:hover .adm-row-action{opacity:1}
 .adm-row-edit-btn:hover{color:#D0FA51;opacity:1 !important}
 .adm-row-delete-btn{font-size:1.1rem !important;letter-spacing:0 !important;padding:0.2rem 0.55rem !important;line-height:1 !important}
 .adm-row-delete-btn:hover{background:#FF5577;color:#fff;opacity:1 !important}
@@ -2159,6 +2183,12 @@ body.is-admin,
   transition:background 0.2s ease, transform 0.2s ease;
 }
 .adm-save:hover{background:#fff;transform:translateY(-1px)}
+/* Disabled state while a save PATCH is in-flight — blocks double
+   submits (would race the project doc) and signals async work. */
+.adm-save[disabled]{
+  opacity:0.45;cursor:not-allowed;pointer-events:none;
+  transform:none;background:#D0FA51;
+}
 .adm-form-status{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.16em;text-transform:uppercase;
@@ -2528,6 +2558,28 @@ body.is-admin,
   .adm-fields{padding:1.2rem 1.2rem 0.9rem}
   .adm-outcome-row{grid-template-columns:1fr 1fr;gap:0.4rem}
   .adm-outcome-remove{grid-column:1 / -1}
+}
+
+/* ── A11Y: 44×44 touch targets on phones/tablets ─────────────────
+   Apple HIG + Google MD both call 44pt the safe minimum so editors
+   can hit each button reliably with a thumb without the row above
+   or below firing instead. Desktop sizing stays compact. */
+@media (max-width: 768px){
+  .adm-link{min-height:44px;display:inline-flex;align-items:center;padding:0.6rem 0.4rem}
+  .adm-row-action{min-height:44px;min-width:44px;padding:0.55rem 0.9rem}
+  .adm-row-delete-btn{min-width:44px;padding:0.4rem 0.7rem !important}
+  .adm-row-handle{min-width:32px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem}
+  .adm-add-project{min-height:44px}
+  .adm-save{min-height:44px}
+  /* Thumb remove: visual stays compact but the hit area expands via
+     a transparent ::before so the user can tap anywhere within 44px. */
+  .adm-thumb-remove{
+    width:1.8rem;height:1.8rem;
+    opacity:0.92;
+  }
+  .adm-thumb-remove::before{
+    content:'';position:absolute;inset:-0.7rem;
+  }
 }
 `
   const style = document.createElement('style')
