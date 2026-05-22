@@ -1676,11 +1676,11 @@ body:not(.loading) .splash{
 .project-gallery .g-item.g-wide{grid-column:1 / -1}
 .project-gallery .g-item img{width:100%;height:auto;display:block;object-fit:cover}
 .project-nav-next{
-  /* margin-top pulled 10rem → 5rem so the gap between the last case-
-     study block (or gallery) and the divider line isn't a chasm.
-     padding-bottom kept tight (1.5rem) — the container's own
-     padding-bottom (6rem) owns the page-bottom rhythm. */
-  margin:5rem 0 0;padding:5rem 0 1.5rem;
+  /* margin-top + padding-top each pulled 5rem → 2.5rem after Ali
+     measured the live stack and called the 160px above "NEXT PROJECT"
+     still a chasm. New rhythm: 40px before the divider line, 40px
+     above the label — tight editorial breathing instead of a void. */
+  margin:2.5rem 0 0;padding:2.5rem 0 1.5rem;
   display:flex;justify-content:space-between;align-items:center;
   border-top:0.2rem solid var(--accent);
 }
@@ -2109,7 +2109,7 @@ body::after{display:none}
   .project-gallery .g-item.g-wide{grid-column:1}
 
   .project-nav-next{
-    margin-top:3rem;padding:3rem 0 1rem;
+    margin-top:1.5rem;padding:2rem 0 1rem;
     flex-direction:column;align-items:flex-start;gap:2rem;
   }
   .project-nav-next .pn-block{max-width:100%}
@@ -3511,12 +3511,11 @@ body{
 .collab-btn:hover{background:#fff}
 
 /* ─── PROJECT VIEW — adapt palette ─── */
-/* Bottom padding reduced 12rem → 6rem. Just enough to clear the
-   floating bottom-pill nav (lives at bottom: 1.5rem, ~5rem tall) +
-   keep the last block from kissing the viewport edge. The old 12rem
-   was leaving a ~190px chasm below RECOGNITION on projects with
-   case-study blocks at the bottom. */
-.project-view{padding:2.5rem 2.4rem 6rem}
+/* Bottom padding 6rem → 3rem. Bottom-pill nav is hidden on the
+   project-view overlay (z-stacked below it) so the wide clearance
+   isn't doing any work here — was just leaving a 96px black strip
+   under the kbd-hint. */
+.project-view{padding:2.5rem 2.4rem 3rem}
 .project-hero .p-top{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
@@ -3774,7 +3773,7 @@ body{
   .work-row .work-cta{font-size:0.7rem}
   /* Disable scroll-reveal stagger on mobile (saves perf, less janky) */
   .work-row{transition-duration:0.4s}
-  .project-view{padding:2rem 1.25rem 5rem}
+  .project-view{padding:2rem 1.25rem 2.5rem}
   .project-hero .p-title{font-size:4rem}
   .collab-cta .collab-title{font-size:3.5rem}
   .project-nav-next .pn-title{font-size:2.6rem}
