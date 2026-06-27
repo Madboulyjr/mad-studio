@@ -4,6 +4,12 @@
   "installCommand": "npm install",
   "redirects": [
     {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "stream.beingmad.co" }],
+      "destination": "https://www.beingmad.co/madplus",
+      "permanent": true
+    },
+    {
       "source": "/studio",
       "destination": "https://madboulyjr-studio.sanity.studio",
       "permanent": false
