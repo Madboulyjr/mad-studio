@@ -20,6 +20,7 @@ const API = {
   upload: '/api/admin/upload-image',
   videoInit: '/api/admin/video-init',
   videoFinalize: '/api/admin/video-finalize',
+  syncCatalog: '/api/admin/sync-catalog',
 }
 
 /* PUT a file via XMLHttpRequest so we get progress events (fetch doesn't
@@ -266,6 +267,7 @@ function renderDashboard() {
           <span>Studio · Admin</span>
         </a>
         <div class="adm-topbar-actions">
+          <button class="adm-link" id="adm-sync-catalog" title="Pull latest releases into MAD+ (auto: cover, title, links)">Sync releases ⟳</button>
           <a class="adm-link" href="https://madboulyjr-studio.sanity.studio" target="_blank" rel="noopener">Sanity Studio ↗</a>
           <button class="adm-link" id="adm-logout">Sign out</button>
         </div>
@@ -341,6 +343,36 @@ function renderDashboard() {
     </div>
   `
   rootEl.querySelector('#adm-logout').addEventListener('click', logout)
+
+  // Sync releases — pulls the latest catalog into MAD+ (featured + wall).
+  const syncBtn = rootEl.querySelector('#adm-sync-catalog')
+  if (syncBtn) {
+    syncBtn.addEventListener('click', async () => {
+      if (syncBtn.dataset.busy === '1') return
+      syncBtn.dataset.busy = '1'
+      const label = syncBtn.textContent
+      syncBtn.textContent = 'Syncing…'
+      try {
+        const r = await fetch(API.syncCatalog, {method: 'POST', credentials: 'same-origin'})
+        const j = await r.json().catch(() => ({}))
+        if (!r.ok || !j.ok) {
+          alert(`Sync failed: ${j.error || r.status}`)
+        } else {
+          alert(
+            `Synced ${j.total} release(s) from Spotify.\n` +
+              `Featured: ${j.featured}\n` +
+              `Wall: ${j.releasesCount} · new covers uploaded: ${j.newCovers}\n\n` +
+              `Open /madplus to see it live.`,
+          )
+        }
+      } catch (e) {
+        alert(`Sync failed: ${e.message || e}`)
+      } finally {
+        syncBtn.dataset.busy = '0'
+        syncBtn.textContent = label
+      }
+    })
+  }
 
   // Search input — debounced filter (no full re-render, just hide/show rows
   // so input stays focused + cursor stays put). Re-renders only when search
