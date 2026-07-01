@@ -1715,8 +1715,12 @@ body:not(.loading) .splash{
 /* Gallery items reveal on scroll (JS toggles .is-revealed via IntersectionObserver).
    Replaces the old open-time stagger so long case studies reveal as you scroll. */
 @media (prefers-reduced-motion: no-preference){
-  .project-gallery .g-item{opacity:0;transform:translateY(2.2rem) scale(0.985);transition:opacity 0.6s cubic-bezier(.2,.7,.2,1), transform 0.6s cubic-bezier(.2,.7,.2,1)}
-  .project-gallery .g-item.is-revealed{opacity:1;transform:none}
+  .project-gallery .g-item{opacity:0;transform:translateY(6rem) scale(0.94);filter:blur(6px);transition:opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.85s cubic-bezier(.16,.84,.3,1), filter 0.7s ease}
+  .project-gallery .g-item.is-revealed{opacity:1;transform:none;filter:none}
+  /* Felt on every image — a subtle lift + zoom on hover */
+  .project-gallery .g-item img{transition:transform 0.6s cubic-bezier(.2,.7,.2,1)}
+  .project-gallery .g-item:hover img{transform:scale(1.03)}
+  .project-gallery .g-item.g-video{transition:opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.85s cubic-bezier(.16,.84,.3,1)}
 }
 
 /* Footer CTA */

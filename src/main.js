@@ -2167,21 +2167,6 @@ function enhanceProjectView() {
       once.observe(outcome)
     }
   }
-
-  // Magnetic next-project arrow — nudge toward the cursor, spring back.
-  const navNext = projectViewInner.querySelector('.project-nav-next')
-  const arrow = projectViewInner.querySelector('#pn-arrow')
-  if (navNext && arrow && !reduced) {
-    navNext.addEventListener('pointermove', (e) => {
-      const r = navNext.getBoundingClientRect()
-      const dx = (e.clientX - (r.left + r.width / 2)) * 0.12
-      const dy = (e.clientY - (r.top + r.height / 2)) * 0.18
-      arrow.style.transform = `translate(${dx}px, ${dy}px)`
-    })
-    navNext.addEventListener('pointerleave', () => {
-      arrow.style.transform = ''
-    })
-  }
 }
 
 /* Count a single stat element from 0 → its rendered target, preserving
