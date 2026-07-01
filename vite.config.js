@@ -107,7 +107,7 @@ function perUrlHtmlPlugin() {
       }
 
       const tagline = 'Creativity is madness with a deadline.'
-      const writeRoute = (urlPath, {title, description, ogImage}) => {
+      const writeRoute = (urlPath, {title, description, ogImage, jsonLd}) => {
         let html = baseHtml
         html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
         const setMeta = (prop, value) => {
@@ -132,6 +132,12 @@ function perUrlHtmlPlugin() {
         setNameMeta('twitter:description', description)
         setNameMeta('twitter:image', `${SITE}${ogImage}`)
 
+        // JSON-LD structured data — injected as a <script> before </head>.
+        if (jsonLd) {
+          const block = `  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n`
+          html = html.replace('</head>', block + '</head>')
+        }
+
         const filePath = urlPath === '/'
           ? indexPath // landing keeps the original index.html
           : resolve(distDir, urlPath.replace(/^\//, ''), 'index.html')
@@ -142,6 +148,23 @@ function perUrlHtmlPlugin() {
       }
 
       let count = 0
+      // Landing — brand Organization
+      writeRoute('/', {
+        title: `MAD Studio — ${tagline}`,
+        description: tagline,
+        ogImage: '/og-cover.jpg',
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'MAD Studio',
+          url: SITE,
+          slogan: tagline,
+          sameAs: [
+            'https://www.instagram.com/madbovlly',
+            'https://open.spotify.com/artist/6wcaWzTRzPz0uGwF0Z54Jy',
+          ],
+        },
+      })
       // Sections
       for (const s of data.sections) {
         const sectionUrl = ID_TO_URL[s.slug] || s.slug
@@ -160,6 +183,17 @@ function perUrlHtmlPlugin() {
           title: `${p.title}${p.year ? ` · ${p.year}` : ''} — ${p.sectionTitle} · MAD Studio`,
           description: (p.caption || '').replace(/\s+—\s+/g, ' ').slice(0, 160) || tagline,
           ogImage: `/og/${sectionUrl}-${p.slug}.jpg`,
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'CreativeWork',
+            name: p.title,
+            ...(p.year ? {dateCreated: String(p.year)} : {}),
+            ...(p.caption ? {description: (p.caption || '').replace(/\s+—\s+/g, ' ').slice(0, 300)} : {}),
+            creator: {'@type': 'Organization', name: 'MAD Studio', url: SITE},
+            url: `${SITE}/${sectionUrl}/${p.slug}`,
+            image: `${SITE}/og/${sectionUrl}-${p.slug}.jpg`,
+            isPartOf: {'@type': 'CollectionPage', name: p.sectionTitle, url: `${SITE}/${sectionUrl}`},
+          },
         })
         count++
       }
