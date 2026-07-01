@@ -2161,6 +2161,23 @@ projectBack.addEventListener('click', () => {
   else history.back()
 })
 
+/* Warm the network for a project route the moment the user hovers its card —
+   makes both the SPA transition and any new-tab open feel instant. Each URL
+   is prefetched at most once. */
+const _prefetched = new Set()
+detailInner.addEventListener('pointerenter', (e) => {
+  const row = e.target && e.target.closest && e.target.closest('.work-row')
+  if (!row || !row.href) return
+  const href = row.getAttribute('href')
+  if (!href || _prefetched.has(href)) return
+  _prefetched.add(href)
+  const link = document.createElement('link')
+  link.rel = 'prefetch'
+  link.as = 'document'
+  link.href = href
+  document.head.appendChild(link)
+}, true)
+
 detailInner.addEventListener('click', (e) => {
   const row = e.target.closest('.work-row')
   if (!row) return
@@ -2334,7 +2351,10 @@ document.addEventListener('keydown', (e) => {
 
 /* ─── Illustration click → open detail (bbox-gated) ─────────────── */
 document.getElementById('illustration').addEventListener('click', (e) => {
-  const bb = bbox || charBBox()
+  // Measure live: the avatar floats + parallaxes, so a cached bbox goes
+  // stale and swallows clicks. getBoundingClientRect reflects the current
+  // transformed position, so one click on the avatar always registers.
+  const bb = charBBox()
   if (!bb) return
   if (
     e.clientX >= bb.minX &&
