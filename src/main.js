@@ -2337,10 +2337,10 @@ document.getElementById('illustration').addEventListener('click', (e) => {
     e.clientY >= bb.minY &&
     e.clientY <= bb.maxY
   ) {
-    // Quack on every avatar tap — pairs with the duck cursor for a
-    // tiny moment of personality before the section opens. Web Audio
-    // synth, no asset, no payload.
-    playDuckQuack()
+    // Soft synth pluck on every avatar tap — a tiny moment of
+    // personality before the section opens. Decoded once, replayed
+    // via a BufferSourceNode for near-zero latency.
+    playClickSound()
 
     // Track easter-egg trigger BEFORE navigating. Five rapid clicks (<2s)
     // on the avatar before the detail page loads = MAD jingle + glitch.
@@ -2371,43 +2371,38 @@ function registerAvatarClick() {
   return false
 }
 
-/* Real-recording duck quack — Ali dropped /public/quack.mp3. The first
-   pass used a single HTMLAudioElement and rewound it on each click,
-   but that has perceptible latency on first play (the file has to
-   fetch + decode before audio can start). Now: fetch + decode the
-   MP3 into an AudioBuffer eagerly on module load, then on click
-   just spin up a BufferSourceNode → near-zero latency, plays even
-   if the previous quack is still ringing out.
-   Volume bumped down to 0.68 (20% quieter than the old 0.85) per
-   Ali's "waty sothaaa 20%". */
-let _quackBuffer = null
-let _quackCtx = null
-;(async function preloadQuack() {
+/* UI click sound — a short synth pluck at /public/ui-click.mp3. We
+   fetch + decode the MP3 into an AudioBuffer eagerly on module load,
+   then on click spin up a BufferSourceNode → near-zero latency, plays
+   even if the previous click is still ringing out. */
+let _clickBuffer = null
+let _clickCtx = null
+;(async function preloadClickSound() {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext
     if (!Ctx) return
-    _quackCtx = new Ctx()
-    const res = await fetch('/quack.mp3')
+    _clickCtx = new Ctx()
+    const res = await fetch('/ui-click.mp3')
     if (!res.ok) return
     const arr = await res.arrayBuffer()
-    _quackBuffer = await _quackCtx.decodeAudioData(arr)
+    _clickBuffer = await _clickCtx.decodeAudioData(arr)
   } catch (e) {
     // Silent — if preload fails the click handler simply skips audio.
   }
 })()
 
-function playDuckQuack() {
-  if (!_quackBuffer || !_quackCtx) return
+function playClickSound() {
+  if (!_clickBuffer || !_clickCtx) return
   try {
     // Browser autoplay policy parks new AudioContexts in 'suspended'
     // until a user gesture. The avatar click IS that gesture, so
     // this resume() is a no-op on every subsequent click.
-    if (_quackCtx.state === 'suspended') _quackCtx.resume().catch(() => {})
-    const src = _quackCtx.createBufferSource()
-    src.buffer = _quackBuffer
-    const gain = _quackCtx.createGain()
-    gain.gain.value = 0.68
-    src.connect(gain).connect(_quackCtx.destination)
+    if (_clickCtx.state === 'suspended') _clickCtx.resume().catch(() => {})
+    const src = _clickCtx.createBufferSource()
+    src.buffer = _clickBuffer
+    const gain = _clickCtx.createGain()
+    gain.gain.value = 0.7
+    src.connect(gain).connect(_clickCtx.destination)
     src.start(0)
   } catch (e) {}
 }
