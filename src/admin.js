@@ -585,6 +585,30 @@ function renderProjectForm(p) {
         <button type="button" class="adm-link adm-outcome-remove" data-i="${i}">Remove</button>
       </div>`
   })
+  // Awards — accept new object shape OR legacy strings.
+  const normAward = (a) => {
+    if (typeof a === 'string') {
+      const t = /shortlist|nominat|finalist|platinum/i.test(a)
+        ? 'platinum'
+        : /\bsilver\b/i.test(a) ? 'silver' : /\bbronze\b/i.test(a) ? 'bronze' : 'gold'
+      return {title: a, sealText: a.split(/\s*[—–-]\s*/)[0].trim(), tier: t}
+    }
+    return {title: (a && a.title) || '', sealText: (a && a.sealText) || '', tier: (a && a.tier) || 'gold'}
+  }
+  const tierOptions = (sel) =>
+    ['gold', 'silver', 'bronze', 'platinum', 'none']
+      .map((t) => `<option value="${t}"${t === sel ? ' selected' : ''}>${t === 'none' ? 'No seal' : t[0].toUpperCase() + t.slice(1)}</option>`)
+      .join('')
+  const awardRows = (cs.awards || []).map((a, i) => {
+    const w = normAward(a)
+    return `
+      <div class="adm-award-row" data-i="${i}">
+        <input class="adm-input" name="award-title-${i}" value="${escapeAttr(w.title)}" placeholder="Award (shown in project)">
+        <input class="adm-input" name="award-seal-${i}" value="${escapeAttr(w.sealText)}" placeholder="Seal text (short)">
+        <select class="adm-input" name="award-tier-${i}">${tierOptions(w.tier)}</select>
+        <button type="button" class="adm-link adm-award-remove" data-i="${i}">Remove</button>
+      </div>`
+  })
   return `
     <form class="adm-form" id="adm-form" autocomplete="off">
       <h2 class="adm-edit-title">${escapeHtml(p.title)}</h2>
@@ -683,7 +707,10 @@ function renderProjectForm(p) {
         <label>Agency / collaborator <input class="adm-input" name="cs-agency" value="${escapeAttr(cs.agency || '')}"></label>
         <label>Problem <textarea class="adm-textarea" name="cs-problem" rows="3">${escapeHtml(cs.problem || '')}</textarea></label>
         <label>Constraints (comma-separated) <input class="adm-input" name="cs-constraints" value="${escapeAttr((cs.constraints || []).join(', '))}" placeholder="e.g. 8-week timeline, OOH only"></label>
-        <label>Awards (comma-separated) <input class="adm-input" name="cs-awards" value="${escapeAttr((cs.awards || []).join(', '))}"></label>
+        <div class="adm-outcome-block">
+          <div class="adm-outcome-label">Awards / recognition <button type="button" id="adm-award-add" class="adm-link">+ Add</button></div>
+          <div class="adm-outcome-list" id="adm-award-list">${awardRows.join('')}</div>
+        </div>
         <label>External case-study URL <input class="adm-input" name="cs-externalUrl" value="${escapeAttr(cs.externalUrl || '')}" placeholder="https://…"></label>
         <div class="adm-outcome-block">
           <div class="adm-outcome-label">Outcome metrics (max 4) <button type="button" id="adm-outcome-add" class="adm-link">+ Add</button></div>
@@ -1367,10 +1394,33 @@ function bindEditFormHandlers(kind, id) {
       list.appendChild(div)
     })
   }
+  const awardAdd = rootEl.querySelector('#adm-award-add')
+  if (awardAdd) {
+    awardAdd.addEventListener('click', () => {
+      const list = rootEl.querySelector('#adm-award-list')
+      const i = list.children.length
+      const div = document.createElement('div')
+      div.className = 'adm-award-row'
+      div.dataset.i = i
+      div.innerHTML = `
+        <input class="adm-input" name="award-title-${i}" placeholder="Award (shown in project)">
+        <input class="adm-input" name="award-seal-${i}" placeholder="Seal text (short)">
+        <select class="adm-input" name="award-tier-${i}">
+          <option value="gold">Gold</option><option value="silver">Silver</option><option value="bronze">Bronze</option><option value="platinum">Platinum</option><option value="none">No seal</option>
+        </select>
+        <button type="button" class="adm-link adm-award-remove" data-i="${i}">Remove</button>
+      `
+      list.appendChild(div)
+    })
+  }
   rootEl.addEventListener('click', (e) => {
     if (e.target.classList && e.target.classList.contains('adm-outcome-remove')) {
       e.preventDefault()
       e.target.closest('.adm-outcome-row').remove()
+    }
+    if (e.target.classList && e.target.classList.contains('adm-award-remove')) {
+      e.preventDefault()
+      e.target.closest('.adm-award-row').remove()
     }
   })
 
@@ -1413,6 +1463,17 @@ function collectProjectPayload(data, form) {
     const label = (data.get(`outcome-label-${i}`) || '').toString().trim()
     if (metric || label) outcome.push({metric, label})
   })
+  // Walk the award rows → structured objects (title + seal text + tier).
+  const awards = []
+  form.querySelectorAll('.adm-award-row').forEach((row) => {
+    const i = row.dataset.i
+    const title = (data.get(`award-title-${i}`) || '').toString().trim()
+    const sealText = (data.get(`award-seal-${i}`) || '').toString().trim()
+    const tier = (data.get(`award-tier-${i}`) || 'gold').toString()
+    if (title || sealText) {
+      awards.push({_key: `aw-${i}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24) || 'x'}`, title, sealText, tier})
+    }
+  })
   const payload = {
     title: data.get('title') || '',
     year: data.get('year') || '',
@@ -1425,7 +1486,7 @@ function collectProjectPayload(data, form) {
       agency: data.get('cs-agency') || '',
       problem: data.get('cs-problem') || '',
       constraints: splitCsv(data.get('cs-constraints')),
-      awards: splitCsv(data.get('cs-awards')),
+      awards,
       externalUrl: data.get('cs-externalUrl') || '',
       outcome,
     },

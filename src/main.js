@@ -1540,39 +1540,57 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
  * Unique <defs> IDs per card so multiple seals on one page don't
  * collide.
  */
-function buildAwardSeal({idx, status, awards, offset = 0}) {
+/* Normalise an award into {title, sealText, tier}. Accepts the new object
+   shape or a legacy plain string (derives tier + a short sealText from it). */
+function normalizeAward(a) {
+  if (!a) return null
+  if (typeof a === 'string') {
+    const s = a.trim()
+    if (!s) return null
+    const tier = /shortlist|nominat|finalist|platinum/i.test(s)
+      ? 'platinum'
+      : /\bsilver\b/i.test(s)
+        ? 'silver'
+        : /\bbronze\b/i.test(s)
+          ? 'bronze'
+          : 'gold'
+    return {title: s, sealText: s.split(/\s*[—–-]\s*/)[0].trim(), tier}
+  }
+  const title = a.title || a.sealText || ''
+  if (!title && !a.sealText) return null
+  return {title, sealText: a.sealText || title, tier: a.tier || 'gold'}
+}
+
+/* Metallic gradient stops per seal tier. */
+const SEAL_TIERS = {
+  gold: '<stop offset="0%" stop-color="#FAEAB0"/><stop offset="38%" stop-color="#E6C77A"/><stop offset="58%" stop-color="#C9A14D"/><stop offset="100%" stop-color="#E8CF85"/>',
+  silver: '<stop offset="0%" stop-color="#F6F7F8"/><stop offset="42%" stop-color="#D2D6DB"/><stop offset="62%" stop-color="#A8AEB6"/><stop offset="100%" stop-color="#E2E5E9"/>',
+  bronze: '<stop offset="0%" stop-color="#F0D6B0"/><stop offset="40%" stop-color="#D6A56A"/><stop offset="62%" stop-color="#A9713C"/><stop offset="100%" stop-color="#E0B481"/>',
+  platinum: '<stop offset="0%" stop-color="#FBFAF7"/><stop offset="44%" stop-color="#DDE0DE"/><stop offset="62%" stop-color="#B9BEC1"/><stop offset="100%" stop-color="#EDEDEA"/>',
+}
+
+function buildAwardSeal({idx, tier = 'gold', sealText, offset = 0}) {
   const uid = `seal-${idx}`
-  const isWon = status === 'won'
+  const stops = SEAL_TIERS[tier] || SEAL_TIERS.gold
   // When several seals share one cover, stack them vertically down the
   // right edge (one below the other) rather than side by side.
-  const offsetStyle = offset > 0 ? ` style="top:calc(-1.6rem + ${offset * 5.2}rem)"` : ''
+  const offsetStyle = offset > 0 ? ` style="top:calc(-1.4rem + ${offset * 5.6}rem)"` : ''
 
-  // Rim text comes straight from the award strings the user types
-  // into Sanity. Uppercased + joined with " · " for readability around
-  // the rim. We pad with a leading star and (for short text) repeat
-  // the phrase so it fills the full circumference like a real seal.
-  const safeAwards = Array.isArray(awards) ? awards.filter(Boolean).map(String) : []
-  const phrase = safeAwards.length
-    ? safeAwards.map((a) => a.toUpperCase()).join(' · ')
-    : (isWon ? 'AWARDED' : 'SHORTLISTED')
-  const padded = `★ ${phrase} `
-  // Repeat short phrases so the whole rim is covered. ~32 chars covers
-  // half the circumference at our font size; below that we double it.
-  const rimText = padded.length < 32 ? (padded + '· ').repeat(2).trim() : padded.trim()
+  // Rim text is the editable per-award sealText. Uppercased, prefixed with
+  // a star. Short phrases repeat to fill the ring; medium/long phrases show
+  // once (repeating them was what made the rim look cramped). Font shrinks a
+  // touch for long text so it doesn't crowd.
+  const phrase = String(sealText || '').trim().toUpperCase() || 'AWARD'
+  const unit = `★ ${phrase} `
+  const rimText = phrase.length < 16 ? (unit + '· ').repeat(2).trim() : unit.trim()
+  const fontSize = phrase.length > 22 ? 6 : 7.2
+  const letterSpacing = phrase.length > 22 ? 1 : 1.4
 
-  // Gradient stops differ by status. Won = gold, shortlist = muted
-  // platinum so awarded projects clearly outrank shortlisted ones.
-  const stops = isWon
-    ? '<stop offset="0%" stop-color="#FAEAB0"/><stop offset="38%" stop-color="#E6C77A"/><stop offset="58%" stop-color="#C9A14D"/><stop offset="100%" stop-color="#E8CF85"/>'
-    : '<stop offset="0%" stop-color="#F1EEE3"/><stop offset="42%" stop-color="#C9C4B5"/><stop offset="60%" stop-color="#A29D8E"/><stop offset="100%" stop-color="#D8D2C3"/>'
-
-  // Hover tooltip = the full award titles, exact strings.
-  const escHover = safeAwards.join(' · ').replace(/"/g, '&quot;')
-  const aria = `${safeAwards.length} ${isWon ? 'award' : 'shortlist'}${safeAwards.length > 1 ? 's' : ''}`
+  const escHover = phrase.replace(/"/g, '&quot;')
 
   return `
-    <span class="work-award-seal ${isWon ? 'is-won' : 'is-shortlisted'}"${offsetStyle}
-          role="img" aria-label="${aria}" title="${escHover}">
+    <span class="work-award-seal tier-${tier}"${offsetStyle}
+          role="img" aria-label="${escHover}" title="${escHover}">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <defs>
           <!-- Rim circle path for the curved text (clockwise from 12 o'clock) -->
@@ -1600,8 +1618,8 @@ function buildAwardSeal({idx, status, awards, offset = 0}) {
           <text fill="#1A1815"
                 font-family="'Roboto', system-ui, sans-serif"
                 font-weight="700"
-                font-size="7.2"
-                letter-spacing="1.4">
+                font-size="${fontSize}"
+                letter-spacing="${letterSpacing}">
             <textPath href="#${uid}-rim" startOffset="0">${rimText}</textPath>
           </text>
         </g>
@@ -1703,21 +1721,14 @@ function buildDetail(id) {
           // "shortlist"/"nominated"/"finalist" keywords to decide
           // status. Won status wins if any award was won.
           const allAwards = (w.caseStudy && Array.isArray(w.caseStudy.awards)) ? w.caseStudy.awards : []
-          // One seal per award — gold for wins, platinum for shortlists —
-          // fanned out along the cover's top edge so each reads distinctly.
-          const badgeHTML = allAwards.length
-            ? allAwards
-                .map((a, ai) => {
-                  const isShortlist = /shortlist|nominat|finalist/i.test(String(a))
-                  return buildAwardSeal({
-                    idx: `${i}-${ai}`,
-                    status: isShortlist ? 'shortlisted' : 'won',
-                    awards: [a],
-                    offset: ai,
-                  })
-                })
-                .join('')
-            : ''
+          // One seal per award that has a tier (skip tier "none"), coloured by
+          // its tier and stamped with its own sealText, stacked down the edge.
+          const sealAwards = allAwards.map(normalizeAward).filter((a) => a && a.tier !== 'none')
+          const badgeHTML = sealAwards
+            .map((a, si) =>
+              buildAwardSeal({idx: `${i}-${si}`, tier: a.tier, sealText: a.sealText || a.title, offset: si}),
+            )
+            .join('')
           return `
         <a class="work-row" data-idx="${i}" href="/${ID_TO_URL[id] || id}/${encodeURIComponent(w.slug)}">
           <div class="work-cover">
@@ -2078,7 +2089,7 @@ function buildProject(works, idx, sectionId) {
     ? `<div class="p-block p-awards">
          <div class="p-block-label">— Recognition</div>
          <div class="p-award-list">
-           ${cs.awards.map((a) => `<span>★ ${a}</span>`).join('')}
+           ${cs.awards.map((a) => `<span>★ ${(normalizeAward(a) || {}).title || ''}</span>`).join('')}
          </div>
        </div>`
     : ''

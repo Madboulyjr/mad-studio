@@ -121,9 +121,42 @@ export const project = {
           name: 'awards',
           title: 'Awards / recognition',
           type: 'array',
-          of: [{type: 'string'}],
-          options: {layout: 'tags'},
-          description: 'e.g. "Cannes Bronze 2024", "D&AD Wood Pencil"',
+          of: [
+            {
+              type: 'object',
+              fields: [
+                {
+                  name: 'title',
+                  title: 'Award (shown in project)',
+                  type: 'string',
+                  description: 'Full award line in the project Recognition list, e.g. "MENA Digital Awards 2025 — Gold · Viral Content".',
+                },
+                {
+                  name: 'sealText',
+                  title: 'Seal text (badge rim)',
+                  type: 'string',
+                  description: 'Short text stamped around the seal on the cover, e.g. "MENA Digital 2025 · Gold". Keep it short.',
+                },
+                {
+                  name: 'tier',
+                  title: 'Seal tier',
+                  type: 'string',
+                  options: {
+                    list: [
+                      {title: 'Gold', value: 'gold'},
+                      {title: 'Silver', value: 'silver'},
+                      {title: 'Bronze', value: 'bronze'},
+                      {title: 'Platinum', value: 'platinum'},
+                      {title: 'No seal (list only)', value: 'none'},
+                    ],
+                  },
+                  initialValue: 'gold',
+                },
+              ],
+              preview: {select: {title: 'title', subtitle: 'tier'}},
+            },
+          ],
+          description: 'Each award shows in the project Recognition list. Give it a tier to also stamp a seal on the cover.',
         },
         {
           name: 'externalUrl',
