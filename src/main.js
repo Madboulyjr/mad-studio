@@ -2117,6 +2117,97 @@ function buildProject(works, idx, sectionId) {
     navigate({view: 'project', id: nextSectionId, projectSlug: next.slug})
   document.getElementById('pn-title').addEventListener('click', goNext)
   document.getElementById('pn-arrow').addEventListener('click', goNext)
+
+  enhanceProjectView()
+}
+
+/* ─── Editorial polish for the project view ─────────────────────────
+   Tasteful, presentational motion — all disabled under reduced-motion.
+   Called on every project render (survives project→project swaps). */
+let _galleryRevealObserver = null
+function enhanceProjectView() {
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Gallery scroll-reveal — fade + rise each item as it enters view.
+  const items = projectViewInner.querySelectorAll('.project-gallery .g-item')
+  if (reduced || !('IntersectionObserver' in window)) {
+    items.forEach((el) => el.classList.add('is-revealed'))
+  } else {
+    if (_galleryRevealObserver) _galleryRevealObserver.disconnect()
+    _galleryRevealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed')
+            _galleryRevealObserver.unobserve(entry.target)
+          }
+        })
+      },
+      {rootMargin: '0px 0px -8% 0px', threshold: 0.12},
+    )
+    items.forEach((el) => _galleryRevealObserver.observe(el))
+  }
+
+  // Outcome stats count-up — tick numbers from 0 → target once visible.
+  const outcome = projectViewInner.querySelector('.p-outcome')
+  if (outcome) {
+    if (reduced || !('IntersectionObserver' in window)) {
+      // leave the rendered target values as-is
+    } else {
+      const once = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+            outcome.querySelectorAll('.p-stat-num').forEach((el) => countUpStat(el))
+            obs.disconnect()
+          })
+        },
+        {threshold: 0.4},
+      )
+      once.observe(outcome)
+    }
+  }
+
+  // Magnetic next-project arrow — nudge toward the cursor, spring back.
+  const navNext = projectViewInner.querySelector('.project-nav-next')
+  const arrow = projectViewInner.querySelector('#pn-arrow')
+  if (navNext && arrow && !reduced) {
+    navNext.addEventListener('pointermove', (e) => {
+      const r = navNext.getBoundingClientRect()
+      const dx = (e.clientX - (r.left + r.width / 2)) * 0.12
+      const dy = (e.clientY - (r.top + r.height / 2)) * 0.18
+      arrow.style.transform = `translate(${dx}px, ${dy}px)`
+    })
+    navNext.addEventListener('pointerleave', () => {
+      arrow.style.transform = ''
+    })
+  }
+}
+
+/* Count a single stat element from 0 → its rendered target, preserving
+   any non-numeric prefix/suffix (e.g. "+240%", "3.2M", "12×"). */
+function countUpStat(el) {
+  const raw = (el.textContent || '').trim()
+  const match = raw.match(/-?\d[\d,.]*/)
+  if (!match) return
+  const numStr = match[0]
+  const target = parseFloat(numStr.replace(/,/g, ''))
+  if (!Number.isFinite(target)) return
+  const decimals = (numStr.split('.')[1] || '').length
+  const prefix = raw.slice(0, match.index)
+  const suffix = raw.slice(match.index + numStr.length)
+  const dur = 1100
+  let startTs = null
+  const step = (ts) => {
+    if (startTs == null) startTs = ts
+    const p = Math.min(1, (ts - startTs) / dur)
+    const eased = 1 - Math.pow(1 - p, 3) // easeOutCubic
+    const val = (target * eased).toFixed(decimals)
+    el.textContent = `${prefix}${decimals ? val : Math.round(target * eased).toLocaleString()}${suffix}`
+    if (p < 1) requestAnimationFrame(step)
+    else el.textContent = raw // snap to exact original
+  }
+  requestAnimationFrame(step)
 }
 
 function openProjectDOM(works, idx, sectionId) {

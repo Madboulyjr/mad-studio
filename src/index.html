@@ -1712,7 +1712,12 @@ body:not(.loading) .splash{
 .project-view.open .p-top{animation:projFadeUp 0.5s 0.15s cubic-bezier(.2,.7,.2,1) both}
 .project-view.open .p-title{animation:detailGlitchIn 0.8s 0.2s cubic-bezier(.2,.7,.2,1) both}
 .project-view.open .p-meta-row{animation:projFadeUp 0.55s 0.45s cubic-bezier(.2,.7,.2,1) both}
-.project-view.open .project-gallery .g-item{animation:projFadeUp 0.5s calc(0.55s + var(--gi,0) * 0.06s) cubic-bezier(.2,.7,.2,1) both}
+/* Gallery items reveal on scroll (JS toggles .is-revealed via IntersectionObserver).
+   Replaces the old open-time stagger so long case studies reveal as you scroll. */
+@media (prefers-reduced-motion: no-preference){
+  .project-gallery .g-item{opacity:0;transform:translateY(2.2rem) scale(0.985);transition:opacity 0.6s cubic-bezier(.2,.7,.2,1), transform 0.6s cubic-bezier(.2,.7,.2,1)}
+  .project-gallery .g-item.is-revealed{opacity:1;transform:none}
+}
 
 /* Footer CTA */
 .collab-cta{
