@@ -1710,7 +1710,7 @@ function buildDetail(id) {
               })
             : ''
           return `
-        <article class="work-row" data-idx="${i}">
+        <a class="work-row" data-idx="${i}" href="/${ID_TO_URL[id] || id}/${encodeURIComponent(w.slug)}">
           <div class="work-cover">
             <div class="work-cover-frame">
               ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
@@ -1732,7 +1732,7 @@ function buildDetail(id) {
               <span class="work-cta" aria-hidden="true">View project ↗</span>
             </div>
           </div>
-        </article>
+        </a>
       `
         })
         .join('')}
@@ -2164,6 +2164,11 @@ projectBack.addEventListener('click', () => {
 detailInner.addEventListener('click', (e) => {
   const row = e.target.closest('.work-row')
   if (!row) return
+  // Let the browser handle new-tab / new-window / download intents natively
+  // (⌘/Ctrl-click, middle-click, Shift/Alt-click). Only intercept a plain
+  // left-click for the smooth in-app transition.
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  e.preventDefault()
   const idx = parseInt(row.dataset.idx, 10)
   const id = detailPage.dataset.sectionId || document.getElementById('illustration').dataset.id
   const p = PAGES[id]

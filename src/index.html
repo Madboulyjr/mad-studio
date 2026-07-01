@@ -3130,6 +3130,9 @@ body{
              transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .work-row.is-in-view{opacity:1;transform:translateY(0)}
+/* Work cards are real <a> links (openable in a new tab) — reset link chrome */
+a.work-row{text-decoration:none;color:inherit}
+a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset:4px}
 /* Alternate sides: even rows flip cover to the right */
 .work-row:nth-child(even){grid-template-columns:1fr 1.4fr}
 .work-row:nth-child(even) .work-cover{order:2}
