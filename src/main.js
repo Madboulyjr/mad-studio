@@ -1540,9 +1540,12 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
  * Unique <defs> IDs per card so multiple seals on one page don't
  * collide.
  */
-function buildAwardSeal({idx, status, awards}) {
+function buildAwardSeal({idx, status, awards, offset = 0}) {
   const uid = `seal-${idx}`
   const isWon = status === 'won'
+  // When several seals share one cover, fan them out leftward along the
+  // top edge so they don't stack on the same corner.
+  const offsetStyle = offset > 0 ? ` style="right:calc(-1.6rem + ${offset * 4.6}rem)"` : ''
 
   // Rim text comes straight from the award strings the user types
   // into Sanity. Uppercased + joined with " · " for readability around
@@ -1568,7 +1571,7 @@ function buildAwardSeal({idx, status, awards}) {
   const aria = `${safeAwards.length} ${isWon ? 'award' : 'shortlist'}${safeAwards.length > 1 ? 's' : ''}`
 
   return `
-    <span class="work-award-seal ${isWon ? 'is-won' : 'is-shortlisted'}"
+    <span class="work-award-seal ${isWon ? 'is-won' : 'is-shortlisted'}"${offsetStyle}
           role="img" aria-label="${aria}" title="${escHover}">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <defs>
@@ -1700,14 +1703,20 @@ function buildDetail(id) {
           // "shortlist"/"nominated"/"finalist" keywords to decide
           // status. Won status wins if any award was won.
           const allAwards = (w.caseStudy && Array.isArray(w.caseStudy.awards)) ? w.caseStudy.awards : []
-          const wonAwards = allAwards.filter((a) => !/shortlist|nominat|finalist/i.test(String(a)))
-          const slAwards = allAwards.filter((a) => /shortlist|nominat|finalist/i.test(String(a)))
+          // One seal per award — gold for wins, platinum for shortlists —
+          // fanned out along the cover's top edge so each reads distinctly.
           const badgeHTML = allAwards.length
-            ? buildAwardSeal({
-                idx: i,
-                status: wonAwards.length ? 'won' : 'shortlisted',
-                awards: allAwards,
-              })
+            ? allAwards
+                .map((a, ai) => {
+                  const isShortlist = /shortlist|nominat|finalist/i.test(String(a))
+                  return buildAwardSeal({
+                    idx: `${i}-${ai}`,
+                    status: isShortlist ? 'shortlisted' : 'won',
+                    awards: [a],
+                    offset: ai,
+                  })
+                })
+                .join('')
             : ''
           return `
         <a class="work-row" data-idx="${i}" href="/${ID_TO_URL[id] || id}/${encodeURIComponent(w.slug)}">
