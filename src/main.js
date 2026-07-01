@@ -1543,9 +1543,9 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
 function buildAwardSeal({idx, status, awards, offset = 0}) {
   const uid = `seal-${idx}`
   const isWon = status === 'won'
-  // When several seals share one cover, fan them out leftward along the
-  // top edge so they don't stack on the same corner.
-  const offsetStyle = offset > 0 ? ` style="right:calc(-1.6rem + ${offset * 4.6}rem)"` : ''
+  // When several seals share one cover, stack them vertically down the
+  // right edge (one below the other) rather than side by side.
+  const offsetStyle = offset > 0 ? ` style="top:calc(-1.6rem + ${offset * 5.2}rem)"` : ''
 
   // Rim text comes straight from the award strings the user types
   // into Sanity. Uppercased + joined with " · " for readability around
