@@ -1574,7 +1574,7 @@ function buildAwardSeal({idx, tier = 'gold', sealText, offset = 0}) {
   const stops = SEAL_TIERS[tier] || SEAL_TIERS.gold
   // When several seals share one cover, stack them vertically down the
   // right edge (one below the other) rather than side by side.
-  const offsetStyle = offset > 0 ? ` style="top:calc(-1.4rem + ${offset * 5.6}rem)"` : ''
+  const offsetStyle = offset > 0 ? ` style="top:calc(-1.4rem + ${offset * 4.5}rem)"` : ''
 
   // Rim text is the editable per-award sealText. Uppercased, prefixed with
   // a star. Short phrases repeat to fill the ring; medium/long phrases show
