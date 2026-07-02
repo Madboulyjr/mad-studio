@@ -1581,10 +1581,13 @@ function buildAwardSeal({idx, tier = 'gold', sealText, offset = 0}) {
   // once (repeating them was what made the rim look cramped). Font shrinks a
   // touch for long text so it doesn't crowd.
   const phrase = String(sealText || '').trim().toUpperCase() || 'AWARD'
-  const unit = `★ ${phrase} `
-  const rimText = phrase.length < 16 ? (unit + '· ').repeat(2).trim() : unit.trim()
-  const fontSize = phrase.length > 22 ? 6 : 7.2
-  const letterSpacing = phrase.length > 22 ? 1 : 1.4
+  // Repeat the phrase (with a star separator) until it comfortably fills the
+  // ring, then stretch it to the exact circle length so text wraps the FULL
+  // rim evenly — no empty half, no overlap at the seam.
+  const unit = `${phrase}  ★  `
+  let rimText = unit
+  while (rimText.length < 32) rimText += unit
+  const fontSize = 6.4
 
   const escHover = phrase.replace(/"/g, '&quot;')
 
@@ -1618,9 +1621,8 @@ function buildAwardSeal({idx, tier = 'gold', sealText, offset = 0}) {
           <text fill="#1A1815"
                 font-family="'Roboto', system-ui, sans-serif"
                 font-weight="700"
-                font-size="${fontSize}"
-                letter-spacing="${letterSpacing}">
-            <textPath href="#${uid}-rim" startOffset="0">${rimText}</textPath>
+                font-size="${fontSize}">
+            <textPath href="#${uid}-rim" startOffset="0" textLength="224" lengthAdjust="spacingAndGlyphs">${rimText}</textPath>
           </text>
         </g>
         <!-- Centre MAD-M letterform — bigger than before (scale 0.062
