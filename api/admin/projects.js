@@ -190,6 +190,44 @@ export default async function handler(req, res) {
       }
     }
 
+    // Duplicate an existing project — clone all fields into a new draft with
+    // a fresh slug/_id (shares the same image/video assets — no re-upload).
+    if (action === 'duplicate') {
+      if (!id) return jsonResponse(res, 400, {error: 'Missing ?id to duplicate'})
+      const client = sanityClient()
+      try {
+        const src = await client.fetch(`*[_id == $id][0]`, {id})
+        if (!src) return jsonResponse(res, 404, {error: 'Source project not found'})
+        const baseSlug = `${(src.slug && src.slug.current) || 'project'}-copy`.slice(0, 56)
+        let slug = baseSlug
+        let n = 2
+        // Ensure the slug is unique
+        while (await client.fetch(`count(*[_type == "project" && slug.current == $s])`, {s: slug})) {
+          slug = `${baseSlug}-${n++}`
+        }
+        const sectionRef = src.section && src.section._ref
+        const orderRow = sectionRef
+          ? await client.fetch(`*[_type == "project" && section._ref == $sid] | order(order desc)[0]{order}`, {sid: sectionRef})
+          : null
+        const order = ((orderRow && orderRow.order) || 0) + 1
+        const doc = {
+          ...src,
+          _id: `project-${slug}`,
+          title: `${src.title || 'Untitled'} (copy)`,
+          slug: {_type: 'slug', current: slug},
+          order,
+          published: false, // start the copy as a draft
+        }
+        delete doc._createdAt
+        delete doc._updatedAt
+        delete doc._rev
+        await client.create(doc)
+        return jsonResponse(res, 200, {ok: true, project: {_id: doc._id, slug, title: doc.title}})
+      } catch (e) {
+        return jsonResponse(res, 500, {error: e.message || 'Duplicate failed'})
+      }
+    }
+
     // Update existing (alias for PATCH; some callers use POST)
     if (id) {
       return updateProject(req, res, id, body)

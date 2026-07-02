@@ -328,6 +328,7 @@ function renderDashboard() {
                     </span>
                   </button>
                   <button class="adm-row-action adm-row-pub-btn ${p.published !== false ? 'is-live' : 'is-draft'}" data-action="toggle-publish" data-id="${p._id}" data-published="${p.published !== false}" title="${p.published !== false ? 'Published — click to unpublish' : 'Draft — click to publish'}">${p.published !== false ? '● Live' : '○ Draft'}</button>
+                  <button class="adm-row-action adm-row-dup-btn" data-action="duplicate" data-id="${p._id}" data-title="${escapeAttr(p.title)}" title="Duplicate this project">⧉ Copy</button>
                   <button class="adm-row-action adm-row-edit-btn" data-action="edit" data-id="${p._id}" title="Edit">Edit ↗</button>
                   <button class="adm-row-action adm-row-delete-btn" data-action="delete" data-id="${p._id}" data-title="${escapeAttr(p.title)}" aria-label="Delete ${escapeAttr(p.title)}" title="Delete">×</button>
                 </div>
@@ -445,7 +446,28 @@ function renderDashboard() {
       const action = el.dataset.action
       const id = el.dataset.id
       if (action === 'edit') openEdit('project', id)
-      else if (action === 'toggle-publish') {
+      else if (action === 'duplicate') {
+        const title = el.dataset.title || 'this project'
+        if (!confirm(`Duplicate "${title}"?\n\nCreates a draft copy you can edit.`)) return
+        el.disabled = true
+        el.textContent = '…'
+        try {
+          const r = await fetch(`${API.projects}?action=duplicate&id=${encodeURIComponent(id)}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
+            body: '{}',
+          })
+          const j = await r.json().catch(() => ({}))
+          if (!r.ok || !j.ok) throw new Error(j.error || r.status)
+          await refreshLists()
+          openEdit('project', j.project._id) // jump straight into editing the copy
+        } catch (err) {
+          alert('Duplicate failed: ' + (err.message || err))
+          el.disabled = false
+          render()
+        }
+      } else if (action === 'toggle-publish') {
         const next = el.dataset.published !== 'true' // flip current state
         el.disabled = true
         el.textContent = '…'
@@ -2228,6 +2250,8 @@ body.is-admin,
 .adm-row-pub-btn.is-draft{color:#E0A030}
 .adm-row-pub-btn:hover{background:rgba(245,240,225,0.1)}
 .adm-row-pub-btn:disabled{opacity:0.5 !important;cursor:default}
+.adm-row-dup-btn:hover{color:#8AB4F8;opacity:1 !important}
+.adm-row-dup-btn:disabled{opacity:0.5 !important;cursor:default}
 .adm-tag{
   background:rgba(245,240,225,0.06);
   padding:0.18rem 0.55rem;border-radius:999px;
