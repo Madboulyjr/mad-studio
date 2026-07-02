@@ -1511,22 +1511,6 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         ${platformPills}
       </div>
 
-      <!-- Apple Music player — dark embed so you can hear the catalogue
-           on-site (30s previews for everyone, full tracks for Apple Music
-           subscribers). Sits below the cards + pills. -->
-      <div class="madplus-listen">
-        <div class="madplus-listen-kicker">— Listen</div>
-        <iframe
-          class="madplus-apple-embed"
-          allow="autoplay *; encrypted-media *;"
-          frameborder="0"
-          height="450"
-          loading="lazy"
-          sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation"
-          src="https://embed.music.apple.com/us/artist/madbouly/1763009729"
-        ></iframe>
-      </div>
-
       <!-- Collab CTA — same block as other detail pages so the section
            closes with the studio's standard call-to-action, not a
            one-off footer that breaks the site rhythm. -->

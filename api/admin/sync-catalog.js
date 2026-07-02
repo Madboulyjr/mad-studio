@@ -105,9 +105,13 @@ export default async function handler(req, res) {
     // previous syncs — avoids re-uploading the same artwork every run.
     const existing = await client.fetch(`*[_id == $id][0]{featuredRelease, releases}`, {id: SECTION_ID})
     const coverById = new Map()
+    const previewById = new Map()
     const remember = (item) => {
-      if (item && item.extId && item.cover && item.cover.asset && item.cover.asset._ref) {
-        coverById.set(String(item.extId), item.cover)
+      if (!item || !item.extId) return
+      const k = String(item.extId)
+      if (item.cover && item.cover.asset && item.cover.asset._ref) coverById.set(k, item.cover)
+      if (item.previewAudio && item.previewAudio.asset && item.previewAudio.asset._ref) {
+        previewById.set(k, item.previewAudio)
       }
     }
     remember(existing && existing.featuredRelease)
@@ -130,9 +134,37 @@ export default async function handler(req, res) {
       return cover
     }
 
+    // Deezer exposes a free 30s preview MP3 per track. We grab the first
+    // track's preview for each release, upload it to Sanity, and store it as
+    // previewAudio so the on-site player can play every release.
+    let newPreviews = 0
+    async function ensurePreview(album) {
+      const key = String(album.id)
+      if (previewById.has(key)) return previewById.get(key)
+      let previewUrl = null
+      try {
+        const detail = await deezerGet(`https://api.deezer.com/album/${album.id}`)
+        const t0 = detail.tracks && detail.tracks.data && detail.tracks.data[0]
+        previewUrl = t0 && t0.preview ? t0.preview : null
+      } catch {
+        previewUrl = null
+      }
+      if (!previewUrl) return null
+      const buf = await fetchBuffer(previewUrl)
+      const asset = await client.assets.upload('file', buf, {
+        filename: `madplus-${slugify(album.title)}-preview.mp3`,
+        contentType: 'audio/mpeg',
+      })
+      newPreviews++
+      const pa = {_type: 'file', asset: {_type: 'reference', _ref: asset._id}}
+      previewById.set(key, pa)
+      return pa
+    }
+
     const [featuredAlbum, ...restAlbums] = releasesRaw
 
     const featuredCover = await ensureCover(featuredAlbum)
+    const featuredPreview = await ensurePreview(featuredAlbum)
     const featuredRelease = {
       kicker: 'LATEST RELEASE',
       title: featuredAlbum.title,
@@ -141,6 +173,7 @@ export default async function handler(req, res) {
       label: kindOf(featuredAlbum),
       extId: String(featuredAlbum.id),
       ...(featuredCover ? {cover: featuredCover} : {}),
+      ...(featuredPreview ? {previewAudio: featuredPreview} : {}),
       platforms: [
         {_key: 'fr-spotify', platform: 'spotify', url: SPOTIFY_ARTIST},
         {_key: 'fr-apple', platform: 'apple-music', url: APPLE_ARTIST},
@@ -152,6 +185,7 @@ export default async function handler(req, res) {
     const releases = []
     for (const a of restAlbums) {
       const cover = await ensureCover(a)
+      const preview = await ensurePreview(a)
       releases.push({
         _key: `rl-${a.id}`,
         title: a.title,
@@ -160,6 +194,7 @@ export default async function handler(req, res) {
         listenUrl: a.link || '',
         extId: String(a.id),
         ...(cover ? {cover} : {}),
+        ...(preview ? {previewAudio: preview} : {}),
       })
     }
 
@@ -171,6 +206,7 @@ export default async function handler(req, res) {
       featured: featuredAlbum.title,
       releasesCount: releases.length,
       newCovers,
+      newPreviews,
     })
   } catch (e) {
     return jsonResponse(res, 500, {error: (e && e.message) || 'Sync failed'})
