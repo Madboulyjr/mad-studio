@@ -327,6 +327,7 @@ function renderDashboard() {
                       ${(p.tags || []).slice(0, 2).map((t) => `<span class="adm-tag">${escapeHtml(t)}</span>`).join('')}
                     </span>
                   </button>
+                  <button class="adm-row-action adm-row-pub-btn ${p.published !== false ? 'is-live' : 'is-draft'}" data-action="toggle-publish" data-id="${p._id}" data-published="${p.published !== false}" title="${p.published !== false ? 'Published — click to unpublish' : 'Draft — click to publish'}">${p.published !== false ? '● Live' : '○ Draft'}</button>
                   <button class="adm-row-action adm-row-edit-btn" data-action="edit" data-id="${p._id}" title="Edit">Edit ↗</button>
                   <button class="adm-row-action adm-row-delete-btn" data-action="delete" data-id="${p._id}" data-title="${escapeAttr(p.title)}" aria-label="Delete ${escapeAttr(p.title)}" title="Delete">×</button>
                 </div>
@@ -444,7 +445,26 @@ function renderDashboard() {
       const action = el.dataset.action
       const id = el.dataset.id
       if (action === 'edit') openEdit('project', id)
-      else if (action === 'delete') {
+      else if (action === 'toggle-publish') {
+        const next = el.dataset.published !== 'true' // flip current state
+        el.disabled = true
+        el.textContent = '…'
+        try {
+          const r = await fetch(`${API.projects}?id=${encodeURIComponent(id)}`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'same-origin',
+            body: JSON.stringify({published: next}),
+          })
+          if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status)
+          await refreshLists()
+          render()
+        } catch (err) {
+          alert('Publish toggle failed: ' + (err.message || err))
+          el.disabled = false
+          render()
+        }
+      } else if (action === 'delete') {
         const title = el.dataset.title || 'this project'
         if (!confirm(`Delete "${title}"?\n\nThis permanently removes it from Sanity. This can't be undone via /admin (you'd have to re-add it from Studio history).`)) return
         try {
@@ -2202,6 +2222,12 @@ body.is-admin,
 .adm-row-edit-btn:hover{color:#D0FA51;opacity:1 !important}
 .adm-row-delete-btn{font-size:1.1rem !important;letter-spacing:0 !important;padding:0.2rem 0.55rem !important;line-height:1 !important}
 .adm-row-delete-btn:hover{background:#FF5577;color:#fff;opacity:1 !important}
+/* Publish toggle in the project list — green when live, muted when draft */
+.adm-row-pub-btn{opacity:1 !important}
+.adm-row-pub-btn.is-live{color:#D0FA51}
+.adm-row-pub-btn.is-draft{color:#E0A030}
+.adm-row-pub-btn:hover{background:rgba(245,240,225,0.1)}
+.adm-row-pub-btn:disabled{opacity:0.5 !important;cursor:default}
 .adm-tag{
   background:rgba(245,240,225,0.06);
   padding:0.18rem 0.55rem;border-radius:999px;
