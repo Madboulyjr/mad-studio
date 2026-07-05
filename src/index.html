@@ -1674,10 +1674,11 @@ body:not(.loading) .splash{
   position:relative;
 }
 .project-gallery .g-item.g-wide{grid-column:1 / -1}
-/* Non-wide visuals (portrait / square) sit CENTERED in their own full-width
-   row at a readable max-width — not stuck in the left grid column. */
-.project-gallery .g-item.g-tall{grid-column:1 / -1;max-width:44rem;margin-inline:auto}
-.project-gallery .g-item.g-square{grid-column:1 / -1;max-width:52rem;margin-inline:auto}
+/* Non-wide visuals (portrait / square) span the full row so they read big
+   and fill the width — click opens the full-screen lightbox. */
+.project-gallery .g-item.g-tall,
+.project-gallery .g-item.g-square{grid-column:1 / -1;max-width:none;margin-inline:0;cursor:zoom-in}
+.project-gallery .g-item.g-wide{cursor:zoom-in}
 .project-gallery .g-item img{width:100%;height:auto;display:block;object-fit:cover}
 .project-nav-next{
   /* margin-top + padding-top each pulled 5rem → 2.5rem after Ali
