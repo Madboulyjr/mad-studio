@@ -59,7 +59,10 @@ const QUERY = `{
       // private. Pre-pending the inline coalesce keeps new uploads
       // working without needing the wrapper to be public.
       "playbackId": coalesce(playbackId, video.asset->playbackId),
-      "assetId": coalesce(assetId, video.asset->assetId)
+      "assetId": coalesce(assetId, video.asset->assetId),
+      // Direct-MP4 (videoFile) — hosted on Sanity, played in a native <video>
+      "fileUrl": file.asset->url,
+      "posterUrl": poster.asset->url
     }
   }
 }`

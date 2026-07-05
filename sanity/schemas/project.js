@@ -240,6 +240,35 @@ export const project = {
             },
           },
         },
+        {
+          type: 'object',
+          name: 'videoFile',
+          title: 'Video (direct MP4 — free, no Mux)',
+          description: 'Hosted straight on Sanity + played in the site\'s own <video> player. No Mux limit; best for short clips.',
+          fields: [
+            {
+              name: 'file',
+              title: 'MP4 / WebM file',
+              type: 'file',
+              options: {accept: 'video/mp4,video/webm,video/quicktime'},
+            },
+            {name: 'poster', title: 'Poster image (optional)', type: 'image', options: {hotspot: true}},
+            {name: 'caption', title: 'Caption', type: 'string'},
+            {
+              name: 'autoplay',
+              title: 'Autoplay muted loop',
+              description: 'Off by default. Tick only for short ambient clips (muted, looping).',
+              type: 'boolean',
+              initialValue: false,
+            },
+          ],
+          preview: {
+            select: {caption: 'caption'},
+            prepare({caption}) {
+              return {title: 'Video (MP4)', subtitle: caption || ''}
+            },
+          },
+        },
       ],
     },
     {

@@ -2022,6 +2022,15 @@ function renderGalleryItem(item, gi) {
       ></mux-player>
     </div>`
   }
+  // Direct-MP4 video hosted on Sanity — played in a native <video> (no Mux).
+  if (item._type === 'videoFile' && item.fileUrl) {
+    const auto = item.autoplay === true
+    const attrs = auto ? 'autoplay muted loop playsinline' : 'controls playsinline'
+    const poster = item.posterUrl ? ` poster="${item.posterUrl}"` : ''
+    return `<div class="g-item g-video g-wide" style="--gi:${gi}">
+      <video src="${item.fileUrl}"${poster} ${attrs} preload="metadata" style="width:100%;height:100%;display:block;object-fit:cover;"></video>
+    </div>`
+  }
   if (item._type === 'image' || item.asset) {
     // a11y: prefer item.alt, fall back to item.caption, then a generic
     // "Project image" + index so we never ship empty alt= attrs
