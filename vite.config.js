@@ -152,7 +152,7 @@ function perUrlHtmlPlugin() {
       writeRoute('/', {
         title: `MAD Studio — ${tagline}`,
         description: tagline,
-        ogImage: '/og-square.jpg?v=3',
+        ogImage: '/og-cover.jpg?v=4',
         jsonLd: {
           '@context': 'https://schema.org',
           '@type': 'Organization',

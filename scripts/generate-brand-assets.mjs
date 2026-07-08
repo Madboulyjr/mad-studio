@@ -146,6 +146,26 @@ await sharp(Buffer.from(touchIconSvg))
   .png({compressionLevel: 9})
   .toFile(path.join(OUT, 'apple-touch-icon.png'))
 
+// ─── Share card: MAD Originals headline + 3D avatar (overrides og-cover) ──────
+// Matches the Originals landing: "We are MAD Originals. / Art direction,
+// campaigns & visual identity." over the memoji avatar on black.
+const ogAvatarSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0A0A0A"/>
+  <text x="600" y="96" text-anchor="middle" font-family="'Roboto',sans-serif" font-weight="700" font-size="52" fill="#F5F0E1">We are <tspan font-family="'Newsreader',serif" font-style="italic" font-weight="500" fill="#EAD9A0">MAD Originals.</tspan></text>
+  <text x="600" y="156" text-anchor="middle" font-family="'Roboto',sans-serif" font-weight="700" font-size="44" fill="#F5F0E1">Art direction, campaigns &amp; visual identity.</text>
+</svg>
+`
+const AV = 380
+const avatarBuf = await sharp(path.join(OUT, 'avatars/originals@2x.webp'))
+  .resize(AV, AV, {fit: 'contain', background: {r: 0, g: 0, b: 0, alpha: 0}})
+  .png()
+  .toBuffer()
+await sharp(Buffer.from(ogAvatarSvg))
+  .composite([{input: avatarBuf, top: 630 - AV - 8, left: Math.round((1200 - AV) / 2)}])
+  .jpeg({quality: 90, mozjpeg: true})
+  .toFile(path.join(OUT, 'og-cover.jpg'))
+
 // ─── Report ──────────────────────────────────────────────────────────────────
 const {statSync} = await import('node:fs')
 const sizes = [
