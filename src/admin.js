@@ -738,6 +738,13 @@ function renderProjectForm(p) {
             </svg>
             <span>Add video</span>
           </label>
+          <button type="button" class="adm-gallery-action-btn" id="adm-gallery-embed-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <span>Add video link (YouTube/Vimeo)</span>
+          </button>
         </div>
         <div class="adm-cover-status" id="adm-gallery-status"></div>
       </fieldset>
@@ -1347,6 +1354,27 @@ function bindGallery(projectId) {
     })
   }
 
+  // Add video link (YouTube / Vimeo) — just a URL, no upload.
+  const embedBtn = rootEl.querySelector('#adm-gallery-embed-btn')
+  if (embedBtn) {
+    embedBtn.addEventListener('click', () => {
+      const url = (prompt('Paste a YouTube or Vimeo link:') || '').trim()
+      if (!url) return
+      if (!/(youtu\.?be|youtube\.com|vimeo\.com)/i.test(url)) {
+        alert('That doesn’t look like a YouTube or Vimeo URL.')
+        return
+      }
+      mediaState.push({
+        _type: 'videoEmbed',
+        _key: 've-' + Math.random().toString(36).slice(2, 10),
+        url,
+        caption: '',
+      })
+      status.textContent = '✓ Video link added — click "Save changes" to apply'
+      reRenderGallery()
+    })
+  }
+
   // Remove (delegated)
   grid.addEventListener('click', (e) => {
     const btn = e.target.closest('.adm-thumb-remove')
@@ -1554,6 +1582,9 @@ function collectProjectPayload(data, form) {
     if (m._type === 'videoItem') {
       return {_type: 'videoItem', _key: m._key, video: m.video, caption: m.caption, autoplay: m.autoplay}
     }
+    if (m._type === 'videoEmbed') {
+      return {_type: 'videoEmbed', _key: m._key, url: m.url, caption: m.caption || ''}
+    }
     return {_type: 'image', _key: m._key, assetId: m.assetId || m.asset?._ref}
   })
   return payload
@@ -1659,14 +1690,17 @@ function collectSectionPayload(data) {
 
 /* ─── Gallery helpers ──────────────────────────────────────── */
 function renderGalleryThumb(m, i) {
-  const isVideo = m._type === 'videoItem'
-  const url = m.url || (m.asset?.url) || ''
+  const isEmbed = m._type === 'videoEmbed'
+  const isVideo = m._type === 'videoItem' || m._type === 'videoFile' || isEmbed
+  // Only images use a URL as the <img> src — never an embed link.
+  const url = !isVideo ? (m.asset?.url || '') : ''
   const assetId = m.assetId || m.asset?._ref || ''
+  const videoLabel = isEmbed ? 'Video link (YouTube/Vimeo)' : 'Video · edit in Studio'
   return `
     <div class="adm-gallery-thumb${isVideo ? ' is-video' : ''}" data-i="${i}" data-asset-id="${escapeAttr(assetId)}" data-type="${isVideo ? 'video' : 'image'}" draggable="true">
       ${isVideo
         ? `<div class="adm-thumb-video" aria-hidden="true">▶</div>
-           <div class="adm-thumb-label">Video · edit in Studio</div>`
+           <div class="adm-thumb-label">${videoLabel}</div>`
         : url
           ? `<img src="${escapeAttr(url)}?w=300&auto=format" alt="Gallery image ${i + 1}" loading="lazy">`
           : `<div class="adm-thumb-empty">image</div>`}

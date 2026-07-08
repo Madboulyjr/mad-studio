@@ -1995,6 +1995,16 @@ projectViewInner.addEventListener('click', (e) => {
   openLightbox(srcs, idx)
 })
 
+/* Parse a YouTube/Vimeo URL into a clean embed src (or null if unrecognised). */
+function parseVideoEmbed(url) {
+  const u = String(url || '')
+  let m = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/)
+  if (m) return `https://www.youtube.com/embed/${m[1]}?rel=0&modestbranding=1&playsinline=1`
+  m = u.match(/vimeo\.com\/(?:video\/)?(\d+)/)
+  if (m) return `https://player.vimeo.com/video/${m[1]}?dnt=1`
+  return null
+}
+
 function renderGalleryItem(item, gi) {
   if (item._type === 'videoItem' && item.playbackId) {
     // Defaults flipped: no video autoplays anymore. A video only
@@ -2030,6 +2040,15 @@ function renderGalleryItem(item, gi) {
     return `<div class="g-item g-video g-wide" style="--gi:${gi}">
       <video src="${item.fileUrl}"${poster} ${attrs} preload="metadata" style="width:100%;height:100%;display:block;object-fit:cover;"></video>
     </div>`
+  }
+  // YouTube / Vimeo embed — hosted there (unlimited, HD), shown in a 16:9 iframe.
+  if (item._type === 'videoEmbed' && item.url) {
+    const embed = parseVideoEmbed(item.url)
+    if (embed) {
+      return `<div class="g-item g-video g-wide" style="--gi:${gi}">
+        <div class="g-embed"><iframe src="${embed}" title="Video" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen loading="lazy"></iframe></div>
+      </div>`
+    }
   }
   if (item._type === 'image' || item.asset) {
     // a11y: prefer item.alt, fall back to item.caption, then a generic

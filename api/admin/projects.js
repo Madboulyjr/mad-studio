@@ -91,6 +91,16 @@ function normaliseMediaItem(item) {
     }
     return out
   }
+  // YouTube / Vimeo embed — just a URL + caption.
+  if (item._type === 'videoEmbed') {
+    if (!item.url) return null
+    return {
+      _type: 'videoEmbed',
+      _key: item._key || cryptoRandom(),
+      url: String(item.url).slice(0, 400),
+      caption: item.caption ? String(item.caption).slice(0, 300) : '',
+    }
+  }
   return null
 }
 function clamp01(n) {
@@ -125,7 +135,7 @@ export default async function handler(req, res) {
           coverImage{
             ...,
             "assetId": asset._ref,
-            "url": asset->url,
+            "url": coalesce(asset->url, url),
             "metadata": asset->metadata{dimensions}
           },
           media[]{
@@ -140,7 +150,7 @@ export default async function handler(req, res) {
             // works too. The coalesce chain is what prevents the admin
             // round-trip from wiping the inline playbackId field on save.
             "assetId": coalesce(assetId, asset._ref, video.asset->assetId),
-            "url": asset->url,
+            "url": coalesce(asset->url, url),
             "playbackId": coalesce(playbackId, video.asset->playbackId)
           }
         }`,

@@ -269,6 +269,27 @@ export const project = {
             },
           },
         },
+        {
+          type: 'object',
+          name: 'videoEmbed',
+          title: 'Video (YouTube / Vimeo link — free, unlimited)',
+          description: 'Paste a YouTube or Vimeo URL. Hosted there (unlimited, HD), embedded in a 16:9 player. Best when you have lots of videos.',
+          fields: [
+            {
+              name: 'url',
+              title: 'YouTube / Vimeo URL',
+              type: 'url',
+              description: 'e.g. https://youtu.be/XXXX or https://vimeo.com/123456',
+            },
+            {name: 'caption', title: 'Caption', type: 'string'},
+          ],
+          preview: {
+            select: {url: 'url', caption: 'caption'},
+            prepare({url, caption}) {
+              return {title: 'Video (embed)', subtitle: caption || url || ''}
+            },
+          },
+        },
       ],
     },
     {
