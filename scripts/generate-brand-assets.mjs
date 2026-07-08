@@ -26,54 +26,51 @@ const ogSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <rect width="1200" height="630" fill="#0A0A0A"/>
 
-  <!-- subtle grid background -->
-  <g stroke="#F5F0E1" stroke-width="0.5" opacity="0.04">
+  <!-- faint grid -->
+  <g stroke="#F5F0E1" stroke-width="0.5" opacity="0.035">
     <line x1="80" y1="0" x2="80" y2="630"/>
-    <line x1="600" y1="0" x2="600" y2="630"/>
     <line x1="1120" y1="0" x2="1120" y2="630"/>
-    <line x1="0" y1="80" x2="1200" y2="80"/>
-    <line x1="0" y1="540" x2="1200" y2="540"/>
+    <line x1="0" y1="150" x2="1200" y2="150"/>
+    <line x1="0" y1="470" x2="1200" y2="470"/>
   </g>
 
-  <!-- top-left status stamp -->
-  <text x="80" y="105"
+  <!-- red accent tick + top labels -->
+  <rect x="80" y="96" width="66" height="8" fill="#FF313B"/>
+  <text x="80" y="132"
     font-family="'IBM Plex Mono', monospace"
-    font-weight="500" font-size="20" letter-spacing="3"
-    fill="#F5F0E1" opacity="0.55"
-    text-transform="uppercase">
+    font-weight="600" font-size="21" letter-spacing="3" fill="#F5F0E1">
     BEINGMAD.CO
   </text>
+  <text x="1120" y="132"
+    font-family="'IBM Plex Mono', monospace"
+    font-weight="500" font-size="19" letter-spacing="3" fill="#F5F0E1"
+    opacity="0.5" text-anchor="end">
+    ART DIRECTION · DESIGN · MOTION
+  </text>
 
-  <!-- giant MAD logo (~60% width) -->
-  <g transform="translate(80 180) scale(1.95) translate(-30 -320)" fill="#F5F0E1">
+  <!-- hero MAD wordmark -->
+  <g transform="translate(78 205) scale(1.98) translate(-39 -329)" fill="#F5F0E1">
     <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
     <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
     <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
   </g>
 
-  <!-- Newsreader italic tagline, right-aligned to balance the logo -->
-  <text x="1120" y="495"
+  <!-- Newsreader italic tagline, "madness" in red -->
+  <text x="82" y="520"
     font-family="'Newsreader', Georgia, serif"
-    font-style="italic" font-weight="500"
-    font-size="44" letter-spacing="-0.5"
-    fill="#D0FA51" text-anchor="end">
-    Creativity is madness
-  </text>
-  <text x="1120" y="545"
-    font-family="'Newsreader', Georgia, serif"
-    font-style="italic" font-weight="500"
-    font-size="44" letter-spacing="-0.5"
-    fill="#D0FA51" text-anchor="end">
-    with a deadline.
+    font-style="italic" font-weight="500" font-size="48" letter-spacing="-0.5"
+    fill="#F5F0E1">
+    Creativity is <tspan fill="#FF313B">madness</tspan> with a deadline.
   </text>
 
-  <!-- bottom section markers in mono -->
-  <text x="80" y="585"
+  <!-- bottom section markers + red dot -->
+  <text x="80" y="574"
     font-family="'IBM Plex Mono', monospace"
     font-weight="500" font-size="18" letter-spacing="4"
-    fill="#F5F0E1" opacity="0.65">
+    fill="#F5F0E1" opacity="0.6">
     ORIGINALS · BUBBLE · MAD+ · VISION
   </text>
+  <circle cx="1120" cy="568" r="6" fill="#FF313B"/>
 </svg>
 `
 
