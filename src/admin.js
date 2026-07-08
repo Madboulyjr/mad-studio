@@ -1364,11 +1364,12 @@ function bindGallery(projectId) {
         alert('That doesn’t look like a YouTube or Vimeo URL.')
         return
       }
+      const caption = (prompt('Name / caption for this video (optional — helps you tell them apart):') || '').trim()
       mediaState.push({
         _type: 'videoEmbed',
         _key: 've-' + Math.random().toString(36).slice(2, 10),
         url,
-        caption: '',
+        caption,
       })
       status.textContent = '✓ Video link added — click "Save changes" to apply'
       reRenderGallery()
@@ -1695,12 +1696,17 @@ function renderGalleryThumb(m, i) {
   // Only images use a URL as the <img> src — never an embed link.
   const url = !isVideo ? (m.asset?.url || '') : ''
   const assetId = m.assetId || m.asset?._ref || ''
-  const videoLabel = isEmbed ? 'Video link (YouTube/Vimeo)' : 'Video · edit in Studio'
+  // For a YouTube embed, show the real thumbnail so each one is recognisable.
+  const ytMatch = isEmbed ? String(m.url || '').match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/) : null
+  const ytThumb = ytMatch ? `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg` : ''
+  const embedLabel = isEmbed ? (m.caption || String(m.url || '').replace(/^https?:\/\/(www\.)?/, '').slice(0, 34)) : ''
+  const videoLabel = isEmbed ? embedLabel : 'Video · edit in Studio'
   return `
     <div class="adm-gallery-thumb${isVideo ? ' is-video' : ''}" data-i="${i}" data-asset-id="${escapeAttr(assetId)}" data-type="${isVideo ? 'video' : 'image'}" draggable="true">
       ${isVideo
-        ? `<div class="adm-thumb-video" aria-hidden="true">▶</div>
-           <div class="adm-thumb-label">${videoLabel}</div>`
+        ? `${ytThumb ? `<img src="${escapeAttr(ytThumb)}" alt="" loading="lazy" style="opacity:0.55">` : ''}
+           <div class="adm-thumb-video" aria-hidden="true">▶</div>
+           <div class="adm-thumb-label">${escapeHtml(videoLabel)}</div>`
         : url
           ? `<img src="${escapeAttr(url)}?w=300&auto=format" alt="Gallery image ${i + 1}" loading="lazy">`
           : `<div class="adm-thumb-empty">image</div>`}
