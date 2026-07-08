@@ -82,6 +82,50 @@ await sharp(Buffer.from(ogSvg))
   .png({compressionLevel: 9})
   .toFile(path.join(OUT, 'og-cover.png'))
 
+// ─── Square share thumbnail (1200×1200) ──────────────────────────────────────
+// Compact-card preview (small square thumbnail) for WhatsApp / summary cards.
+const ogSquareSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200">
+  <rect width="1200" height="1200" fill="#0A0A0A"/>
+  <g stroke="#F5F0E1" stroke-width="0.6" opacity="0.035">
+    <line x1="100" y1="0" x2="100" y2="1200"/>
+    <line x1="1100" y1="0" x2="1100" y2="1200"/>
+    <line x1="0" y1="220" x2="1200" y2="220"/>
+    <line x1="0" y1="980" x2="1200" y2="980"/>
+  </g>
+  <rect x="100" y="150" width="90" height="12" fill="#FF313B"/>
+  <text x="100" y="200"
+    font-family="'IBM Plex Mono', monospace" font-weight="600" font-size="30" letter-spacing="4" fill="#F5F0E1">
+    BEINGMAD.CO
+  </text>
+
+  <!-- centered MAD wordmark -->
+  <g transform="translate(120 400) scale(1.8) translate(-39 -329)" fill="#F5F0E1">
+    <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+    <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+    <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+  </g>
+
+  <text x="102" y="880"
+    font-family="'Newsreader', Georgia, serif" font-style="italic" font-weight="500" font-size="58" letter-spacing="-0.5" fill="#F5F0E1">
+    Creativity is <tspan fill="#FF313B">madness</tspan>
+  </text>
+  <text x="102" y="948"
+    font-family="'Newsreader', Georgia, serif" font-style="italic" font-weight="500" font-size="58" letter-spacing="-0.5" fill="#F5F0E1">
+    with a deadline.
+  </text>
+
+  <text x="100" y="1055"
+    font-family="'IBM Plex Mono', monospace" font-weight="500" font-size="26" letter-spacing="5" fill="#F5F0E1" opacity="0.6">
+    ORIGINALS · BUBBLE · MAD+ · VISION
+  </text>
+  <circle cx="1100" cy="1046" r="8" fill="#FF313B"/>
+</svg>
+`
+await sharp(Buffer.from(ogSquareSvg))
+  .jpeg({quality: 90, mozjpeg: true})
+  .toFile(path.join(OUT, 'og-square.jpg'))
+
 // ─── Apple Touch Icon (180×180) ──────────────────────────────────────────────
 // iOS home-screen pinning. Black background + cream M ONLY (no full MAD).
 // iOS auto-rounds corners; we ship square + iOS rounds it.
