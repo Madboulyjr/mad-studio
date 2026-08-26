@@ -5,7 +5,12 @@
   "redirects": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "stream.beingmad.co" }],
+      "has": [
+        {
+          "type": "host",
+          "value": "stream.beingmad.co"
+        }
+      ],
       "destination": "https://www.beingmad.co/madplus",
       "permanent": true
     },
@@ -17,7 +22,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|avatars/|favicon|robots|sitemap|admin|studio).*)",
+      "source": "/((?!api/|plan|\\.well-known/|assets/|avatars/|favicon|robots|sitemap|admin|studio).*)",
       "destination": "/index.html"
     },
     {
@@ -36,5 +41,16 @@
     "api/admin/upload-image.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    }
+  ]
 }
