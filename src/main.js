@@ -2728,6 +2728,34 @@ function buildManifestoMarkup() {
     `
     : ''
 
+  const credentials = Array.isArray(SITE.credentials) ? SITE.credentials : []
+  const credsBlock = credentials.length
+    ? `
+      <section class="mani-section" aria-labelledby="mani-creds-h">
+        <div class="mani-section-head">
+          <span class="mani-section-kicker">— Credentials</span>
+          <h2 class="mani-section-title" id="mani-creds-h">Always learning.</h2>
+          <span class="mani-section-count">${String(credentials.length).padStart(2, '0')}</span>
+        </div>
+        <ul class="mani-award-list">
+          ${credentials
+            .map((cr) => {
+              const titleCell = cr.link
+                ? `<a class="mani-award-title-link" href="${escMani(cr.link)}" target="_blank" rel="noopener">${escMani(cr.title || 'Credential')} <span aria-hidden="true">↗</span></a>`
+                : escMani(cr.title || 'Credential')
+              return `
+              <li class="mani-award">
+                <span class="mani-award-year">${escMani(cr.year || '—')}</span>
+                <span class="mani-award-title">${titleCell}</span>
+                <span class="mani-award-meta">${escMani(cr.organization || '')}</span>
+              </li>`
+            })
+            .join('')}
+        </ul>
+      </section>
+    `
+    : ''
+
   // Empty-state message when none of the lists are populated yet
   const emptyAll = !won.length && !shortlisted.length && !press.length
   const emptyHint = emptyAll
@@ -2766,6 +2794,7 @@ function buildManifestoMarkup() {
         ${statsRow}
         ${wonBlock}
         ${shortlistedBlock}
+        ${credsBlock}
         ${pressBlock}
         ${emptyHint}
 

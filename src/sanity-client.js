@@ -19,7 +19,7 @@ const QUERY = `{
   "siteSettings": *[_type == "siteSettings"][0]{
     tagline, websiteUrl, websiteUrlLabel, contactEmail, socials,
     manifestoTitle, manifestoBody, manifestoStats,
-    awardsWon, awardsShortlisted, pressFeatures
+    awardsWon, awardsShortlisted, pressFeatures, credentials
   },
   "sections": *[_type == "section"] | order(order asc){
     "slug": slug.current,

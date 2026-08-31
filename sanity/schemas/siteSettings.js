@@ -145,6 +145,29 @@ export const siteSettings = {
         },
       ],
     },
+    {
+      name: 'credentials',
+      title: 'Credentials / learning',
+      type: 'array',
+      description: 'Courses, certifications, programmes. e.g. Creative Leadership — Future London Academy.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            {name: 'title', title: 'Credential / course', type: 'string'},
+            {name: 'organization', title: 'Institution / academy', type: 'string'},
+            {name: 'year', title: 'Year', type: 'string'},
+            {name: 'link', title: 'Link (optional)', type: 'url'},
+          ],
+          preview: {
+            select: {title: 'title', organization: 'organization', year: 'year'},
+            prepare({title, organization, year}) {
+              return {title: title || 'Credential', subtitle: [organization, year].filter(Boolean).join(' · ')}
+            },
+          },
+        },
+      ],
+    },
   ],
   preview: {
     prepare() {
