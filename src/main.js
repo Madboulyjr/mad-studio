@@ -2858,10 +2858,12 @@ const CV = {
   name: 'Ali Mohamed Shehata',
   headline: '10+ Captivating Years.',
   headlineEm: 'Sprinkling stardust on brands.',
-  intro:
-    "From <strong>AKQA (WPP)</strong> to <strong>FP7</strong> in Cairo, <strong>Acquaint Communications</strong> in KSA and <strong>Socialeyez</strong> in Dubai — I've danced with industry giants like Google Arabia, Mondelez International, Hardee's, Vodafone and Mazda, leaving audiences spellbound.",
-  collab:
-    "If you're ready to elevate your brand's story to legendary status, I'm your <em>Creative Genie</em>. Let's create a visual masterpiece that leaves the competition green with envy.",
+  paras: [
+    "Hey there! I'm <strong>Madbouly</strong>, an advertising wizard who's been sprinkling stardust on brands for over <strong>10 captivating years</strong>. From <strong>AKQA (WPP)</strong> to <strong>FP7</strong> in Cairo, <strong>Acquaint Communications</strong> in KSA and <strong>Socialeyez</strong> in Dubai — I've danced with industry giants like Google Arabia, Mondelez International, Hardee's, Vodafone and Mazda, leaving audiences spellbound.",
+    "Most recently in Riyadh, I've worked my magic at <strong>Onsor Mosha</strong>, and before that <strong>Fullstop</strong> — casting spells on accounts like New Murabba, Diriyah, Almarai and Zain KSA.",
+    "With art direction that'll make your jaw drop, 3D that defies gravity and animation that makes your heart skip a beat, I've mastered bringing ideas to life in mind-bending ways. I've also partnered with the crème de la crème — Dubai Expo 2020, du Telecommunications, Emaar Properties, RTA Dubai, Juhayna and other prestigious names — crafting narratives that keep audiences on the edge of their seats.",
+    "If you're ready to elevate your brand's story to legendary status, I'm your <em>Creative Genie</em>. Let's collaborate on a visual masterpiece that leaves the competition green with envy — and embark on an enchanting journey where magic meets advertising brilliance.",
+  ],
   experience: [
     {role: 'Senior Art Director', company: 'Onsor Mosha', dates: '2024 — Present', place: 'Riyadh, Saudi Arabia'},
     {role: 'Art Director / Visualiser', company: 'The Fullstop KSA', dates: '2023 — 2024', place: 'Cairo, Egypt'},
@@ -2947,8 +2949,7 @@ function buildCvMarkup() {
           <div class="mani-kicker">— ${escMani(CV.name)}</div>
           <h1 class="mani-title">${escMani(CV.headline)}<br><em>${escMani(CV.headlineEm)}</em></h1>
           <div class="mani-body">
-            <p class="mani-p">${CV.intro}</p>
-            <p class="mani-p">${CV.collab}</p>
+            ${CV.paras.map((p) => `<p class="mani-p">${p}</p>`).join('')}
           </div>
           <div class="cv-contact">
             <a class="mani-resume-btn" href="mailto:${escMani(contactEmail)}">Get in touch <span aria-hidden="true">→</span></a>
