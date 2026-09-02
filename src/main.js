@@ -2756,6 +2756,11 @@ function buildManifestoMarkup() {
     `
     : ''
 
+  const resumeUrl = SITE.resumeUrl || ''
+  const resumeBtn = resumeUrl
+    ? `<a class="mani-resume-btn" href="${escMani(resumeUrl)}" target="_blank" rel="noopener" download>Download Résumé <span aria-hidden="true">↓</span></a>`
+    : ''
+
   // Empty-state message when none of the lists are populated yet
   const emptyAll = !won.length && !shortlisted.length && !press.length
   const emptyHint = emptyAll
@@ -2789,6 +2794,7 @@ function buildManifestoMarkup() {
           <div class="mani-kicker">— The Studio</div>
           <h1 class="mani-title">${title}</h1>
           <div class="mani-body">${paragraphs}</div>
+          ${resumeBtn}
         </div>
 
         ${statsRow}

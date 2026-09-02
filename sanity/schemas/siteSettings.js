@@ -146,6 +146,13 @@ export const siteSettings = {
       ],
     },
     {
+      name: 'resume',
+      title: 'Résumé / CV (PDF)',
+      type: 'file',
+      description: 'Upload your CV as a PDF. A "Download Résumé" button appears on the Manifesto page when this is set.',
+      options: {accept: 'application/pdf'},
+    },
+    {
       name: 'credentials',
       title: 'Credentials / learning',
       type: 'array',
