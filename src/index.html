@@ -2914,7 +2914,10 @@ body{
   font-size:1.05rem;letter-spacing:0.3em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;margin-left:auto;
 }
-.cv-contact{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap;margin-top:0.4rem}
+.cv-contact{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap;margin-top:2.6rem}
+/* the button carries its own top margin for the manifesto — cancel it here
+   so the button and the contact line sit on the same baseline */
+.cv-contact .mani-resume-btn{margin-top:0}
 .cv-contact-meta{
   font-family:'Roboto', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;letter-spacing:0.14em;text-transform:uppercase;

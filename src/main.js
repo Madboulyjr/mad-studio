@@ -1518,7 +1518,7 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
         <div class="collab-kicker">Let's Collaborate</div>
         <h2 class="collab-title">Sound that <em>moves.</em></h2>
         <p class="collab-lead">Need original music or sound design for a film, brand, or campaign? Let's make something nobody else could.</p>
-        <a class="collab-btn" href="mailto:${SITE.contactEmail || 'madboulyjr.7@gmail.com'}">Get In Touch → </a>
+        <a class="collab-btn" href="mailto:${SITE.contactEmail || 'mad@beingmad.co'}">Get In Touch → </a>
       </div>
     </div>
   `
@@ -1651,7 +1651,7 @@ function buildDetail(id) {
     </div>
   `
     : ''
-  const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+  const contactEmail = SITE.contactEmail || 'mad@beingmad.co'
   // Resolve section's display name (e.g. "Originals", "Bubble", "MAD+", "Vision")
   const sec = SECTIONS.find((s) => s.id === id)
   const secLabel = sec ? sec.cTitle : id
@@ -1709,7 +1709,7 @@ function buildDetail(id) {
              Projects for this section are still in production. Drop me a line
              if you'd like to see early work or commission something new.
            </p>
-           <a class="works-empty-cta" href="mailto:${SITE.contactEmail || 'madboulyjr.7@gmail.com'}">Get in touch →</a>
+           <a class="works-empty-cta" href="mailto:${SITE.contactEmail || 'mad@beingmad.co'}">Get in touch →</a>
          </div>`
       : `<div class="works-list">
       ${works
@@ -2639,7 +2639,7 @@ function buildManifestoMarkup() {
   const won = Array.isArray(SITE.awardsWon) ? SITE.awardsWon : []
   const shortlisted = Array.isArray(SITE.awardsShortlisted) ? SITE.awardsShortlisted : []
   const press = Array.isArray(SITE.pressFeatures) ? SITE.pressFeatures : []
-  const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+  const contactEmail = SITE.contactEmail || 'mad@beingmad.co'
 
   const paragraphs = body
     .split(/\n\s*\n/)
@@ -2877,7 +2877,7 @@ const CV = {
 }
 
 function buildCvMarkup() {
-  const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+  const contactEmail = SITE.contactEmail || 'mad@beingmad.co'
   const won = Array.isArray(SITE.awardsWon) ? SITE.awardsWon : []
   const creds = Array.isArray(SITE.credentials) ? SITE.credentials : []
 
