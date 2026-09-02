@@ -128,7 +128,7 @@ function illusMarkup(slug) {
 /* ─── Speech bubble — rotating witty phrases per section ─── */
 const SPEECH = {
   originals: [
-    '9+ years of madness.',
+    '10+ years of madness.',
     'Currently making something mad.',
     'Last project: BIOLAB.',
     'Coffee: too many.',
@@ -2634,7 +2634,7 @@ function buildManifestoMarkup() {
     'Creativity is <em>madness</em><br>with a deadline.'
   const body =
     SITE.manifestoBody ||
-    'Nine years building loud worlds for clients across the region — launching Google Arabia, Vodafone RED, Mazda re-launches, Mondelez packaging.\n\n<strong>The work doesn\'t whisper.</strong> It picks a fight with the scroll, makes the brief feel small, and earns its place in the feed by being the thing nobody saw coming.\n\nTrained at AKQA, FP7, Acquaint and Socialeyez. Now operating on my own terms — running MAD Studio across Originals, Bubble, MAD+ music and Vision film.'
+    'Ten years building loud worlds for clients across the region — launching Google Arabia, Vodafone RED, Mazda re-launches, Mondelez packaging.\n\n<strong>The work doesn\'t whisper.</strong> It picks a fight with the scroll, makes the brief feel small, and earns its place in the feed by being the thing nobody saw coming.\n\nTrained at AKQA, FP7, Acquaint and Socialeyez. Now operating on my own terms — running MAD Studio across Originals, Bubble, MAD+ music and Vision film.'
   const stats = Array.isArray(SITE.manifestoStats) ? SITE.manifestoStats : []
   const won = Array.isArray(SITE.awardsWon) ? SITE.awardsWon : []
   const shortlisted = Array.isArray(SITE.awardsShortlisted) ? SITE.awardsShortlisted : []
@@ -2756,10 +2756,8 @@ function buildManifestoMarkup() {
     `
     : ''
 
-  const resumeUrl = SITE.resumeUrl || ''
-  const resumeBtn = resumeUrl
-    ? `<a class="mani-resume-btn" href="${escMani(resumeUrl)}" target="_blank" rel="noopener" download>Download Résumé <span aria-hidden="true">↓</span></a>`
-    : ''
+  // Links to the standalone /cv page (a shareable résumé you can send as a link).
+  const resumeBtn = `<a class="mani-resume-btn" href="/cv" id="mani-cv-link">View Résumé <span aria-hidden="true">→</span></a>`
 
   // Empty-state message when none of the lists are populated yet
   const emptyAll = !won.length && !shortlisted.length && !press.length
@@ -2826,6 +2824,15 @@ function openManifestoDOM() {
     // Inline back button → navigate to landing
     const backBtn = _manifestoEl.querySelector('.mani-back')
     if (backBtn) backBtn.addEventListener('click', () => navigate({view: 'landing'}))
+    // Résumé link → route in-app instead of a full page load
+    const cvLink = _manifestoEl.querySelector('#mani-cv-link')
+    if (cvLink) {
+      cvLink.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+        e.preventDefault()
+        navigate({view: 'cv'})
+      })
+    }
   }
   _manifestoEl.classList.add('open')
   _manifestoEl.setAttribute('aria-hidden', 'false')
@@ -2837,6 +2844,147 @@ function closeManifestoDOM() {
   if (!_manifestoEl) return
   _manifestoEl.classList.remove('open')
   _manifestoEl.setAttribute('aria-hidden', 'true')
+  document.body.style.overflow = ''
+  setEnterPillVisible(true)
+}
+
+/* ─── RÉSUMÉ / CV PAGE (/cv) ───────────────────────────────────────────
+   A standalone, shareable page — send the link itself as the CV. Built
+   on the SAME shell + mani-* classes as the manifesto so it inherits the
+   site's editorial look with no separate design. The role/education data
+   lives here (it changes rarely); awards + credentials are pulled from
+   Sanity so the CV never drifts from the manifesto. */
+const CV = {
+  name: 'Ali Mohamed Shehata',
+  headline: '10+ Captivating Years.',
+  headlineEm: 'Sprinkling stardust on brands.',
+  intro:
+    "From <strong>AKQA (WPP)</strong> to <strong>FP7</strong> in Cairo, <strong>Acquaint Communications</strong> in KSA and <strong>Socialeyez</strong> in Dubai — I've danced with industry giants like Google Arabia, Mondelez International, Hardee's, Vodafone and Mazda, leaving audiences spellbound.",
+  collab:
+    "If you're ready to elevate your brand's story to legendary status, I'm your <em>Creative Genie</em>. Let's create a visual masterpiece that leaves the competition green with envy.",
+  experience: [
+    {role: 'Senior Art Director', company: 'Onsor Mosha', dates: '2024 — Present', place: 'Riyadh, Saudi Arabia'},
+    {role: 'Art Director / Visualiser', company: 'The Fullstop KSA', dates: '2023 — 2024', place: 'Cairo, Egypt'},
+    {role: 'Senior Graphic Designer', company: 'Acquaint Communications', dates: '2022 — 2023', place: 'Cairo, Egypt'},
+    {role: 'Senior Graphic Designer', company: 'AKQA', dates: '2020 — 2022', place: 'Cairo, Egypt'},
+    {role: 'Senior Graphic Designer', company: 'Hype Egypt', dates: '2018 — 2020', place: 'Cairo, Egypt'},
+    {role: 'Junior Graphic Designer', company: 'BeBrand Advertising', dates: '2016 — 2017', place: 'Maadi, Cairo, Egypt'},
+  ],
+  education: [
+    {title: 'Bachelor of Business Administration — Business / Commerce', org: 'Cairo University', dates: '2015 — 2017'},
+    {title: 'High School', org: "El Sa'adia High School", dates: '2002 — 2011'},
+  ],
+}
+
+function buildCvMarkup() {
+  const contactEmail = SITE.contactEmail || 'madboulyjr.7@gmail.com'
+  const won = Array.isArray(SITE.awardsWon) ? SITE.awardsWon : []
+  const creds = Array.isArray(SITE.credentials) ? SITE.credentials : []
+
+  const listSection = (kicker, heading, items) =>
+    items.length
+      ? `
+      <section class="mani-section">
+        <div class="mani-section-head">
+          <span class="mani-section-kicker">— ${escMani(kicker)}</span>
+          <h2 class="mani-section-title">${escMani(heading)}</h2>
+          <span class="mani-section-count">${String(items.length).padStart(2, '0')}</span>
+        </div>
+        <ul class="mani-award-list">${items.join('')}</ul>
+      </section>`
+      : ''
+
+  const expItems = CV.experience.map(
+    (e) => `
+      <li class="mani-award">
+        <span class="mani-award-year">${escMani(e.dates)}</span>
+        <span class="mani-award-title">${escMani(e.role)} · <em>${escMani(e.company)}</em></span>
+        <span class="mani-award-meta">${escMani(e.place)}</span>
+      </li>`,
+  )
+  const eduItems = CV.education.map(
+    (e) => `
+      <li class="mani-award">
+        <span class="mani-award-year">${escMani(e.dates)}</span>
+        <span class="mani-award-title">${escMani(e.title)}</span>
+        <span class="mani-award-meta">${escMani(e.org)}</span>
+      </li>`,
+  )
+  const credItems = creds.map(
+    (cr) => `
+      <li class="mani-award">
+        <span class="mani-award-year">${escMani(cr.year || '—')}</span>
+        <span class="mani-award-title">${escMani(cr.title || '')}</span>
+        <span class="mani-award-meta">${escMani(cr.organization || '')}</span>
+      </li>`,
+  )
+  const wonItems = won.map(
+    (a) => `
+      <li class="mani-award">
+        <span class="mani-award-year">${escMani(a.year || '—')}</span>
+        <span class="mani-award-title">${escMani(a.title || '')}</span>
+        <span class="mani-award-meta">${escMani(a.organization || '')}${a.project ? ` · ${escMani(a.project)}` : ''}</span>
+      </li>`,
+  )
+
+  return `
+    <section class="manifesto-page cv-page" id="cv-page" aria-hidden="true">
+      <div class="mani-shell">
+        <div class="mani-banner" aria-label="Résumé">
+          <button class="detail-back detail-back-inline mani-back" type="button" aria-label="Back to home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Back</span>
+          </button>
+          <svg class="detail-banner-logo" viewBox="30 320 530 165" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M39.25,329.84h64.47l35.87,41.64l17.07-41.64h80.11v139.39h-65.84l-5.49-72.29l-16.46,72.29h-35.67l-44.17-72.68l22.22,72.68H39.25V329.84z"/>
+            <path fill-rule="evenodd" d="M286.44,329.84h86.42l30.18,139.39h-55.29l-10.97-36.64h-26.06l-2.19,36.64h-65.42L286.44,329.84z M330,408.3l-14.54-48.39l-3.02,48.39H330z"/>
+            <path fill-rule="evenodd" d="M503.63,329.84h-93.44v139.39h93.44c28.64,0,51.86-23.22,51.86-51.86V381.7C555.49,353.06,532.27,329.84,503.63,329.84z M448.05,389.64v-29.73l76.11,4.75L448.05,389.64z"/>
+          </svg>
+          <span class="mani-banner-label">Résumé</span>
+        </div>
+
+        <div class="mani-hero">
+          <div class="mani-kicker">— ${escMani(CV.name)}</div>
+          <h1 class="mani-title">${escMani(CV.headline)}<br><em>${escMani(CV.headlineEm)}</em></h1>
+          <div class="mani-body">
+            <p class="mani-p">${CV.intro}</p>
+            <p class="mani-p">${CV.collab}</p>
+          </div>
+          <div class="cv-contact">
+            <a class="mani-resume-btn" href="mailto:${escMani(contactEmail)}">Get in touch <span aria-hidden="true">→</span></a>
+            <span class="cv-contact-meta">${escMani(contactEmail)} · Riyadh, KSA</span>
+          </div>
+        </div>
+
+        ${listSection('Experience', 'Where I have been.', expItems)}
+        ${listSection('Awards', 'Recognition.', wonItems)}
+        ${listSection('Credentials', 'Always learning.', credItems)}
+        ${listSection('Education', 'Foundations.', eduItems)}
+      </div>
+    </section>
+  `
+}
+
+let _cvEl = null
+function openCvDOM() {
+  if (!_cvEl) {
+    const wrap = document.createElement('div')
+    wrap.innerHTML = buildCvMarkup()
+    _cvEl = wrap.firstElementChild
+    document.body.appendChild(_cvEl)
+    const backBtn = _cvEl.querySelector('.mani-back')
+    if (backBtn) backBtn.addEventListener('click', () => navigate({view: 'landing'}))
+  }
+  _cvEl.classList.add('open')
+  _cvEl.setAttribute('aria-hidden', 'false')
+  _cvEl.scrollTo(0, 0)
+  document.body.style.overflow = 'hidden'
+  setEnterPillVisible(false)
+}
+function closeCvDOM() {
+  if (!_cvEl) return
+  _cvEl.classList.remove('open')
+  _cvEl.setAttribute('aria-hidden', 'true')
   document.body.style.overflow = ''
   setEnterPillVisible(true)
 }
@@ -2862,6 +3010,8 @@ function parseRoute(pathname) {
   }
   // Manifesto page — full-screen takeover with philosophy + awards + press
   if (segs[0].toLowerCase() === 'manifesto') return {view: 'manifesto'}
+  // Standalone shareable résumé page
+  if (segs[0].toLowerCase() === 'cv' || segs[0].toLowerCase() === 'resume') return {view: 'cv'}
   const id = URL_TO_ID[segs[0].toLowerCase()]
   if (!id) return {view: 'notfound', path: pathname || location.pathname}
   if (segs.length === 1) return {view: 'detail', id}
@@ -2872,6 +3022,7 @@ function urlForRoute(r) {
   if (r.view === 'landing') return '/'
   if (r.view === 'admin') return r.sub ? `/admin/${r.sub}` : '/admin'
   if (r.view === 'manifesto') return '/manifesto'
+  if (r.view === 'cv') return '/cv'
   if (r.view === 'notfound') return r.path || '/404'
   const seg = ID_TO_URL[r.id] || r.id
   if (r.view === 'project') return `/${seg}/${encodeURIComponent(r.projectSlug)}`
@@ -2884,6 +3035,7 @@ function titleForRoute(r) {
   if (r.view === 'landing') return base
   if (r.view === 'admin') return `Admin · MAD Studio`
   if (r.view === 'manifesto') return `Manifesto · MAD Studio`
+  if (r.view === 'cv') return `Résumé — Ali Shehata · Senior Art Director`
   if (r.view === 'notfound') return `404 — Page not found · MAD Studio`
   const sec = SECTIONS.find((s) => s.id === r.id)
   const secTitle = sec ? sec.cTitle : r.id
@@ -2960,9 +3112,19 @@ function applyRoute(r) {
   if (r.view === 'manifesto') {
     if (projectView.classList.contains('open')) closeProjectDOM()
     if (detailPage.classList.contains('open')) closeDetailDOM()
+    closeCvDOM()
     openManifestoDOM()
     return
   }
+  // Résumé page
+  if (r.view === 'cv') {
+    if (projectView.classList.contains('open')) closeProjectDOM()
+    if (detailPage.classList.contains('open')) closeDetailDOM()
+    closeManifestoDOM()
+    openCvDOM()
+    return
+  }
+  closeCvDOM()
   closeManifestoDOM()
   if (r.view === 'landing') {
     if (projectView.classList.contains('open')) closeProjectDOM()
