@@ -1,55 +1,8 @@
+import {normalizeContent, externalProjectUrl, escapeHtml} from './src/content-utils.js'
 import {defineConfig, loadEnv} from 'vite'
 import {resolve} from 'path'
 import {writeFileSync, mkdirSync, readFileSync, existsSync} from 'node:fs'
 import {createClient} from '@sanity/client'
-
-/**
- * Vite plugin: generate /dist/sitemap.xml from seed-data at build time.
- * Maps internal section slugs to public URLs (music → madplus).
- */
-function sitemapPlugin() {
-  return {
-    name: 'mad-studio-sitemap',
-    apply: 'build',
-    async closeBundle() {
-      const SITE_URL = 'https://beingmad.co'
-      const ID_TO_URL = {originals: 'originals', bubble: 'bubble', music: 'madplus', vision: 'vision'}
-      const today = new Date().toISOString().split('T')[0]
-      // Pull section + project lists from the seed file.
-      const seed = await import('./sanity/scripts/seed-data.mjs')
-      const sections = (seed.SECTIONS || []).map((s) => s.slug)
-      const projects = seed.ORIGINALS_PROJECTS || []
-      const urls = [
-        {loc: `${SITE_URL}/`, priority: '1.0', changefreq: 'weekly'},
-        ...sections.map((slug) => ({
-          loc: `${SITE_URL}/${ID_TO_URL[slug] || slug}`,
-          priority: '0.9',
-          changefreq: 'weekly',
-        })),
-        ...projects.map((p) => ({
-          // Every seeded project sits under the "originals" section today.
-          loc: `${SITE_URL}/${ID_TO_URL[p.sectionSlug || 'originals'] || 'originals'}/${p.slug}`,
-          priority: '0.7',
-          changefreq: 'monthly',
-        })),
-      ]
-      const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls
-  .map(
-    (u) =>
-      `  <url><loc>${u.loc}</loc><lastmod>${today}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`,
-  )
-  .join('\n')}
-</urlset>
-`
-      const outDir = resolve(__dirname, 'dist')
-      mkdirSync(outDir, {recursive: true})
-      writeFileSync(resolve(outDir, 'sitemap.xml'), xml, 'utf8')
-      console.log(`✓ Generated sitemap.xml (${urls.length} URLs)`)
-    },
-  }
-}
 
 /**
  * Vite plugin: clone /dist/index.html to per-URL static HTML files with
@@ -72,7 +25,7 @@ function perUrlHtmlPlugin() {
     name: 'mad-studio-per-url-html',
     apply: 'build',
     async closeBundle() {
-      const SITE = 'https://beingmad.co'
+      const SITE = 'https://www.beingmad.co'
       const ID_TO_URL = {originals: 'originals', bubble: 'bubble', music: 'madplus', vision: 'vision'}
       const distDir = resolve(__dirname, 'dist')
       const indexPath = resolve(distDir, 'index.html')
@@ -98,30 +51,33 @@ function perUrlHtmlPlugin() {
             "slug": slug.current,
             "sectionSlug": section->slug.current,
             "sectionTitle": section->title,
-            title, caption, year
+            title, caption, year, tags, caseStudy,
+            media[]{..., "playbackId": coalesce(playbackId, video.asset->playbackId), "fileUrl": file.asset->url}
           }
         }`)
       } catch (e) {
-        console.warn('  perUrlHtml: Sanity fetch failed, skipping:', e.message)
-        return
+        throw new Error(`Cannot build current project routes: ${e.message}`)
       }
 
+      data = normalizeContent(data)
+      const routePaths = []
       const tagline = 'Creativity is madness with a deadline.'
-      const writeRoute = (urlPath, {title, description, ogImage, jsonLd}) => {
+      const writeRoute = (urlPath, {title, description, ogImage, jsonLd, noindex = false}) => {
+        if (!existsSync(resolve(distDir, ogImage.split('?')[0].replace(/^\//, '')))) ogImage = '/og-cover.jpg?v=4'
         let html = baseHtml
-        html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`)
+        html = html.replace(/<title>[^<]*<\/title>/, () => `<title>${escapeHtml(title)}</title>`)
         const setMeta = (prop, value) => {
           const re = new RegExp(`(<meta\\s+property="${prop}"\\s+content=")[^"]*"`, 'g')
-          if (re.test(html)) html = html.replace(re, `$1${value}"`)
-          else html = html.replace('</head>', `  <meta property="${prop}" content="${value}">\n</head>`)
+          if (re.test(html)) html = html.replace(re, (_, prefix) => `${prefix}${escapeHtml(value)}"`)
+          else html = html.replace('</head>', `  <meta property="${prop}" content="${escapeHtml(value)}">\n</head>`)
         }
         const setNameMeta = (name, value) => {
           const re = new RegExp(`(<meta\\s+name="${name}"\\s+content=")[^"]*"`, 'g')
-          if (re.test(html)) html = html.replace(re, `$1${value}"`)
+          if (re.test(html)) html = html.replace(re, (_, prefix) => `${prefix}${escapeHtml(value)}"`)
         }
         const canonicalRe = /<link\s+rel="canonical"\s+href="[^"]*"\s*\/?>/
         if (canonicalRe.test(html)) {
-          html = html.replace(canonicalRe, `<link rel="canonical" href="${SITE}${urlPath}">`)
+          html = html.replace(canonicalRe, `<link rel="canonical" href="${escapeHtml(SITE + urlPath)}">`)
         }
         setMeta('og:title', title)
         setMeta('og:description', description)
@@ -134,10 +90,12 @@ function perUrlHtmlPlugin() {
 
         // JSON-LD structured data — injected as a <script> before </head>.
         if (jsonLd) {
-          const block = `  <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>\n`
+          const block = `  <script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>\n`
           html = html.replace('</head>', block + '</head>')
         }
 
+        if (noindex) html = html.replace('</head>', '<meta name="robots" content="noindex,follow"></head>')
+        else routePaths.push(urlPath)
         const filePath = urlPath === '/'
           ? indexPath // landing keeps the original index.html
           : resolve(distDir, urlPath.replace(/^\//, ''), 'index.html')
@@ -180,6 +138,7 @@ function perUrlHtmlPlugin() {
         const sectionUrl = ID_TO_URL[p.sectionSlug] || p.sectionSlug
         if (!sectionUrl || !p.slug) continue
         writeRoute(`/${sectionUrl}/${p.slug}`, {
+          noindex: !!externalProjectUrl(p),
           title: `${p.title}${p.year ? ` · ${p.year}` : ''} — ${p.sectionTitle} · MAD Studio`,
           description: (p.caption || '').replace(/\s+—\s+/g, ' ').slice(0, 160) || tagline,
           ogImage: `/og/${sectionUrl}-${p.slug}.jpg`,
@@ -197,6 +156,15 @@ function perUrlHtmlPlugin() {
         })
         count++
       }
+      for (const [path, title, description] of [
+        ['/manifesto','Manifesto · MAD Studio','The philosophy behind MAD Studio.'],
+        ['/cv','Résumé — Ali Shehata · Senior Art Director','Experience and selected work by Ali Shehata.'],
+      ]) writeRoute(path, {title, description, ogImage:'/og-cover.jpg?v=4'})
+      writeRoute('/404', {title:'404 — Page not found · MAD Studio', description:'This page could not be found. Explore MAD Studio’s work.', ogImage:'/og-cover.jpg?v=4', noindex:true})
+      writeFileSync(resolve(distDir, '404.html'), readFileSync(resolve(distDir, '404/index.html')))
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...new Set(routePaths)].map(path => `  <url><loc>${escapeHtml(SITE + path)}</loc></url>`).join('\n')}\n</urlset>\n`
+      writeFileSync(resolve(distDir, 'sitemap.xml'), xml)
+      console.log(`✓ Generated sitemap.xml (${routePaths.length} current URLs)`)
       console.log(`✓ Generated per-URL HTML files (${count} routes)`)
     },
   }
@@ -205,7 +173,7 @@ function perUrlHtmlPlugin() {
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    plugins: [sitemapPlugin(), perUrlHtmlPlugin()],
+    plugins: [perUrlHtmlPlugin()],
     root: 'src',
     publicDir: resolve(__dirname, 'public'),
     build: {

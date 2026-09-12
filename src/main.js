@@ -1,9 +1,68 @@
+import {normalizeContent, externalProjectUrl, escapeHtml, musicPlatform} from './content-utils.js'
 import {fetchContent, urlFor} from './sanity-client.js'
 import {inject as injectAnalytics} from '@vercel/analytics'
+import {createAvatarHandoff} from './avatar-handoff.js'
+import {startSpeechRotation, stopSpeechRotation} from './avatar-speech.js'
+
+// Load the reviewed 3D character on demand; keep local comparison overrides.
+const avatar3dQuery = import.meta.env.DEV ? new URLSearchParams(location.search).get('avatar3d') : null
+const avatar3dMode = avatar3dQuery || 'all'
+const avatar3dEnabled = ['all', 'originals', 'bubble', 'music', 'vision'].includes(avatar3dMode)
+const avatarUses3D = slug => avatar3dEnabled && (avatar3dMode === 'all' || slug === avatar3dMode)
+const avatarHandoff = createAvatarHandoff({
+  createEntry(slug, hasCurrent) {
+    const illustration = document.getElementById('illustration')
+    let stage = illustration.querySelector('.avatar-stage')
+    let container
+    if (!stage) {
+      illustration.innerHTML = illusMarkup(slug)
+      stage = illustration.querySelector('.avatar-stage')
+      container = stage.querySelector('.avatar-float')
+    } else {
+      const template = document.createElement('template')
+      template.innerHTML = avatarFloatMarkup(slug)
+      container = template.content.firstElementChild
+      stage.append(container)
+    }
+    if (hasCurrent) container.classList.add('avatar-stage-pending')
+    container.dataset.avatar = slug
+    return {container, poster: container.querySelector('.avatar3d'), enabled: avatarUses3D(slug)}
+  },
+  async mountEntry(entry, lifecycle) {
+    const [{mountAvatar3D}, {AVATAR_MODELS}] = await Promise.all([import('./avatar-3d.js'), import('./avatar-config.js')])
+    if (lifecycle.signal.aborted) throw new DOMException('Avatar load aborted.', 'AbortError')
+    if (!AVATAR_MODELS[entry.slug]) throw new Error('This character has no 3D model.')
+    return mountAvatar3D({...AVATAR_MODELS[entry.slug], container: entry.container, poster: entry.poster, ...lifecycle})
+  },
+  revealEntry(entry, previous) {
+    previous?.container.classList.add('avatar-stage-outgoing')
+    entry.container.classList.remove('avatar-stage-pending')
+  },
+  showFallback(entry, error) {
+    entry.container.classList.remove('avatar-3d-primary')
+    entry.container.classList.add('avatar-3d-fallback')
+    console.warn('3D avatar unavailable; showing the original artwork.', error)
+  },
+  removeEntry(entry) { entry.container.remove() },
+  onCommit(slug) { startSpeechRotation(slug) },
+  transitionMs: () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180,
+})
+
+function showAvatar(slug) {
+  const illustration = document.getElementById('illustration')
+  illustration.dataset.id = slug
+  stopSpeechRotation()
+  if (AVATARS[slug]) avatarHandoff.select(slug)
+  else {
+    avatarHandoff.dispose()
+    illustration.innerHTML = illusMarkup(slug)
+    startSpeechRotation(slug)
+  }
+}
 
 /* Vercel Analytics — only fires on the production beingmad.co host.
    In dev / preview deploys it stays silent so we don't pollute stats. */
-if (typeof window !== 'undefined' && window.location.hostname === 'beingmad.co') {
+if (typeof window !== 'undefined' && ['beingmad.co', 'www.beingmad.co'].includes(window.location.hostname)) {
   injectAnalytics()
 }
 
@@ -44,14 +103,15 @@ function coverImageUrl(project, w = 1600) {
 }
 
 /* ─── Fetch content from Sanity ─────────────────────────────────── */
-// Record the splash start time so we can enforce a minimum display
-// duration. The zoom-in animation runs 1.4s; we hold the splash for
-// at least 1.6s total so the user sees the full animation + a brief
-// settled moment before the content reveals. Even when Sanity's CDN
-// returns instantly, the splash gets its full screen time.
 const _splashStart = performance.now()
-const SPLASH_MIN_MS = 1600
-const content = await fetchContent()
+const SPLASH_MIN_MS = 0
+let content
+try {
+  content = normalizeContent(await fetchContent())
+} catch (error) {
+  document.body.innerHTML = `<main style="min-height:100svh;display:grid;place-content:center;padding:2rem;background:#000;color:#f5f5f5;font-family:'Bricolage Grotesque',sans-serif"><h1>Back in a moment.</h1><p>The work couldn’t load. Please try again.</p><p><a href="" style="color:white">Try again</a> · <a href="mailto:mad@beingmad.co" style="color:white">Get in touch</a></p></main>`
+  throw error
+}
 const {sections: sectionsDocs, projects: projectDocs} = content
 
 // Landing SECTIONS (derived from Sanity) — palette stays cream-on-black globally
@@ -62,7 +122,7 @@ const SECTIONS = sectionsDocs.map((s, i) => {
   return {
     id: s.slug,
     bg: '#0A0A0A',
-    accent: '#F5F0E1',
+    accent: '#F5F5F5',
     // hero copy: ALWAYS 2 lines. Line 1: "We are <name>." Line 2: "<description>."
     heroLine: `We are <em>${cleanTitle}.</em><br>${description}.`,
     heroSub: '',
@@ -89,9 +149,7 @@ const ILLUS = Object.fromEntries(
   sectionsDocs.map((s) => [s.slug, s.illustrationSvg || ''])
 )
 
-// 3D avatar overrides — when a slug is here, we render the optimized WebP
-// (1024 + 1600 retina via srcset, with PNG fallback wrapped in <picture>).
-// Generated by scripts/optimize-avatars.mjs (95% smaller than source PNGs).
+// The original WebP provides layout and an emergency fallback; 3D is primary.
 const AVATARS = {
   originals: 'originals',
   bubble: 'bubble',
@@ -99,23 +157,28 @@ const AVATARS = {
   vision: 'vision',
 }
 
-function illusMarkup(slug) {
-  if (AVATARS[slug]) {
-    const id = AVATARS[slug]
-    return `
-      <div class="avatar-stage">
-        <div class="avatar-shadow"></div>
-        <div class="avatar-float">
+function avatarFloatMarkup(slug) {
+  const id = AVATARS[slug]
+  return `<div class="avatar-float${avatarUses3D(slug) ? ' avatar-3d-primary' : ''}">
           <img
             class="avatar3d"
             src="/avatars/${id}.webp"
             srcset="/avatars/${id}.webp 1x, /avatars/${id}@2x.webp 2x"
             alt="${slug} section avatar"
+            width="1600" height="1600"
             draggable="false"
             decoding="async"
             fetchpriority="high">
           <div class="avatar-light"></div>
-        </div>
+        </div>`
+}
+
+function illusMarkup(slug) {
+  if (AVATARS[slug]) {
+    return `
+      <div class="avatar-stage${avatar3dEnabled ? ' avatar-stage-3d' : ''}">
+        <div class="avatar-shadow"></div>
+        ${avatarFloatMarkup(slug)}
         <div class="speech-bubble" id="speech-bubble" aria-hidden="true">
           <span class="speech-text"></span>
         </div>
@@ -125,79 +188,6 @@ function illusMarkup(slug) {
   return ILLUS[slug] || ''
 }
 
-/* ─── Speech bubble — rotating witty phrases per section ─── */
-const SPEECH = {
-  originals: [
-    '10+ years of madness.',
-    'Currently making something mad.',
-    'Last project: BIOLAB.',
-    'Coffee: too many.',
-    'Ask me anything.',
-    'Stop scrolls.',
-  ],
-  bubble: [
-    'Off the brief.',
-    'Personal art only.',
-    'No rules here.',
-    'Side obsession #47.',
-  ],
-  music: [
-    'Beats since forever.',
-    'Egyptian instruments + deep house.',
-    'No formula.',
-    'Currently producing.',
-  ],
-  vision: [
-    'Rolling.',
-    'AI tools, no limits.',
-    'Films, shorts, music videos.',
-    'Concept first.',
-  ],
-}
-
-const SPEECH_POSITIONS = [
-  // sides only, AVOID eye-level zone (rough top 18%-50% area)
-  // upper sides (above the eyes, by the temples)
-  'side-left-upper', 'side-right-upper',
-  // lower sides (cheek/jaw, below the eyes)
-  'side-left-lower', 'side-right-lower',
-  // very-lower (chin level)
-  'side-left-bottom', 'side-right-bottom',
-]
-let speechTimer = null
-let speechIdx = 0
-let lastPosIdx = -1
-function startSpeechRotation(slug) {
-  const bubble = document.getElementById('speech-bubble')
-  if (!bubble) return
-  const phrases = SPEECH[slug] || []
-  if (!phrases.length) {
-    bubble.style.display = 'none'
-    return
-  }
-  bubble.style.display = ''
-  const textEl = bubble.querySelector('.speech-text')
-  speechIdx = 0
-  if (speechTimer) clearInterval(speechTimer)
-  function show() {
-    bubble.classList.remove('show')
-    setTimeout(() => {
-      textEl.textContent = phrases[speechIdx % phrases.length]
-      // pick a random position, never the same as last time
-      let p
-      do {
-        p = Math.floor(Math.random() * SPEECH_POSITIONS.length)
-      } while (p === lastPosIdx && SPEECH_POSITIONS.length > 1)
-      lastPosIdx = p
-      bubble.dataset.pos = SPEECH_POSITIONS[p]
-      bubble.classList.add('show')
-      speechIdx++
-    }, 350)
-  }
-  show()
-  speechTimer = setInterval(show, 4500)
-}
-
 // Detail PAGES keyed by slug, with works filtered per section
 const PAGES = Object.fromEntries(
   sectionsDocs.map((s) => {
@@ -205,6 +195,7 @@ const PAGES = Object.fromEntries(
       .filter((p) => p.sectionSlug === s.slug)
       .map((p) => ({
         slug: p.slug,
+        externalUrl: externalProjectUrl(p),
         title: p.title,
         year: p.year || '',
         caption: p.caption || '',
@@ -238,7 +229,7 @@ const PAGES = Object.fromEntries(
    without projects are skipped. Loops back to the very first project at
    the very end. */
 const ALL_PROJECTS = sectionsDocs
-  .flatMap((s) => (PAGES[s.slug] && PAGES[s.slug].works.length ? PAGES[s.slug].works.map((w) => ({sectionId: s.slug, work: w})) : []))
+  .flatMap((s) => (PAGES[s.slug] && PAGES[s.slug].works.length ? PAGES[s.slug].works.filter(w => !w.externalUrl).map((w) => ({sectionId: s.slug, work: w})) : []))
 
 function findNextProject(sectionId, projectSlug) {
   if (!ALL_PROJECTS.length) return null
@@ -296,7 +287,7 @@ function buildNav() {
     })
     nav.appendChild(d)
   })
-  setupCarouselScrollSync(nav)
+  // Navigation selection follows explicit clicks, never incidental scrolling.
 }
 
 /* On mobile the nav-cards container is a horizontal snap carousel.
@@ -336,6 +327,7 @@ function applyCardStyles(activeIdx) {
     c.style.color = ''
     c.style.borderColor = ''
     c.classList.toggle('active', j === activeIdx)
+    c.setAttribute('aria-pressed', String(j === activeIdx))
   })
 }
 
@@ -370,10 +362,14 @@ function typeActiveCard(idx) {
   hackerType(sub, s.cSub, 25)
 }
 
+let sectionSwitchTimer = null
 function switchTo(i) {
   if (i === current) return
+  clearTimeout(sectionSwitchTimer)
   current = i
   const s = SECTIONS[i]
+  syncEnterPill(s)
+  syncHomePreview(s.id)
 
   const hl = document.getElementById('headline')
   const sub = document.getElementById('subtitle')
@@ -382,20 +378,19 @@ function switchTo(i) {
 
   hl.classList.add('fading')
   sub.classList.add('fading')
-  illus.classList.add('fading')
+  // Keep the outgoing 3D character visible while its replacement prepares.
+  illus.classList.remove('fading')
+  showAvatar(s.id)
 
-  setTimeout(() => {
+  sectionSwitchTimer = setTimeout(() => {
     hl.innerHTML = s.heroLine
     sub.innerHTML = s.heroSub
-    illus.innerHTML = illusMarkup(s.id)
-    illus.dataset.id = s.id
     counter.innerHTML = renderCounter(s)
     hl.classList.remove('fading')
     sub.classList.remove('fading')
     illus.classList.remove('fading')
-    startSpeechRotation(s.id)
     syncEnterPill(s)
-  }, 180)
+  }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 140)
 
   applyCardStyles(i)
 }
@@ -405,9 +400,44 @@ function syncEnterPill(s) {
   const pill = document.getElementById('enter-pill')
   if (!pill) return
   const label = document.getElementById('enter-pill-label')
-  if (label) label.textContent = `Enter ${s.cTitle}`
+  const pending = s.id === 'vision' && !PAGES.vision?.works.length
+  if (label) label.textContent = pending ? 'About Vision' : `Enter ${s.cTitle}`
   pill.dataset.id = s.id
-  pill.setAttribute('aria-label', `Enter ${s.cTitle} section`)
+  pill.setAttribute('aria-label', pending ? 'About Vision — collection in production' : `Enter ${s.cTitle} section`)
+}
+
+/* A small direct route into the work, while retaining the avatar-led homepage. */
+function syncHomePreview(sectionId) {
+  const preview = document.getElementById('home-featured')
+  const status = document.getElementById('home-status')
+  const page = PAGES[sectionId]
+  const visionPending = sectionId === 'vision' && !page?.works.length
+  status.hidden = !visionPending
+  status.textContent = visionPending ? 'Vision is in production. The first collection is coming soon.' : ''
+  const contact = document.getElementById('home-contact')
+  contact.href = `mailto:${SITE.contactEmail || 'mad@beingmad.co'}`
+  let work = page?.works.find(work => !work.externalUrl)
+  let targetSection = sectionId
+  let label = 'Selected work'
+  if (sectionId === 'originals') work = page?.works.find(work => work.slug === 'google-arabia') || work
+  if (sectionId === 'vision' && !work) {
+    targetSection = 'originals'
+    work = PAGES.originals?.works.find(work => work.slug === 'new-murabba-founding-day')
+    label = 'A film from Originals'
+  }
+  if (sectionId === 'music') {
+    const release = page?.featuredRelease
+    if (release?.coverUrl) {
+      preview.href = '/madplus'
+      preview.innerHTML = `<img src="${escapeHtml(release.coverUrl)}" alt="" width="64" height="64"><span><small>Latest sound</small><strong>${escapeHtml(release.title)}</strong><span class="home-featured-action">Listen to the releases ↗</span></span>`
+      preview.hidden = false
+      return
+    }
+  }
+  preview.hidden = !work
+  if (!work) return
+  preview.href = `/${targetSection}/${encodeURIComponent(work.slug)}`
+  preview.innerHTML = `<img src="${escapeHtml(work.coverUrl)}" alt="" width="64" height="64"><span><small>${label}</small><strong>${escapeHtml(work.title)}</strong><span class="home-featured-action">View project ↗</span></span>`
 }
 
 /* Init landing */
@@ -417,11 +447,10 @@ if (s0) {
   document.getElementById('headline').innerHTML = s0.heroLine
   document.getElementById('subtitle').innerHTML = s0.heroSub
   document.getElementById('counter').innerHTML = renderCounter(s0)
-  document.getElementById('illustration').innerHTML = illusMarkup(s0.id)
-  document.getElementById('illustration').dataset.id = s0.id
+  showAvatar(s0.id)
   applyCardStyles(0)
-  startSpeechRotation(s0.id)
   syncEnterPill(s0)
+  syncHomePreview(s0.id)
 }
 
 /* Enter-pill click → navigate to current section's detail */
@@ -1017,10 +1046,10 @@ function bindMadplusStage(scopeEl) {
       const newSrc = coverImg ? coverImg.src : ''
       if (newSrc) {
         // Replace the cover thumb image (avoid layout shift)
-        nowCoverEl.innerHTML = `<img src="${newSrc}" alt="${title}">`
+        nowCoverEl.innerHTML = `<img src="${escapeHtml(newSrc)}" alt="${escapeHtml(title)}">`
       }
     }
-    if (listenLink) listenLink.setAttribute('href', listenUrl || '#')
+    if (listenLink) { listenLink.setAttribute('href', listenUrl || '#'); listenLink.setAttribute('aria-label', `Open on ${musicPlatform(listenUrl)}`); listenLink.hidden = !listenUrl }
 
     playerBar.dataset.listenUrl = listenUrl
     playerBar.dataset.previewUrl = previewUrl
@@ -1031,6 +1060,7 @@ function bindMadplusStage(scopeEl) {
     // still routes to Spotify if the user explicitly wants it.
     if (playBtn) {
       const hasPreview = !!previewUrl
+      playBtn.disabled = !hasPreview
       playBtn.classList.toggle('mp-play--disabled', !hasPreview)
       playBtn.setAttribute('aria-disabled', hasPreview ? 'false' : 'true')
       if (!hasPreview) playBtn.setAttribute('aria-label', 'Preview unavailable — use the Listen button to open on Spotify')
@@ -1045,8 +1075,8 @@ function bindMadplusStage(scopeEl) {
     }
     setPlayState('paused')
     // Reset progress fill when switching cards
-    const fill = stage.querySelector('#mp-progress-fill')
-    if (fill) fill.style.width = '0%'
+    updateProgress()
+    stage.querySelectorAll('[data-release-index]').forEach(button => button.setAttribute('aria-current', String(Number(button.dataset.releaseIndex) === activeIdx)))
   }
 
   function setPlayState(state) {
@@ -1054,7 +1084,7 @@ function bindMadplusStage(scopeEl) {
     playBtn.dataset.state = state
     if (state === 'playing') playBtn.setAttribute('aria-label', 'Pause preview')
     else if (state === 'loading') playBtn.setAttribute('aria-label', 'Loading…')
-    else playBtn.setAttribute('aria-label', 'Play preview')
+    else playBtn.setAttribute('aria-label', playerBar.dataset.previewUrl ? 'Play preview' : `Preview unavailable — listen on ${musicPlatform(playerBar.dataset.listenUrl)}`)
     if (playerBar) playerBar.dataset.state = state
   }
 
@@ -1093,15 +1123,24 @@ function bindMadplusStage(scopeEl) {
   })
 
   /* Progress line under the now-playing pod — animated as audio advances. */
-  const progressFill = stage.querySelector('#mp-progress-fill')
+  const progressFill = stage.querySelector('#mp-seek')
   function updateProgress() {
     if (!progressFill) return
     const a = _audioState.audio
     const isOurs = a && _audioState.currentSrc === playerBar.dataset.previewUrl
     const dur = isOurs && isFinite(a.duration) ? a.duration : 0
     const pct = isOurs && dur > 0 ? (a.currentTime / dur) * 100 : 0
-    progressFill.style.width = pct.toFixed(2) + '%'
+    progressFill.value = pct
+    progressFill.disabled = dur === 0
+    stage.querySelector('#mp-elapsed').textContent = fmtTime(isOurs ? a.currentTime : 0)
+    stage.querySelector('#mp-duration').textContent = fmtTime(dur)
+    progressFill.setAttribute('aria-valuetext', `${fmtTime(isOurs ? a.currentTime : 0)} of ${fmtTime(dur)}`)
   }
+
+  progressFill?.addEventListener('input', () => {
+    const audio = _audioState.audio
+    if (audio && _audioState.currentSrc === playerBar.dataset.previewUrl && Number.isFinite(audio.duration)) { audio.currentTime = Number(progressFill.value) / 100 * audio.duration; updateProgress() }
+  })
 
   /* Play/pause logic */
   function toggleActivePlayback() {
@@ -1120,18 +1159,20 @@ function bindMadplusStage(scopeEl) {
         a.src = ''
       }
       a = new Audio(previewUrl)
+      a.hidden = true
+      playerBar.querySelector('audio')?.remove()
+      playerBar.append(a)
       a.preload = 'auto'
-      a.crossOrigin = 'anonymous'
       _audioState.audio = a
       _audioState.currentSrc = previewUrl
-      a.addEventListener('play', () => setPlayState('playing'))
-      a.addEventListener('pause', () => setPlayState('paused'))
+      a.addEventListener('play', () => { if (_audioState.audio === a) setPlayState('playing') })
+      a.addEventListener('pause', () => { if (_audioState.audio === a) setPlayState('paused') })
       a.addEventListener('ended', () => {
         a.currentTime = 0
         setPlayState('paused')
         updateProgress()
       })
-      a.addEventListener('error', () => setPlayState('paused'))
+      a.addEventListener('error', () => { if (_audioState.audio !== a) return; setPlayState('paused'); playBtn.setAttribute('aria-label', 'Preview could not load — use the Listen link') })
       a.addEventListener('timeupdate', updateProgress)
       a.addEventListener('loadedmetadata', updateProgress)
       // Apply current mute setting if user toggled it earlier
@@ -1151,12 +1192,14 @@ function bindMadplusStage(scopeEl) {
   const queueBtn = stage.querySelector('.mp-queue')
   if (queueBtn) {
     queueBtn.addEventListener('click', () => {
-      // Scroll to the platform pills row — gives a "see all releases / open
-      // on your platform" affordance without leaving the page
-      const target = stage.querySelector('.madplus-platforms-wrap')
-      if (target) target.scrollIntoView({behavior: 'smooth', block: 'center'})
+      const list = stage.querySelector('#mp-release-list')
+      list.hidden = !list.hidden
+      queueBtn.setAttribute('aria-expanded', String(!list.hidden))
+      if (!list.hidden) { list.scrollIntoView({behavior:'smooth', block:'nearest'}); list.querySelector('button')?.focus({preventScroll:true}) }
     })
   }
+
+  stage.querySelectorAll('[data-release-index]').forEach(button => button.addEventListener('click', () => goTo(Number(button.dataset.releaseIndex))))
 
   /* Mute toggle — purely visual; affects the global Audio element */
   if (muteBtn) {
@@ -1198,6 +1241,7 @@ function bindMadplusStage(scopeEl) {
 
   /* Initial deck layout */
   applyDeckPositions()
+  syncActiveCard()
 }
 
 /* Platform metadata: brand color + official SVG icon path (sourced from
@@ -1264,7 +1308,7 @@ function buildPlatformLinks(platforms, instagramMusic) {
   const items = []
   for (const p of platforms || []) {
     if (!p || !p.url) continue
-    const meta = PLATFORM_META[p.platform] || {label: p.platform || 'Listen', color: '#F5F0E1', icon: FALLBACK_ICON}
+    const meta = PLATFORM_META[p.platform] || {label: p.platform || 'Listen', color: '#F5F5F5', icon: FALLBACK_ICON}
     const label = p.label || meta.label
     items.push(
       `<a class="music-pill" href="${p.url}" target="_blank" rel="noopener" style="--platform:${meta.color}" aria-label="${label} ↗">
@@ -1470,26 +1514,19 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
             <span class="mp-eq" aria-hidden="true">
               <span></span><span></span><span></span><span></span>
             </span>
-            <button class="mp-mini-btn mp-more" type="button" aria-label="More about this release">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/>
-              </svg>
-            </button>
           </div>
           <!-- Thin progress line under the center pod, full width -->
-          <div class="mp-progress" role="presentation">
-            <div class="mp-progress-fill" id="mp-progress-fill"></div>
-          </div>
+          <div class="mp-progress"><span id="mp-elapsed">0:00</span><input id="mp-seek" type="range" min="0" max="100" step="0.1" value="0" disabled aria-label="Seek preview"><span id="mp-duration">0:00</span></div>
         </div>
 
         <!-- RIGHT: lyrics-style listen / queue / mute -->
         <div class="mp-controls mp-controls-right">
           <a class="mp-btn mp-listen" id="mp-listen-link" href="${escMusic(deck[0].listenUrl || '#')}" target="_blank" rel="noopener" aria-label="Open on Spotify">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              <path d="M14 3h7v7M21 3 10 14M10 3H3v18h18v-7"/>
             </svg>
           </a>
-          <button class="mp-btn mp-queue" type="button" aria-label="See all releases">
+          <button class="mp-btn mp-queue" type="button" aria-label="See all releases" aria-expanded="false" aria-controls="mp-release-list">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
               <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
               <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
@@ -1507,6 +1544,7 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
       </div>
 
       <!-- Platform pills (re-rendered with glass styling) -->
+      <ol id="mp-release-list" class="mp-release-list" hidden>${deck.map((release, i) => `<li><button type="button" data-release-index="${i}"><span>${escMusic(release.title)}</span><span>${escMusic(release.subtitle || '')}</span></button></li>`).join('')}</ol>
       <div class="madplus-platforms-wrap">
         ${platformPills}
       </div>
@@ -1517,7 +1555,7 @@ function buildMadplusStage(p, secLabel, secIndexLabel) {
       <div class="collab-cta madplus-collab">
         <div class="collab-kicker">Let's Collaborate</div>
         <h2 class="collab-title">Sound that <em>moves.</em></h2>
-        <p class="collab-lead">Need original music or sound design for a film, brand, or campaign? Let's make something nobody else could.</p>
+        <p class="collab-lead">Working on a film, a campaign or a track? Get in touch to talk about music and sound.</p>
         <a class="collab-btn" href="mailto:${SITE.contactEmail || 'mad@beingmad.co'}">Get In Touch → </a>
       </div>
     </div>
@@ -1619,7 +1657,7 @@ function buildAwardSeal({idx, tier = 'gold', sealText, offset = 0}) {
              in only on hover (default state shows just the M centred) -->
         <g class="seal-rim">
           <text fill="#1A1815"
-                font-family="'Roboto', system-ui, sans-serif"
+                font-family="'Bricolage Grotesque', system-ui, sans-serif"
                 font-weight="700"
                 font-size="${fontSize}">
             <textPath href="#${uid}-rim" startOffset="0" textLength="224" lengthAdjust="spacingAndGlyphs">${rimText}</textPath>
@@ -1643,10 +1681,10 @@ function buildDetail(id) {
   const works = p.works
   const agenciesHTML = p.agencies.length
     ? `
-    <div class="detail-section-label">— In Collaboration With</div>
+    <div class="detail-section-label">In Collaboration With</div>
     <div class="agencies">
-      <div class="agencies-track">
-        ${[...p.agencies, ...p.agencies].map((a) => `<span>${a}</span>`).join('')}
+      <div class="agencies-track" role="list" aria-label="Selected collaborations">
+        ${[...new Set(p.agencies)].map((a) => `<span role="listitem">${escapeHtml(a)}</span>`).join('')}
       </div>
     </div>
   `
@@ -1704,11 +1742,11 @@ function buildDetail(id) {
              </svg>
            </div>
            <div class="works-empty-kicker">— Coming up</div>
-           <h3 class="works-empty-title">In the studio.</h3>
+           <h3 class="works-empty-title">${id === 'vision' ? 'The first collection is in production.' : 'In the studio.'}</h3>
            <p class="works-empty-lead">
-             Projects for this section are still in production. Drop me a line
-             if you'd like to see early work or commission something new.
+             ${id === 'vision' ? 'Vision will bring together my film and moving-image experiments. In the meantime, you can see a campaign film in Originals or get in touch about a brief.' : 'New work is being prepared for this section. Get in touch to discuss a project.'}
            </p>
+           ${id === 'vision' && PAGES.originals?.works.some(work => work.slug === 'new-murabba-founding-day') ? '<a class="vision-film-link" href="/originals/new-murabba-founding-day">Watch the New Murabba campaign film ↗</a>' : ''}
            <a class="works-empty-cta" href="mailto:${SITE.contactEmail || 'mad@beingmad.co'}">Get in touch →</a>
          </div>`
       : `<div class="works-list">
@@ -1732,26 +1770,26 @@ function buildDetail(id) {
             )
             .join('')
           return `
-        <a class="work-row" data-idx="${i}" href="/${ID_TO_URL[id] || id}/${encodeURIComponent(w.slug)}">
+        <a class="work-row" data-idx="${i}" href="${escapeHtml(w.externalUrl || `/${ID_TO_URL[id] || id}/${encodeURIComponent(w.slug)}`)}" ${w.externalUrl ? 'target="_blank" rel="noopener noreferrer"' : ''}>
           <div class="work-cover">
             <div class="work-cover-frame">
               ${w.coverUrl ? `<img src="${w.coverUrl}" alt="${w.title}" loading="lazy" decoding="async">` : ''}
               <div class="work-cover-overlay" aria-hidden="true">
-                <span class="work-open-pill">Open Case ↗</span>
+                <span class="work-open-pill">${w.externalUrl ? 'View on Behance' : 'Open Case'} ↗</span>
               </div>
             </div>
             ${badgeHTML}
           </div>
           <div class="work-info">
             <div class="work-info-top">
-              <span class="work-num" aria-hidden="true">— ${num}</span>
+              <span class="work-num" aria-hidden="true">${num}</span>
               <span class="work-year">${w.year || ''}</span>
             </div>
             <h3 class="work-title">${w.title}.</h3>
             ${cap ? `<p class="work-caption">${formatCaption(cap)}</p>` : ''}
             <div class="work-info-bottom">
               <div class="work-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
-              <span class="work-cta" aria-hidden="true">View project ↗</span>
+              <span class="work-cta" aria-hidden="true">${w.externalUrl ? 'View on Behance' : 'View project'} ↗</span>
             </div>
           </div>
         </a>
@@ -1761,8 +1799,8 @@ function buildDetail(id) {
     </div>`}
     <div class="collab-cta">
       <div class="collab-kicker">Let's Collaborate</div>
-      <h2 class="collab-title">Your brand,<br><em>legendary.</em></h2>
-      <p class="collab-lead">Ready to elevate your story to legendary status? Let's build something that leaves the competition green with envy.</p>
+      <h2 class="collab-title">Got an idea?<br><em>Let’s make it.</em></h2>
+      <p class="collab-lead">Tell me what you’re working on. We can talk through the brief, the format and what the project needs.</p>
       <a class="collab-btn" href="mailto:${contactEmail}">Get In Touch → </a>
     </div>
   `
@@ -1918,21 +1956,27 @@ const lightboxImg = document.getElementById('lightbox-img')
 const lightboxCounter = document.getElementById('lightbox-counter')
 let lightboxImages = []
 let lightboxIdx = 0
+let lightboxReturnFocus = null
 
 function openLightbox(images, idx) {
   if (!lightboxEl || !images || !images.length) return
+  lightboxReturnFocus = document.activeElement
   lightboxImages = images
   lightboxIdx = Math.max(0, Math.min(idx, images.length - 1))
   renderLightbox()
   lightboxEl.classList.add('open')
   lightboxEl.classList.toggle('solo', images.length <= 1)
   lightboxEl.setAttribute('aria-hidden', 'false')
+  syncRouteAccess()
+  document.getElementById('lightbox-close')?.focus()
   document.body.style.overflow = 'hidden'
 }
 
 function closeLightbox() {
   if (!lightboxEl) return
+  const wasOpen = lightboxEl.classList.contains('open')
   lightboxEl.classList.remove('open')
+  if (wasOpen) { syncRouteAccess(); lightboxReturnFocus?.focus({preventScroll:true}) }
   lightboxEl.setAttribute('aria-hidden', 'true')
   // restore overflow only if no other overlay needs it
   if (!detailPage.classList.contains('open') && !projectView.classList.contains('open')) {
@@ -2067,7 +2111,7 @@ function renderGalleryItem(item, gi) {
     // (prevents layout shift, satisfies CLS metric)
     const styleAr = aspect ? `aspect-ratio:${aspect.toFixed(4)};` : ''
     return `<div class="g-item ${cls}" style="--gi:${gi};${styleAr}">
-      <img src="${mediaImageUrl(item)}" alt="${alt.replace(/"/g, '&quot;')}" loading="lazy" decoding="async">
+      <img tabindex="0" role="button" aria-label="Open image ${gi + 1} fullscreen" src="${mediaImageUrl(item)}" alt="${alt.replace(/"/g, '&quot;')}" loading="lazy" decoding="async">
     </div>`
   }
   return ''
@@ -2103,10 +2147,15 @@ function buildProject(works, idx, sectionId) {
     : ''
   const problemHTML = cs.problem
     ? `<div class="p-block p-problem">
-         <div class="p-block-label">— The Problem</div>
+         <div class="p-block-label">— The Brief</div>
          <p class="p-block-body">${cs.problem}</p>
        </div>`
     : ''
+  const storyHTML = [
+    ['The idea', cs.idea],
+    ['The approach', cs.approach],
+  ].filter(([,body]) => body).map(([label,body]) => `<section class="p-block"><h2 class="p-block-label">— ${label}</h2><p class="p-block-body">${escapeHtml(body)}</p></section>`).join('')
+  const deliverablesHTML = cs.deliverables?.length ? `<section class="p-block"><h2 class="p-block-label">— The work</h2><ul class="p-deliverables">${cs.deliverables.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>` : ''
   const constraintsHTML = (cs.constraints && cs.constraints.length)
     ? `<div class="p-block p-constraints">
          <div class="p-block-label">— Constraints</div>
@@ -2148,14 +2197,14 @@ function buildProject(works, idx, sectionId) {
         <div class="p-tags">${(w.tags || []).map((t) => `<span>${t}</span>`).join('')}</div>
       </div>
     </div>
-    ${outcomeHTML}
-    ${problemHTML}
+    <div class="p-story-grid">${problemHTML}${storyHTML}${deliverablesHTML}</div>
+    ${outcomeHTML ? `<section class="p-results"><h2 class="p-block-label">— Campaign results</h2>${outcomeHTML}</section>` : ''}
     ${constraintsHTML}
     <div class="project-gallery">
       ${
         media.length
           ? media.map((m, gi) => renderGalleryItem(m, gi)).join('')
-          : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'Roboto', system-ui, sans-serif;letter-spacing:0.2em;text-transform:uppercase;">No images yet · draft</div>`
+          : `<div style="padding:6rem;text-align:center;opacity:0.5;font-family:'Bricolage Grotesque', system-ui, sans-serif;letter-spacing:0.2em;text-transform:uppercase;">View the full project using the external link above.</div>`
       }
     </div>
     ${awardsHTML}
@@ -2163,12 +2212,12 @@ function buildProject(works, idx, sectionId) {
     <div class="project-nav-next${isCrossSection ? ' is-cross-section' : ''}">
       <div class="pn-block">
         <div class="pn-label">${nextLabel}</div>
-        <div class="pn-title" id="pn-title">${next.title} →</div>
+        <button type="button" class="pn-title" id="pn-title">${next.title} →</button>
         <div class="pn-kbd-hint" aria-hidden="true">
           <kbd>←</kbd><kbd>→</kbd> to navigate · <kbd>esc</kbd> to close
         </div>
       </div>
-      <div class="pn-arrow" id="pn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <button type="button" aria-label="Next project" class="pn-arrow" id="pn-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
     </div>
   `
   const goNext = () =>
@@ -2318,7 +2367,7 @@ detailInner.addEventListener('click', (e) => {
   // Let the browser handle new-tab / new-window / download intents natively
   // (⌘/Ctrl-click, middle-click, Shift/Alt-click). Only intercept a plain
   // left-click for the smooth in-app transition.
-  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+  if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || row.target === '_blank') return
   e.preventDefault()
   const idx = parseInt(row.dataset.idx, 10)
   const id = detailPage.dataset.sectionId || document.getElementById('illustration').dataset.id
@@ -2814,7 +2863,7 @@ function buildManifestoMarkup() {
         <div class="collab-cta mani-collab">
           <div class="collab-kicker">Got a brief?</div>
           <h2 class="collab-title">Make it <em>loud.</em></h2>
-          <p class="collab-lead">Brand, campaign, music, or film — if it deserves to pick a fight with the scroll, drop a line.</p>
+          <p class="collab-lead">A campaign, a film, a track or something in between. Tell me what you have in mind.</p>
           <a class="collab-btn" href="mailto:${escMani(contactEmail)}">Get in touch →</a>
         </div>
       </div>
@@ -2864,12 +2913,12 @@ function closeManifestoDOM() {
    Sanity so the CV never drifts from the manifesto. */
 const CV = {
   name: 'Ali Mohamed Shehata',
-  headline: '10+ Captivating Years.',
-  headlineEm: 'Sprinkling stardust on brands.',
+  headline: 'Art direction.',
+  headlineEm: 'Ideas into images.',
   paras: [
-    "An advertising wizard sprinkling stardust on brands for over <strong>10 years</strong>. From <strong>AKQA (WPP)</strong> and <strong>FP7</strong> in Cairo to <strong>Acquaint</strong> in KSA and <strong>Socialeyez</strong> in Dubai — I've danced with giants like Google Arabia, Mondelez, Hardee's, Vodafone and Mazda.",
-    "Most recently in Riyadh at <strong>Onsor Mosha</strong>, and before that <strong>Fullstop</strong> — casting spells on New Murabba, Diriyah, Almarai and Zain KSA.",
-    "Art direction that makes you look twice, 3D that defies gravity, animation that lands. If you're ready to elevate your brand's story to legendary status, I'm your <em>Creative Genie</em>.",
+    "I’m <strong>Ali Mohamed Shehata</strong>, an art director with more than <strong>10 years</strong> working across campaigns, visual identity, 3D and motion.",
+    "My experience includes <strong>Onsor Mosha, Fullstop, Acquaint and AKQA</strong>, with work for brands including Google Arabia, Vodafone, New Murabba and Mondelez.",
+    "I work from the initial idea through visual development and final execution. <strong>MAD Studio</strong> is where I bring that work together with my personal art and music.",
   ],
   experience: [
     {role: 'Senior Art Director', company: 'Onsor Mosha', dates: '2024 — Present', place: 'Riyadh, Saudi Arabia'},
@@ -3017,13 +3066,15 @@ function parseRoute(pathname) {
     return {view: 'admin', sub: segs.slice(1).join('/') || ''}
   }
   // Manifesto page — full-screen takeover with philosophy + awards + press
-  if (segs[0].toLowerCase() === 'manifesto') return {view: 'manifesto'}
+  if (segs.length === 1 && segs[0].toLowerCase() === 'manifesto') return {view: 'manifesto'}
   // Standalone shareable résumé page
-  if (segs[0].toLowerCase() === 'cv' || segs[0].toLowerCase() === 'resume') return {view: 'cv'}
+  if (segs.length === 1 && (segs[0].toLowerCase() === 'cv' || segs[0].toLowerCase() === 'resume')) return {view: 'cv'}
   const id = URL_TO_ID[segs[0].toLowerCase()]
   if (!id) return {view: 'notfound', path: pathname || location.pathname}
   if (segs.length === 1) return {view: 'detail', id}
-  return {view: 'project', id, projectSlug: decodeURIComponent(segs[1])}
+  if (segs.length !== 2) return {view: 'notfound', path: pathname || location.pathname}
+  try { return {view: 'project', id, projectSlug: decodeURIComponent(segs[1])} }
+  catch { return {view: 'notfound', path: pathname || location.pathname} }
 }
 
 function urlForRoute(r) {
@@ -3098,8 +3149,20 @@ function setNotFoundVisible(show, path) {
 }
 
 function applyRoute(r) {
+  if (r.view === 'project' && !PAGES[r.id]?.works.some(w => w.slug === r.projectSlug)) {
+    r = {view:'notfound', path:location.pathname}
+  }
+  closeLightbox()
+  document.body.dataset.route = r.view
+  try { applyRouteDOM(r) } finally { syncRouteAccess() }
+}
+
+function applyRouteDOM(r) {
   document.title = titleForRoute(r)
   if (r.view === 'notfound') {
+    closeCvDOM()
+    closeManifestoDOM()
+    closeAdmin()
     if (projectView.classList.contains('open')) closeProjectDOM()
     if (detailPage.classList.contains('open')) closeDetailDOM()
     setNotFoundVisible(true, r.path)
@@ -3185,13 +3248,41 @@ window.addEventListener('popstate', (e) => {
   if (footerHome) footerHome.addEventListener('click', goHome)
 }
 
+function syncRouteAccess() {
+  if (document.body.dataset.route === 'admin') return
+  const panels = [...document.querySelectorAll('#main, #detail-page, #project-view, #manifesto-page, #cv-page, #not-found, #lightbox')]
+  const active = panels.find(el => el.id === 'lightbox' && el.classList.contains('open')) ||
+    panels.find(el => el.id === 'project-view' && el.classList.contains('open')) ||
+    panels.find(el => ['manifesto-page','cv-page','not-found'].includes(el.id) && el.classList.contains('open')) ||
+    panels.find(el => el.id === 'detail-page' && el.classList.contains('open')) || document.getElementById('main')
+  panels.forEach(el => { el.inert = el !== active; el.setAttribute('aria-hidden', String(el !== active)) })
+  const skipLink = document.querySelector('.skip-link')
+  if (skipLink && active) skipLink.setAttribute('href', '#' + active.id)
+  const nav = document.querySelector('.bottomnav')
+  if (nav) nav.inert = active?.id !== 'main'
+  if (active && active.id !== 'main' && !active.contains(document.activeElement)) {
+    const focus = active.querySelector('h1, button, a[href]') || active
+    if (!focus.hasAttribute('tabindex')) focus.tabIndex = -1
+    focus.focus({preventScroll:true})
+  }
+}
+new MutationObserver(syncRouteAccess).observe(document.body, {subtree:true, childList:true, attributes:true, attributeFilter:['class']})
+document.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.g-item img[role="button"]')) { e.preventDefault(); e.target.click() }
+  if (e.key !== 'Tab' || !lightboxEl.classList.contains('open')) return
+  const controls = [...lightboxEl.querySelectorAll('button')].filter(el => el.getClientRects().length && !el.disabled)
+  const first = controls[0], last = controls.at(-1)
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+})
+
 // Initial route — handle deep links and refresh-mid-flow
 {
   const initRoute = parseRoute()
   // We don't replaceState for 404 — keep the URL the user typed so they
   // can correct it. The overlay tells them what's going on.
   if (initRoute.view !== 'notfound') {
-    history.replaceState(initRoute, '', urlForRoute(initRoute))
+    history.replaceState(initRoute, '', urlForRoute(initRoute) + (avatar3dEnabled && avatar3dQuery && initRoute.view === 'landing' ? `?avatar3d=${avatar3dMode}` : ''))
   } else {
     history.replaceState(initRoute, '', location.pathname)
   }
@@ -3210,20 +3301,27 @@ let tx = -100,
 window.addEventListener('mousemove', (e) => {
   tx = e.clientX
   ty = e.clientY
+  requestAvatarFrame()
 }, {passive: true})
 /* rAF loop now ONLY drives the avatar parallax (which still needs the
    smoothed lerp for a natural 3D-tilt feel). The cursor itself is
    updated synchronously inside the mousemove handler above — instant,
    no per-frame work. Also: if no overlay is open we don't even ask
    the parallax to run, so frames stay essentially free. */
-function rafCursor() {
-  const overlayOpen =
-    (detailPage && detailPage.classList.contains('open')) ||
-    (projectView && projectView.classList.contains('open')) ||
-    (_manifestoEl && _manifestoEl.classList && _manifestoEl.classList.contains('open'))
-  if (!overlayOpen) updateAvatarParallax(tx, ty)
-  requestAnimationFrame(rafCursor)
+let avatarFrame = 0
+function requestAvatarFrame() {
+  if (!avatarFrame && !document.hidden) avatarFrame = requestAnimationFrame(rafCursor)
 }
+function rafCursor() {
+  avatarFrame = 0
+  if (document.hidden || (document.body.dataset.route && document.body.dataset.route !== 'landing')) return
+  if (updateAvatarParallax(tx, ty)) requestAvatarFrame()
+}
+document.addEventListener('visibilitychange', () => {
+  document.body.classList.toggle('is-background', document.hidden)
+  if (document.hidden) { cancelAnimationFrame(avatarFrame); avatarFrame = 0 }
+  else requestAvatarFrame()
+})
 
 /* ─── 3D AVATAR PARALLAX (fake 3D: tilt + translation + floor shift) ───
    Respects prefers-reduced-motion: skips entirely if user prefers reduced. */
@@ -3263,6 +3361,7 @@ window.addEventListener('orientationchange', _refreshRectPassive, {passive: true
 
 function updateAvatarParallax(mx, my) {
   if (prefersReducedMotion) return
+  if (avatar3dEnabled && document.querySelector('#illustration .avatar-3d-primary')) return
   if (!_avParallaxRect) _refreshAvParallaxRect()
   const r = _avParallaxRect
   if (!r || !r.width) return
@@ -3292,6 +3391,7 @@ function updateAvatarParallax(mx, my) {
     `--avatar-tx:${avatarTx.toFixed(1)}px;` +
     `--avatar-ty:${avatarTy.toFixed(1)}px;` +
     `--shadow-shift:${shadowShift.toFixed(1)};`
+  return Math.max(Math.abs(targetRotX-avatarRotX),Math.abs(targetRotY-avatarRotY),Math.abs(targetTx-avatarTx),Math.abs(targetTy-avatarTy),Math.abs(targetShadowShift-shadowShift)) > .03
 }
 
 rafCursor()

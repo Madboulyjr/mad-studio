@@ -18,13 +18,14 @@
       "source": "/studio",
       "destination": "https://madboulyjr-studio.sanity.studio",
       "permanent": false
+    },
+    {
+      "source": "/resume",
+      "destination": "/cv",
+      "permanent": true
     }
   ],
   "rewrites": [
-    {
-      "source": "/((?!api/|plan|\\.well-known/|assets/|avatars/|favicon|robots|sitemap|admin|studio).*)",
-      "destination": "/index.html"
-    },
     {
       "source": "/admin/:path*",
       "destination": "/index.html"
@@ -52,5 +53,6 @@
         }
       ]
     }
-  ]
+  ],
+  "cleanUrls": true
 }

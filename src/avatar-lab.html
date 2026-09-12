@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Originals — 3D review</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#050509;color:#f5f5f5;font-family:'Bricolage Grotesque',sans-serif}main{max-width:1280px;margin:auto;padding:32px 24px}header{display:flex;justify-content:space-between;gap:24px;align-items:center;margin-bottom:24px}h1{font-size:clamp(24px,4vw,42px);margin:6px 0}p{color:#b8b8c5;line-height:1.5;margin:8px 0}small{letter-spacing:.12em;text-transform:uppercase;color:#b8b8c5}.comparison{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{border:1px solid #30303c;border-radius:20px;overflow:hidden;background:radial-gradient(ellipse at bottom,#100651,transparent 65%),#000}.panel h2{font-size:16px;font-weight:400;margin:20px 24px 0}.stage{position:relative;aspect-ratio:1;display:grid;place-items:center}.stage>img{width:100%;height:100%;object-fit:contain;display:block}.avatar-3d-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}.avatar-3d-ready>img{opacity:0}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}button,a.action{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 16px;border:1px solid #494958;border-radius:999px;background:#14141c;color:white;font:inherit;cursor:pointer;text-decoration:none}button:hover,button[aria-pressed=true]{background:white;color:#08080c}a.primary{background:#1200ff;border-color:#1200ff}button:focus-visible,a:focus-visible{outline:3px solid #a8a1ff;outline-offset:3px}button:disabled{opacity:.45;cursor:wait}#status{min-height:24px}#metrics{font-size:13px;color:#9393a3}.note{max-width:780px;font-size:14px}footer{padding-top:12px;border-top:1px solid #25252d}@media(max-width:700px){main{padding:20px 14px}header{display:block}header a{margin-top:12px}.comparison{gap:10px}.panel{border-radius:12px}.panel h2{font-size:13px;margin:12px 12px 0}.toolbar{gap:6px}button{font-size:13px;padding:8px 12px}}
+    .comparison.eye-detail .stage>img{transform:scale(2.6);transform-origin:50% 51%}.stage{overflow:hidden}
+  </style>
+</head>
+<body>
+<main>
+  <header><div><small>MAD / character studies</small><h1>Originals. In 3D.</h1><p>The original look, with gentle head and eye movement.</p></div><a class="action primary" href="/?avatar3d=all">Try the set on the homepage ↗</a></header>
+  <nav class="toolbar" id="avatar-picker" aria-label="Choose a character"></nav>
+  <div class="comparison">
+    <section class="panel"><h2>Current reference</h2><div class="stage"><img id="reference-image" src="/avatars/originals@2x.webp" alt="Current Originals avatar: blue knit hat and round glasses"></div></section>
+    <section class="panel"><h2>Revised model · front comparison</h2><div class="stage" id="model-stage"><img id="model-poster" src="/avatars/originals@2x.webp" alt="Originals 3D candidate, with original image shown while loading"></div></section>
+  </div>
+  <div class="toolbar" aria-label="Model viewing angle">
+    <button data-yaw="0" aria-pressed="false" disabled>Front</button><button data-yaw="-20" aria-pressed="false" disabled>Left 20°</button><button data-yaw="20" aria-pressed="false" disabled>Right 20°</button><button data-yaw="90" aria-pressed="false" disabled>Profile</button><button data-yaw="180" aria-pressed="false" disabled>Back</button><button id="hover-mode" data-motion="live" aria-pressed="true" disabled>Live movement</button><button id="eyes-mode" data-motion="eyes" aria-pressed="false" disabled>Eyes only</button>
+  </div>
+  <button id="eye-detail" aria-pressed="false">Eye close-up</button>
+  <p id="status" role="status">Loading the 3D candidate. The original image stays visible until it is ready.</p>
+  <p id="metrics"></p>
+  <footer><p class="note">Compare each character with its original artwork. Live movement adds a soft spring to the hair or headwear; Eyes only holds the head still for a closer look at the gaze. Front returns to a fixed comparison. Local review.</p><a class="action" href="/">Original homepage</a></footer>
+</main>
+<script type="module" src="/avatar-lab.js"></script>
+</body>
+</html>

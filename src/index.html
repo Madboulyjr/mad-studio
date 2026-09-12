@@ -11,10 +11,10 @@
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MAD Studio">
-<meta property="og:url" content="https://beingmad.co/">
+<meta property="og:url" content="https://www.beingmad.co/">
 <meta property="og:title" content="MAD Studio — Creativity is madness with a deadline.">
 <meta property="og:description" content="Independent creative studio. Brand systems · Art direction · 360 campaigns.">
-<meta property="og:image" content="https://beingmad.co/og-cover.jpg?v=4">
+<meta property="og:image" content="https://www.beingmad.co/og-cover.jpg?v=4">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 
@@ -22,9 +22,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MAD Studio — Creativity is madness with a deadline.">
 <meta name="twitter:description" content="Independent creative studio. Brand systems · Art direction · 360 campaigns.">
-<meta name="twitter:image" content="https://beingmad.co/og-cover.jpg?v=4">
+<meta name="twitter:image" content="https://www.beingmad.co/og-cover.jpg?v=4">
 
-<link rel="canonical" href="https://beingmad.co/">
+<link rel="canonical" href="https://www.beingmad.co/">
 
 <!-- Favicon: theme-aware MAD mark.
      Chrome respects `media=...` per icon, Safari honors @media inside the
@@ -38,12 +38,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Two-family stack: Roboto (300/400/500/600/700/900) for everything
-     sans (body, UI, kickers, big display) · Newsreader (italic 400/500
-     only) for editorial em accents. Dropped Hanken Grotesk + IBM Plex
-     Mono entirely — Roboto fills both roles with upper-case + letter-
-     spacing tricks for the former mono kickers. ~90KB total. -->
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700;900&family=Newsreader:ital,wght@1,400;1,500;1,700&display=swap" rel="stylesheet">
+<!-- Bricolage Grotesque throughout; emphasis uses weight 800. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -58,15 +54,15 @@ html,body{width:100%;height:100%;overflow:hidden}
 
 :root{
   --bg: #000000;
-  --accent: #F5F0E1;        /* warm cream — primary text/marks */
-  --accent-soft: #B8B0A0;   /* dimmer cream — secondary text */
-  --cta: #F8E5B5;           /* warm beige — primary CTA fill */
-  --line: rgba(245, 240, 225, 0.16);  /* hairline divider */
+  --accent: #F5F5F5;        /* white — primary text/marks */
+  --accent-soft: #B8B8B8;   /* dimmer cream — secondary text */
+  --cta: #1200FF;           /* warm beige — primary CTA fill */
+  --line: rgba(245,245,245, 0.16);  /* hairline divider */
   --dur: 0.45s;
 }
 
 body{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight: 400;
   letter-spacing: -0.01em;
   background:var(--bg);
@@ -83,9 +79,9 @@ body{
 .skip-link{
   position:fixed;top:1rem;left:1rem;
   z-index:10000;
-  background:var(--cta);color:#1A1815;
+  background:var(--cta);color:#fff;
   padding:0.7rem 1.4rem;border-radius:999px;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:0.9rem;text-decoration:none;
   /* Hidden offscreen until focused */
   transform:translateY(-200%);
@@ -216,30 +212,30 @@ body:not(.loading) .splash{
   transform:translateY(0.6rem);
 }
 .logo-studio{
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:400;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  font-style:normal;
+  font-weight:800;
   font-size:3.32rem;
   line-height:1;
   color:var(--accent);
   transition:color var(--dur) ease;
-}
+;font-weight:800;font-style:normal}
 .header-right{
   text-align:right;
   line-height:1.15;
 }
 .tagline{
   display:block;
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:400;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  font-style:normal;
+  font-weight:800;
   font-size:1.85rem;
   color:var(--accent);
   transition:color var(--dur) ease;
   margin-bottom:-0.2rem;
-}
+;font-weight:800;font-style:normal}
 .website{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:700;
   font-size:1.84rem;
   text-decoration:underline;
@@ -260,7 +256,7 @@ body:not(.loading) .splash{
   z-index:2;
 }
 .headline{
-  font-family:'Roboto',sans-serif;
+  font-family:'Bricolage Grotesque',sans-serif;
   font-weight:900;
   font-size:18.02rem;
   line-height:0.826;
@@ -272,7 +268,7 @@ body:not(.loading) .splash{
   transition:color var(--dur) ease, opacity .18s ease;
 }
 .subtitle{
-  font-family:'Roboto',sans-serif;
+  font-family:'Bricolage Grotesque',sans-serif;
   font-weight:400;
   font-size:2.9rem;
   line-height:1.4;
@@ -280,12 +276,12 @@ body:not(.loading) .splash{
   transition:color var(--dur) ease, opacity .18s ease;
 }
 .subtitle em{
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:500;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  font-style:normal;
+  font-weight:800;
   font-size:3.9rem;
   line-height:1;
-}
+;font-weight:800;font-style:normal}
 
 /* ILLUSTRATION */
 .illustration{
@@ -367,7 +363,7 @@ body:not(.loading) .splash{
   display:inline-flex;align-items:center;gap:0.8rem;
   background:var(--bg);border:0.15rem solid var(--accent);
   color:var(--accent);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.1rem;letter-spacing:0.18em;text-transform:uppercase;
   padding:0.9rem 1.6rem;border-radius:2rem;
   cursor:pointer;
@@ -381,9 +377,9 @@ body:not(.loading) .splash{
 }
 .logo-svg-d{height:3.2rem;width:auto;color:var(--accent)}
 .detail-logo .sub{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:2.2rem;letter-spacing:-0.01em;line-height:1;color:var(--accent);
-}
+;font-weight:800;font-style:normal}
 .detail-inner{
   /* Top margin was 2rem to clear the fixed "Back" pill — but Back is
      now rendered inline inside the section banner, so this buffer is
@@ -426,7 +422,7 @@ body:not(.loading) .splash{
 }
 /* Section index — "01 / 04" mono kicker on the far right */
 .detail-banner-index{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
   flex-shrink:0;
@@ -438,20 +434,20 @@ body:not(.loading) .splash{
 }
 .detail-section-banner .detail-banner-name,
 .mani-banner .detail-banner-name{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1.8rem;letter-spacing:-0.01em;line-height:1;
   color:var(--accent);
-}
+;font-weight:800;font-style:normal}
 
 .detail-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:1.8rem;opacity:0.55;
   color:var(--accent);
 }
 .detail-kicker::before{content:'— '}
 .manifesto{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
   font-size:12rem;line-height:0.92;letter-spacing:-0.03em;
   text-transform:uppercase;
   /* Pulled in from 3.5rem → 1.4rem per Ali — at 12rem font-size the
@@ -461,16 +457,16 @@ body:not(.loading) .splash{
   margin-bottom:1.4rem;
 }
 .manifesto em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;text-transform:none;
-}
+;font-weight:800;font-style:normal}
 .detail-lead{
-  font-family:'Roboto',sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:300;
   font-size:2.1rem;line-height:1.45;max-width:72rem;opacity:0.92;
   margin-bottom:0;
 }
-.detail-lead strong{font-family:'Newsreader',serif;font-style:italic;font-weight:700}
-.detail-lead em{font-family:'Newsreader',serif;font-style:italic;font-weight:700}
+.detail-lead strong{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;font-weight:800;font-style:normal}
+.detail-lead em{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;font-weight:800;font-style:normal}
 /* Drop-cap removed per Ali — body text reads as a clean paragraph
    instead of a magazine opener. Accent words still get Newsreader
    italic via <em> tags inside the paragraph. */
@@ -518,7 +514,7 @@ body:not(.loading) .splash{
   z-index:0;
   overflow:hidden;
   /* base radial fade so edges sit darker */
-  background:radial-gradient(120% 100% at 50% 25%, rgba(255,49,59,0.18) 0%, transparent 55%),
+  background:radial-gradient(120% 100% at 50% 25%, rgba(18,0,255,0.18) 0%, transparent 55%),
              radial-gradient(80% 80% at 80% 60%, rgba(255,184,77,0.10) 0%, transparent 60%),
              #050505;
 }
@@ -532,13 +528,13 @@ body:not(.loading) .splash{
 .madplus-glow-blob-1{
   width:60vw;height:60vw;
   top:-15vw;left:50%;transform:translateX(-50%);
-  background:radial-gradient(circle, rgba(255,49,59,0.55) 0%, rgba(255,49,59,0) 60%);
+  background:radial-gradient(circle, rgba(18,0,255,0.55) 0%, rgba(18,0,255,0) 60%);
   animation:mpGlowFloat1 16s ease-in-out infinite;
 }
 .madplus-glow-blob-2{
   width:50vw;height:50vw;
   top:5vw;right:-10vw;
-  background:radial-gradient(circle, rgba(255,140,40,0.45) 0%, rgba(255,140,40,0) 65%);
+  background:radial-gradient(circle, rgba(18,0,255,0.18) 0%, rgba(18,0,255,0) 65%);
   animation:mpGlowFloat2 22s ease-in-out infinite;
 }
 .madplus-glow-blob-3{
@@ -571,7 +567,7 @@ body:not(.loading) .splash{
   width:100%;max-width:80rem;
   margin:0 auto 2rem;
   padding:0 0.4rem;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
 .madplus-banner .detail-back-inline{
   background:rgba(255,255,255,0.08);
@@ -579,18 +575,18 @@ body:not(.loading) .splash{
   -webkit-backdrop-filter:blur(20px) saturate(140%);
   border-color:rgba(255,255,255,0.18);
 }
-.madplus-banner .detail-banner-rule{background:#F5F0E1;opacity:0.18}
-.madplus-banner .detail-banner-name{color:#F5F0E1}
-.madplus-banner .detail-banner-logo{color:#F5F0E1}
-.madplus-banner .detail-banner-index{color:#F5F0E1;opacity:0.55}
+.madplus-banner .detail-banner-rule{background:#F5F5F5;opacity:0.18}
+.madplus-banner .detail-banner-name{color:#F5F5F5}
+.madplus-banner .detail-banner-logo{color:#F5F5F5}
+.madplus-banner .detail-banner-index{color:#F5F5F5;opacity:0.55}
 
 /* Brand kicker above the carousel — kept as a fallback if the JS-built
    stage ever removes the editorial copy. Otherwise the .madplus-copy
    block below takes over. */
 .madplus-brandmark{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.32em;text-transform:uppercase;
-  color:#F5F0E1;opacity:0.55;
+  color:#F5F5F5;opacity:0.55;
   margin:1rem 0 2rem;
 }
 
@@ -601,32 +597,32 @@ body:not(.loading) .splash{
   width:100%;max-width:80rem;
   text-align:center;
   margin:0.5rem auto 2.6rem;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
 .madplus-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
-  color:#F5F0E1;opacity:0.6;
+  color:#F5F5F5;opacity:0.6;
   margin-bottom:1.6rem;
 }
 .madplus-manifesto{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:5rem;line-height:0.96;letter-spacing:-0.025em;
-  color:#F5F0E1;
+  color:#F5F5F5;
   margin:0 auto 1.4rem;
   max-width:30ch;
 }
 .madplus-manifesto em{
-  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',Georgia,serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;
-}
+;font-weight:800;font-style:normal}
 .madplus-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:1.2rem;line-height:1.55;
-  color:#F5F0E1;opacity:0.75;
+  color:#F5F5F5;opacity:0.75;
   max-width:50rem;margin:0 auto;
 }
-.madplus-lead strong{font-family:'Newsreader',serif;font-style:italic;font-weight:700;opacity:1}
+.madplus-lead strong{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;opacity:1;font-weight:800;font-style:normal}
 
 /* CAROUSEL ─────────────────────────────────────────────────────────── */
 .madplus-carousel{
@@ -715,12 +711,12 @@ body:not(.loading) .splash{
   box-shadow:
     0 40px 100px rgba(0,0,0,0.7),
     0 12px 24px rgba(0,0,0,0.5),
-    inset 0 0 0 1px rgba(255,49,59,0.4);
+    inset 0 0 0 1px rgba(18,0,255,0.4);
 }
 .madplus-card:focus-visible .madplus-card-cover{
   box-shadow:
     0 30px 80px rgba(0,0,0,0.6),
-    0 0 0 3px rgba(255,49,59,0.6);
+    0 0 0 3px rgba(18,0,255,0.6);
 }
 .madplus-card.is-active{cursor:pointer}
 
@@ -746,16 +742,16 @@ body:not(.loading) .splash{
   z-index:2;
 }
 .madplus-card-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1rem;line-height:1.15;letter-spacing:-0.01em;
-  color:#F5F0E1;
+  color:#F5F5F5;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   max-width:100%;
 }
 .madplus-card-sub{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:0.8rem;line-height:1.2;
-  color:#F5F0E1;opacity:0.65;
+  color:#F5F5F5;opacity:0.65;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   max-width:100%;
 }
@@ -803,7 +799,7 @@ body:not(.loading) .splash{
   width:2.6rem;height:2.6rem;
   border:none;background:transparent;
   border-radius:50%;
-  color:#F5F0E1;
+  color:#F5F5F5;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;
   position:relative;
@@ -813,7 +809,7 @@ body:not(.loading) .splash{
 .mp-btn:active{transform:scale(0.93)}
 .mp-btn:focus-visible{
   outline:none;
-  box-shadow:inset 0 0 0 1.5px rgba(245,240,225,0.85);
+  box-shadow:inset 0 0 0 1.5px rgba(245,245,245,0.85);
 }
 .mp-btn svg{width:1.25rem;height:1.25rem;display:block}
 
@@ -821,11 +817,11 @@ body:not(.loading) .splash{
 .mp-play{
   width:2.8rem;height:2.8rem;
   background:transparent;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
 .mp-play:hover{background:rgba(255,255,255,0.16)}
 .mp-play:focus-visible{
-  box-shadow:inset 0 0 0 1.5px rgba(245,240,225,0.85);
+  box-shadow:inset 0 0 0 1.5px rgba(245,245,245,0.85);
 }
 .mp-play svg{display:none;width:1.5rem;height:1.5rem}
 .mp-play[data-state="paused"] .mp-icon-play{display:block;margin-left:2px}
@@ -867,14 +863,14 @@ body:not(.loading) .splash{
   line-height:1.18;gap:0.05rem;
 }
 .mp-now-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
-  font-size:0.95rem;color:#F5F0E1;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
+  font-size:0.95rem;color:#F5F5F5;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   letter-spacing:-0.005em;
 }
 .mp-now-sub{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
-  font-size:0.78rem;color:#F5F0E1;opacity:0.55;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
+  font-size:0.78rem;color:#F5F5F5;opacity:0.55;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 
@@ -882,12 +878,12 @@ body:not(.loading) .splash{
 .mp-mini-icons{
   grid-row:1;
   display:flex;align-items:center;gap:0.5rem;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
 .mp-mini-btn{
   width:1.6rem;height:1.6rem;
   border:none;background:transparent;border-radius:50%;
-  color:#F5F0E1;opacity:0.7;
+  color:#F5F5F5;opacity:0.7;
   cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:background 0.2s ease, opacity 0.2s ease;
@@ -902,12 +898,12 @@ body:not(.loading) .splash{
 }
 .mp-eq span{
   display:block;width:0.18rem;height:30%;
-  background:#F5F0E1;opacity:0.7;
+  background:#F5F5F5;opacity:0.7;
   border-radius:0.04rem;
 }
 .madplus-player-bar[data-state="playing"] .mp-eq span{
   animation:mpEq 0.85s ease-in-out infinite;
-  background:#FF313B;opacity:0.95;
+  background:#1200FF;opacity:0.95;
 }
 .madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(1){animation-delay:-0.4s}
 .madplus-player-bar[data-state="playing"] .mp-eq span:nth-child(2){animation-delay:-0.2s}
@@ -935,11 +931,11 @@ body:not(.loading) .splash{
 }
 .mp-progress-fill{
   height:100%;width:0%;
-  background:#F5F0E1;
+  background:#F5F5F5;
   border-radius:inherit;
   transition:width 0.08s linear;
 }
-.madplus-player-bar[data-state="playing"] .mp-progress-fill{background:#FF313B}
+.madplus-player-bar[data-state="playing"] .mp-progress-fill{background:#1200FF}
 
 /* Right-side icon variants */
 .mp-listen svg{color:inherit;stroke-width:1.6}
@@ -956,7 +952,7 @@ body:not(.loading) .splash{
 }
 .madplus-platforms-wrap .music-platforms{margin:0;width:100%}
 .madplus-platforms-wrap .music-platforms-label{
-  text-align:center;color:#F5F0E1;opacity:0.55;
+  text-align:center;color:#F5F5F5;opacity:0.55;
   margin-bottom:1rem;
 }
 .madplus-platforms-wrap .music-platforms-grid{
@@ -967,14 +963,14 @@ body:not(.loading) .splash{
   -webkit-backdrop-filter:blur(20px) saturate(150%);
   backdrop-filter:blur(20px) saturate(150%);
   border-color:rgba(255,255,255,0.14);
-  color:#F5F0E1;
+  color:#F5F5F5;
   box-shadow:
     0 10px 24px rgba(0,0,0,0.3),
     inset 0 1px 0 rgba(255,255,255,0.12);
 }
 .madplus-platforms-wrap .music-pill:hover{
   background:rgba(255,255,255,0.12);
-  border-color:rgba(255,49,59,0.5);
+  border-color:rgba(18,0,255,0.5);
   transform:translateY(-2px);
 }
 
@@ -985,28 +981,28 @@ body:not(.loading) .splash{
 .madplus-collab{
   width:100%;max-width:80rem;
   margin:2rem auto 0;
-  border-top:0.08rem solid rgba(245,240,225,0.18);
-  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+  border-top:0.08rem solid rgba(245,245,245,0.18);
+  border-bottom:0.08rem solid rgba(245,245,245,0.18);
   padding:5rem 0;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
-.madplus-collab .collab-kicker{color:#F5F0E1;opacity:0.55}
-.madplus-collab .collab-title{color:#F5F0E1}
-.madplus-collab .collab-title em{color:#FF313B}
-.madplus-collab .collab-lead{color:#F5F0E1;opacity:0.7}
+.madplus-collab .collab-kicker{color:#F5F5F5;opacity:0.55}
+.madplus-collab .collab-title{color:#F5F5F5}
+.madplus-collab .collab-title em{color:#1200FF}
+.madplus-collab .collab-lead{color:#F5F5F5;opacity:0.7}
 /* Glass-themed CTA pill */
 .madplus-collab .collab-btn{
   background:rgba(255,255,255,0.08);
   -webkit-backdrop-filter:blur(20px) saturate(150%);
   backdrop-filter:blur(20px) saturate(150%);
-  color:#F5F0E1;
+  color:#F5F5F5;
   border:0.08rem solid rgba(255,255,255,0.18);
   box-shadow:0 12px 28px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.14);
 }
 .madplus-collab .collab-btn:hover{
-  background:rgba(255,49,59,0.85);
+  background:rgba(18,0,255,0.85);
   border-color:transparent;
-  color:#F5F0E1;
+  color:#F5F5F5;
 }
 
 /* MOBILE — < 900px */
@@ -1099,7 +1095,7 @@ body:not(.loading) .splash{
   box-shadow:
     0 36px 72px rgba(0,0,0,0.55),
     0 12px 24px rgba(0,0,0,0.4),
-    inset 0 0 0 1px rgba(245,240,225,0.06);
+    inset 0 0 0 1px rgba(245,245,245,0.06);
   transform:translateZ(0); /* promote to its own layer for smoother shadow */
 }
 /* Subtle accent edge that lights up on hover — adds a little depth */
@@ -1107,12 +1103,12 @@ body:not(.loading) .splash{
   content:"";
   position:absolute;inset:0;
   border-radius:inherit;
-  box-shadow:inset 0 0 0 1px rgba(255,49,59,0);
+  box-shadow:inset 0 0 0 1px rgba(18,0,255,0);
   pointer-events:none;
   transition:box-shadow 0.4s ease;
 }
 .release-hero:hover .release-hero-cover-wrap::after{
-  box-shadow:inset 0 0 0 1px rgba(255,49,59,0.35);
+  box-shadow:inset 0 0 0 1px rgba(18,0,255,0.35);
 }
 .release-hero-cover{
   width:100%;height:100%;object-fit:cover;display:block;
@@ -1131,7 +1127,7 @@ body:not(.loading) .splash{
 }
 .release-hero-kicker{
   display:inline-flex;align-items:center;gap:0.6rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--cta);
   margin-bottom:1.4rem;
@@ -1142,29 +1138,29 @@ body:not(.loading) .splash{
   content:"";
   width:0.5rem;height:0.5rem;
   background:var(--cta);border-radius:50%;
-  box-shadow:0 0 0 0 rgba(255,49,59,0.5);
+  box-shadow:0 0 0 0 rgba(18,0,255,0.5);
   animation:releaseHeroPulse 2.4s cubic-bezier(0.4,0,0.6,1) infinite;
 }
 @keyframes releaseHeroPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(255,49,59,0.55)}
-  60%{box-shadow:0 0 0 8px rgba(255,49,59,0)}
+  0%,100%{box-shadow:0 0 0 0 rgba(18,0,255,0.55)}
+  60%{box-shadow:0 0 0 8px rgba(18,0,255,0)}
 }
 @media (prefers-reduced-motion: reduce){
   .release-hero-kicker::before{animation:none}
 }
 .release-hero-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:5.4rem;line-height:0.96;letter-spacing:-0.025em;
   color:var(--accent);margin:0 0 0.8rem;
 }
 .release-hero-subtitle{
-  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',Georgia,serif;font-style:normal;font-weight:800;
   font-size:1.7rem;line-height:1.3;
   color:var(--accent);opacity:0.85;
   margin-bottom:1rem;
-}
+;font-weight:800;font-style:normal}
 .release-hero-meta{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
   margin-bottom:2.2rem;
@@ -1184,23 +1180,23 @@ body:not(.loading) .splash{
   gap:1rem;
   padding:1.4rem 0;
   margin:0 0 1.8rem;
-  border-top:0.08rem solid rgba(245,240,225,0.12);
-  border-bottom:0.08rem solid rgba(245,240,225,0.12);
+  border-top:0.08rem solid rgba(245,245,245,0.12);
+  border-bottom:0.08rem solid rgba(245,245,245,0.12);
   background:none;
   border-radius:0;
   transition:border-color 0.25s ease;
 }
 .release-player:hover,
 .release-player[data-state="playing"]{
-  border-top-color:rgba(255,49,59,0.35);
-  border-bottom-color:rgba(255,49,59,0.35);
+  border-top-color:rgba(18,0,255,0.35);
+  border-bottom-color:rgba(18,0,255,0.35);
 }
 
 /* HEAD ROW — kicker on the left, current/total time on the right */
 .release-player-head{
   display:flex;align-items:baseline;justify-content:space-between;
   gap:1rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;
   color:var(--accent);
 }
@@ -1210,7 +1206,7 @@ body:not(.loading) .splash{
   opacity:0.55;
   flex-shrink:0;
 }
-.release-player-time .rp-cur{color:#FF313B;opacity:1;font-weight:600}
+.release-player-time .rp-cur{color:#1200FF;opacity:1;font-weight:600}
 .release-player-time .rp-sep{margin:0 0.2em;opacity:0.4}
 
 /* CONTROLS ROW — play button + waveform on a single line */
@@ -1220,17 +1216,17 @@ body:not(.loading) .splash{
   min-width:0;
 }
 
-/* PLAY BUTTON — solid red (#FF313B is the MAD brand red, used as the
+/* PLAY BUTTON — solid red (#1200FF is the MAD brand red, used as the
    section accent on /madplus). Cream icon for max contrast. Hardcoded
-   red instead of var(--cta) because --cta resolves to beige #F8E5B5
+   red instead of var(--cta) because --cta resolves to beige #1200FF
    in the detail-page palette, which gave near-invisible contrast with
    the cream icon. Red reads as "press to play" instantly. */
 .release-play{
   width:3rem;height:3rem;
   border-radius:0.2rem;
-  background:#FF313B;
+  background:#1200FF;
   border:none;
-  color:#F5F0E1;
+  color:#F5F5F5;
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;flex-shrink:0;
   position:relative;
@@ -1241,12 +1237,12 @@ body:not(.loading) .splash{
 .release-play:hover{
   transform:scale(1.06);
   background:#FF4A53;
-  box-shadow:0 0 0 0.3rem rgba(255,49,59,0.22);
+  box-shadow:0 0 0 0.3rem rgba(18,0,255,0.22);
 }
 .release-play:active{transform:scale(0.96)}
 .release-play:focus-visible{
   outline:none;
-  box-shadow:0 0 0 0.18rem var(--bg, #0A0A0A), 0 0 0 0.36rem #FF313B;
+  box-shadow:0 0 0 0.18rem var(--bg, #0A0A0A), 0 0 0 0.36rem #1200FF;
 }
 .release-play svg{
   width:1.1rem;height:1.1rem;display:none;
@@ -1272,7 +1268,7 @@ body:not(.loading) .splash{
   touch-action:none;
 }
 .release-scrub:focus-visible{
-  outline:1px solid #FF313B;outline-offset:4px;
+  outline:1px solid #1200FF;outline-offset:4px;
 }
 .release-wave{
   width:100%;height:100%;display:block;
@@ -1282,14 +1278,14 @@ body:not(.loading) .splash{
 /* Background bars — slightly stronger cream so the waveform reads as
    real content, not decoration. Was 0.22 → bumped to 0.32. */
 .release-wave-bg rect{
-  fill:var(--accent, #F5F0E1);
+  fill:var(--accent, #F5F5F5);
   opacity:0.32;
 }
 /* Foreground bars — same geometry, hardcoded red (NOT var(--cta) which
    resolves to beige in this palette), clipped by the progress rect so
    they reveal as a wash from left to right. */
 .release-wave-fg rect{
-  fill:#FF313B;
+  fill:#1200FF;
   opacity:1;
 }
 .release-wave-clip-rect{
@@ -1299,11 +1295,11 @@ body:not(.loading) .splash{
 .release-wave-cursor{
   position:absolute;top:18%;bottom:18%;left:0%;
   width:1px;
-  background:#FF313B;
+  background:#1200FF;
   pointer-events:none;
   transform:translateX(-50%);
   transition:left 0.08s linear;
-  box-shadow:0 0 6px rgba(255,49,59,0.5);
+  box-shadow:0 0 6px rgba(18,0,255,0.5);
   opacity:0;
 }
 .release-player[data-state="playing"] .release-wave-cursor,
@@ -1319,14 +1315,14 @@ body:not(.loading) .splash{
   position:absolute;left:0;right:0;top:50%;
   height:1px;
   transform:translateY(-50%);
-  background:rgba(245,240,225,0.2);
+  background:rgba(245,245,245,0.2);
   pointer-events:none;
 }
 .release-player[data-state="loading"] .release-scrub::before{
   background:linear-gradient(90deg,
-    rgba(245,240,225,0.05) 0%,
-    rgba(255,49,59,0.5) 50%,
-    rgba(245,240,225,0.05) 100%
+    rgba(245,245,245,0.05) 0%,
+    rgba(18,0,255,0.5) 50%,
+    rgba(245,245,245,0.05) 100%
   );
   background-size:200% 100%;
   animation:releaseLoadShimmer 1.2s ease-in-out infinite;
@@ -1339,7 +1335,7 @@ body:not(.loading) .splash{
 .release-player[data-state="error"] .release-scrub::before{
   content:"Preview unavailable";
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.68rem;letter-spacing:0.16em;text-transform:uppercase;
   color:var(--accent);opacity:0.4;
   background:none;height:auto;
@@ -1358,10 +1354,10 @@ body:not(.loading) .splash{
   display:flex;align-items:baseline;justify-content:space-between;
   margin-bottom:2rem;
   padding-bottom:1.2rem;
-  border-bottom:0.08rem solid rgba(245,240,225,0.1);
+  border-bottom:0.08rem solid rgba(245,245,245,0.1);
 }
 .releases-wall-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
 }
@@ -1384,10 +1380,10 @@ body:not(.loading) .splash{
 }
 .release-tile[href]:hover{
   transform:translateY(-5px);
-  border-color:rgba(255,49,59,0.45);
+  border-color:rgba(18,0,255,0.45);
   box-shadow:
     0 18px 36px rgba(0,0,0,0.5),
-    0 4px 10px rgba(255,49,59,0.15);
+    0 4px 10px rgba(18,0,255,0.15);
 }
 .release-tile[href]:focus-visible{
   outline:2px solid var(--cta);outline-offset:3px;
@@ -1418,14 +1414,14 @@ body:not(.loading) .splash{
 }
 .release-tile[href]:hover .release-tile-overlay{opacity:1}
 .release-tile-pill{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;
   color:#0A0A0A;background:var(--cta);
   padding:0.4rem 0.8rem;border-radius:999px;
 }
 .release-tile-body{padding:1rem 1.2rem 1.2rem}
 .release-tile-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1.15rem;line-height:1.2;letter-spacing:-0.01em;
   margin-bottom:0.3rem;
   /* clamp to 2 lines so meta stays aligned */
@@ -1433,7 +1429,7 @@ body:not(.loading) .splash{
   overflow:hidden;
 }
 .release-tile-meta{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;
 }
@@ -1448,7 +1444,7 @@ body:not(.loading) .splash{
   margin:0 0 5rem;
 }
 .music-platforms-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:1.4rem;
@@ -1463,7 +1459,7 @@ body:not(.loading) .splash{
   border:0.08rem solid var(--line);
   border-radius:999px;
   color:var(--accent);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.95rem;letter-spacing:0;text-decoration:none;
   transition:background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, padding 0.25s ease;
 }
@@ -1556,7 +1552,7 @@ body:not(.loading) .splash{
   animation:agencyScroll 30s linear infinite;
 }
 .agencies-track span{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:900;
   font-size:3rem;letter-spacing:-0.01em;text-transform:uppercase;
   display:inline-flex;align-items:center;gap:5rem;
 }
@@ -1568,13 +1564,13 @@ body:not(.loading) .splash{
 
 /* works list */
 .detail-section-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.3rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:1.5rem;opacity:0.6;
 }
 .detail-section-label::before{content:'— '}
 .section-title{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
   font-size:8rem;line-height:1;letter-spacing:-0.02em;
   text-transform:uppercase;margin-bottom:5rem;
 }
@@ -1613,14 +1609,14 @@ body:not(.loading) .splash{
 .project-hero{margin:6rem 0 4rem;position:relative}
 .project-hero .p-top{
   display:flex;justify-content:space-between;align-items:baseline;
-  padding-bottom:1.5rem;border-bottom:0.1rem solid rgba(255,49,59,0.35);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  padding-bottom:1.5rem;border-bottom:0.1rem solid rgba(18,0,255,0.35);
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.3rem;letter-spacing:0.28em;text-transform:uppercase;
 }
 .project-hero .p-index{opacity:0.7}
 .project-hero .p-year-top{opacity:0.9}
 .project-hero .p-title{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
   font-size:18rem;line-height:0.88;letter-spacing:-0.035em;
   text-transform:uppercase;
   /* margin-bottom pulled from 3rem → 1.4rem, mirrors the same fix on
@@ -1633,7 +1629,7 @@ body:not(.loading) .splash{
 .project-hero[data-num]::before{
   content:attr(data-num);
   position:absolute;right:0;top:5rem;
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
   font-size:32rem;line-height:0.85;letter-spacing:-0.06em;
   color:var(--accent);opacity:0.06;
   z-index:1;pointer-events:none;
@@ -1644,16 +1640,16 @@ body:not(.loading) .splash{
   padding-top:2.5rem;border-top:0.25rem solid var(--accent);
 }
 .project-hero .p-caption{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:2.4rem;line-height:1.3;opacity:0.95;max-width:60rem;
 }
 .project-hero .p-caption em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1em;text-transform:capitalize;
-}
+;font-weight:800;font-style:normal}
 .project-hero .p-tags{
   display:flex;flex-wrap:wrap;gap:0.7rem;justify-content:flex-end;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1.05rem;letter-spacing:0.22em;text-transform:uppercase;
 }
 .project-hero .p-tags span{border:0.1rem solid var(--accent);padding:0.55rem 1.1rem;border-radius:1.4rem;opacity:0.85}
@@ -1670,7 +1666,7 @@ body:not(.loading) .splash{
 }
 .project-gallery .g-item{
   width:100%;background:#1a1a1a;overflow:hidden;
-  border:0.1rem solid rgba(255,49,59,0.2);
+  border:0.1rem solid rgba(18,0,255,0.2);
   position:relative;
 }
 .project-gallery .g-item.g-wide{grid-column:1 / -1}
@@ -1693,8 +1689,8 @@ body:not(.loading) .splash{
   border-top:0.2rem solid var(--accent);
 }
 .project-nav-next .pn-block{max-width:80%}
-.project-nav-next .pn-label{font-family:'Roboto', system-ui, sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:0.3em;opacity:0.6;text-transform:uppercase}
-.project-nav-next .pn-title{font-family:'Roboto',sans-serif;font-weight:900;font-size:7rem;line-height:0.95;letter-spacing:-0.025em;text-transform:uppercase;margin-top:1rem;cursor:pointer;transition:opacity 0.25s ease, transform 0.35s cubic-bezier(.2,.7,.2,1);display:inline-block}
+.project-nav-next .pn-label{font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:0.3em;opacity:0.6;text-transform:uppercase}
+.project-nav-next .pn-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:7rem;line-height:0.95;letter-spacing:-0.025em;text-transform:uppercase;margin-top:1rem;cursor:pointer;transition:opacity 0.25s ease, transform 0.35s cubic-bezier(.2,.7,.2,1);display:inline-block}
 .project-nav-next .pn-title:hover{opacity:0.75;transform:translateX(0.6rem)}
 .project-nav-next .pn-arrow{
   width:6rem;height:6rem;border-radius:50%;flex-shrink:0;
@@ -1738,27 +1734,27 @@ body:not(.loading) .splash{
   text-align:center;
 }
 .collab-cta .collab-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.05rem;letter-spacing:0.3em;text-transform:uppercase;
   margin-bottom:2rem;opacity:0.7;
 }
 .collab-cta .collab-title{
-  font-family:'Roboto',sans-serif;font-weight:900;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
   font-size:9rem;line-height:0.9;letter-spacing:-0.03em;
   text-transform:uppercase;margin-bottom:2rem;
 }
 .collab-cta .collab-title em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   text-transform:none;letter-spacing:-0.01em;
-}
+;font-weight:800;font-style:normal}
 .collab-cta .collab-lead{
-  font-family:'Roboto',sans-serif;font-weight:300;font-size:1.6rem;
+  font-family:'Bricolage Grotesque',sans-serif;font-weight:300;font-size:1.6rem;
   max-width:60rem;margin:0 auto 3rem;line-height:1.5;opacity:0.85;
 }
 .collab-btn{
   display:inline-flex;align-items:center;gap:1rem;
   background:var(--accent);color:var(--bg);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.2rem;letter-spacing:0.2em;text-transform:uppercase;
   padding:1.4rem 2.8rem;border-radius:3rem;text-decoration:none;
   transition:transform 0.25s ease, background 0.25s ease;
@@ -1767,8 +1763,8 @@ body:not(.loading) .splash{
 
 /* entrance anim for detail */
 @keyframes detailGlitchIn{
-  0%{opacity:0;transform:translateX(2rem) skewX(6deg);text-shadow:0.8rem 0 rgba(255,49,59,0.9),-0.8rem 0 rgba(0,255,255,0.6)}
-  40%{opacity:1;transform:translateX(-0.6rem) skewX(-3deg);text-shadow:-0.4rem 0 rgba(255,49,59,0.7),0.4rem 0 rgba(0,255,255,0.4)}
+  0%{opacity:0;transform:translateX(2rem) skewX(6deg);text-shadow:0.8rem 0 rgba(18,0,255,0.9),-0.8rem 0 rgba(0,255,255,0.6)}
+  40%{opacity:1;transform:translateX(-0.6rem) skewX(-3deg);text-shadow:-0.4rem 0 rgba(18,0,255,0.7),0.4rem 0 rgba(0,255,255,0.4)}
   100%{opacity:1;transform:translateX(0) skewX(0);text-shadow:none}
 }
 @keyframes detailFadeUp{
@@ -1808,7 +1804,7 @@ body:not(.loading) .splash{
    classes that no longer exist in markup and the only consumers of
    Newsreader 300 / Roboto 200, which we no longer load. */
 .click-hint{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:400;
   font-size:1.6rem;
   font-style:italic;
@@ -1851,7 +1847,7 @@ body:not(.loading) .splash{
 
 .c-info{flex:1;min-width:0;position:relative;z-index:2}
 .c-num{
-  font-family:'Roboto',sans-serif;
+  font-family:'Bricolage Grotesque',sans-serif;
   font-size:1.42rem;
   font-weight:400;
   letter-spacing:0.02em;
@@ -1859,7 +1855,7 @@ body:not(.loading) .splash{
   margin-bottom:0.6rem;
 }
 .c-title{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:900;
   font-size:2.83rem;
   letter-spacing:0;
@@ -1868,14 +1864,14 @@ body:not(.loading) .splash{
   line-height:1;
 }
 .c-sub{
-  font-family:'Newsreader',serif;
-  font-style:italic;
-  font-weight:400;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;
+  font-style:normal;
+  font-weight:800;
   font-size:1.5rem;
   display:block;
   line-height:1.2;
   margin-top:0.5rem;
-}
+;font-weight:800;font-style:normal}
 
 .c-icon{
   position:absolute;
@@ -1897,18 +1893,18 @@ body:not(.loading) .splash{
 
 /* ── HEADLINE GLITCH-IN (switch only) ─────────────────── */
 @keyframes glitchIn{
-  0%{opacity:0;transform:translateX(1.8rem) skewX(8deg);text-shadow:0.6rem 0 rgba(255,49,59,0.9),-0.6rem 0 rgba(0,255,255,0.6)}
-  30%{opacity:1;transform:translateX(-0.6rem) skewX(-5deg);text-shadow:-0.5rem 0 rgba(255,49,59,0.9),0.5rem 0 rgba(0,255,255,0.6)}
-  55%{transform:translateX(0.4rem) skewX(3deg);text-shadow:0.3rem 0 rgba(255,49,59,0.7),-0.3rem 0 rgba(0,255,255,0.4)}
-  80%{transform:translateX(-0.15rem) skewX(-1deg);text-shadow:-0.15rem 0 rgba(255,49,59,0.5),0.15rem 0 rgba(0,255,255,0.3)}
+  0%{opacity:0;transform:translateX(1.8rem) skewX(8deg);text-shadow:0.6rem 0 rgba(18,0,255,0.9),-0.6rem 0 rgba(0,255,255,0.6)}
+  30%{opacity:1;transform:translateX(-0.6rem) skewX(-5deg);text-shadow:-0.5rem 0 rgba(18,0,255,0.9),0.5rem 0 rgba(0,255,255,0.6)}
+  55%{transform:translateX(0.4rem) skewX(3deg);text-shadow:0.3rem 0 rgba(18,0,255,0.7),-0.3rem 0 rgba(0,255,255,0.4)}
+  80%{transform:translateX(-0.15rem) skewX(-1deg);text-shadow:-0.15rem 0 rgba(18,0,255,0.5),0.15rem 0 rgba(0,255,255,0.3)}
   100%{opacity:1;transform:translateX(0) skewX(0);text-shadow:none}
 }
 .switching .headline{animation:glitchIn 0.6s cubic-bezier(.2,.7,.2,1) both}
 
 @keyframes illusGlitchPop{
-  0%{filter:drop-shadow(0.6rem 0 rgba(255,49,59,0.85)) drop-shadow(-0.6rem 0 rgba(0,255,255,0.6))}
-  40%{filter:drop-shadow(-0.5rem 0 rgba(255,49,59,0.85)) drop-shadow(0.5rem 0 rgba(0,255,255,0.6))}
-  70%{filter:drop-shadow(0.25rem 0 rgba(255,49,59,0.55)) drop-shadow(-0.25rem 0 rgba(0,255,255,0.35))}
+  0%{filter:drop-shadow(0.6rem 0 rgba(18,0,255,0.85)) drop-shadow(-0.6rem 0 rgba(0,255,255,0.6))}
+  40%{filter:drop-shadow(-0.5rem 0 rgba(18,0,255,0.85)) drop-shadow(0.5rem 0 rgba(0,255,255,0.6))}
+  70%{filter:drop-shadow(0.25rem 0 rgba(18,0,255,0.55)) drop-shadow(-0.25rem 0 rgba(0,255,255,0.35))}
   100%{filter:drop-shadow(0 0 0 transparent)}
 }
 .illustration svg{transform-origin:center center}
@@ -1960,7 +1956,7 @@ body::after{display:none}
    MOBILE — responsive layout (≤768px)
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px){
-  html{font-size:10px}
+  html{font-size:16px}
   body{
     display:flex;flex-direction:column;
     grid-template-rows:none;
@@ -2008,7 +2004,7 @@ body::after{display:none}
   .nav-card::before{
     content:attr(data-num);
     position:absolute;top:-2rem;right:-0.5rem;
-    font-family:'Roboto',sans-serif;font-weight:900;
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:900;
     font-size:14rem;line-height:1;letter-spacing:-0.06em;
     color:currentColor;opacity:0.1;
     z-index:1;pointer-events:none;
@@ -2018,7 +2014,7 @@ body::after{display:none}
     position:relative;z-index:3;
   }
   .nav-card .c-num{
-    font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+    font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
     font-size:0.85rem;letter-spacing:0.3em;opacity:0.85;
     text-transform:uppercase;margin-bottom:0.2rem;
   }
@@ -2027,10 +2023,10 @@ body::after{display:none}
     font-weight:900;
   }
   .nav-card .c-sub{
-    font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+    font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
     font-size:1.1rem;line-height:1.25;text-transform:none;
     opacity:0.85;letter-spacing:0;margin-top:0.4rem;
-  }
+  ;font-weight:800;font-style:normal}
   .nav-card .c-icon{
     position:absolute;right:-3.5rem;bottom:-3rem;
     width:17rem;height:17rem;z-index:2;
@@ -2041,15 +2037,15 @@ body::after{display:none}
   .nav-card .c-enter{
     position:absolute;left:1.5rem;bottom:1.3rem;
     z-index:3;display:flex;align-items:center;gap:0.4rem;
-    font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+    font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
     font-size:0.75rem;letter-spacing:0.25em;text-transform:uppercase;
     opacity:0.85;
   }
   .nav-card .c-enter::after{content:'→';font-size:1.1rem;line-height:1}
   /* per-section palette */
-  .nav-card[data-id="originals"]{background:#0D0D0D;color:#FF313B}
+  .nav-card[data-id="originals"]{background:#0D0D0D;color:#1200FF}
   .nav-card[data-id="bubble"]{background:#D0FA51;color:#584CF5}
-  .nav-card[data-id="music"]{background:#FF313B;color:#D0FA51}
+  .nav-card[data-id="music"]{background:#1200FF;color:#D0FA51}
   .nav-card[data-id="vision"]{background:#584CF5;color:#D0FA51}
 
   /* CUSTOM CURSOR — hide on touch (already via hover:none, belt+braces) */
@@ -2138,7 +2134,7 @@ body::after{display:none}
 
 /* extra-small phones (<380px) */
 @media (max-width: 380px){
-  html{font-size:9.2px}
+  html{font-size:16px}
   .nav-card{flex:0 0 90vw}
 }
 
@@ -2149,7 +2145,7 @@ body::after{display:none}
    ═══════════════════════════════════════════════════════ */
 html, body{overflow:hidden;height:100vh;max-height:100vh}
 body{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:400;
   background:var(--bg) !important;
   color:var(--accent) !important;
@@ -2212,7 +2208,7 @@ body{
   height:100%;max-height:100%;width:auto;max-width:none;
   object-fit:contain;display:block;
   position:relative;z-index:2;
-  filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55));
+  filter:drop-shadow(0 40px 80px rgba(18,0,255,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55));
   transform:
     translate3d(var(--avatar-tx, 0px), calc(var(--avatar-ty, 0px) + var(--avatar-base-y, 0px)), 0)
     rotateX(var(--avatar-rx, 0deg))
@@ -2230,7 +2226,7 @@ body{
   position:absolute;left:50%;bottom:5%;
   width:46%;height:8%;
   transform:translateX(-50%) translateX(calc(var(--shadow-shift, 0) * 1px));
-  background:radial-gradient(ellipse, rgba(248, 229, 181, 0.18) 0%, transparent 70%);
+  background:radial-gradient(ellipse, rgba(18,0,255, 0.18) 0%, transparent 70%);
   filter:blur(20px);
   z-index:1;pointer-events:none;
   animation:shadowBreath 6s ease-in-out infinite;
@@ -2245,7 +2241,7 @@ body{
 
 /* All avatars: identical scale, identical placement (PNG canvas is the same for all) */
 .illustration[data-id] .avatar3d{
-  --avatar-base-scale:1.2;--avatar-scale:1.2;--avatar-base-y:0px;
+  --avatar-base-scale:1.08;--avatar-scale:1.08;--avatar-base-y:0px;
 }
 
 /* Easter egg: 5-rapid-click on the avatar fires a glitchy red flash burst.
@@ -2258,10 +2254,10 @@ body{
   content:"MAD!";
   position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);
   /* 800 wasn't loaded in the new 2-family stack — bumped to 900 (loaded) */
-  font-family:'Roboto', system-ui, sans-serif;font-weight:900;font-style:italic;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:900;font-style:italic;
   font-size:clamp(2rem,6vw,4.5rem);
-  color:#FF313B;
-  text-shadow:0 0 18px rgba(255,49,59,0.65);
+  color:#1200FF;
+  text-shadow:0 0 18px rgba(18,0,255,0.65);
   letter-spacing:-0.02em;
   pointer-events:none;
   animation:burstWord 0.8s cubic-bezier(0.2,0.8,0.2,1) forwards;
@@ -2269,11 +2265,11 @@ body{
 }
 @keyframes avatarBurst{
   0%{transform:translate3d(0,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2))}
-  15%{transform:translate3d(-6px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.04));filter:drop-shadow(0 0 30px rgba(255,49,59,0.6)) hue-rotate(-15deg)}
+  15%{transform:translate3d(-6px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.04));filter:drop-shadow(0 0 30px rgba(18,0,255,0.6)) hue-rotate(-15deg)}
   30%{transform:translate3d(8px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.06))}
   45%{transform:translate3d(-4px,var(--avatar-base-y,0),0) scale(calc(var(--avatar-scale,1.2) * 1.02))}
   60%{transform:translate3d(2px,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2))}
-  100%{transform:translate3d(0,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2));filter:drop-shadow(0 40px 80px rgba(248,229,181,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55))}
+  100%{transform:translate3d(0,var(--avatar-base-y,0),0) scale(var(--avatar-scale,1.2));filter:drop-shadow(0 40px 80px rgba(18,0,255,0.08)) drop-shadow(0 14px 24px rgba(0,0,0,0.55))}
 }
 @keyframes burstWord{
   0%{opacity:0;transform:translate(-50%,-50%) scale(0.3) rotate(-8deg)}
@@ -2291,7 +2287,8 @@ body{
 /* ─── SPEECH BUBBLE — true liquid glass (Apple vision pro style) ─── */
 .speech-bubble{
   position:absolute;z-index:50;
-  max-width:8rem;
+  width:max-content;box-sizing:border-box;
+  max-width:var(--speech-max-width,8rem);
   background:linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%);
   -webkit-backdrop-filter:blur(36px) saturate(200%) brightness(115%);
   backdrop-filter:blur(36px) saturate(200%) brightness(115%);
@@ -2299,27 +2296,19 @@ body{
   color:var(--accent);
   padding:0.42rem 0.85rem;
   border-radius:999px;
-  /* Speech-bubble cycles through full short phrases like "Coffee: too
-     many.", "Ask me anything." — those are sentences, not 1-2 word
-     accents, so they go in Roboto per the type rules. */
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.82rem;letter-spacing:-0.005em;line-height:1.2;
   white-space:normal;text-align:center;
   box-shadow:
     0 10px 24px rgba(0,0,0,0.4),
     inset 0 1px 0 rgba(255,255,255,0.22),
     inset 0 -1px 0 rgba(255,255,255,0.04);
-  opacity:0;transform:translateY(0.5rem) scale(0.96) translateZ(60px);
-  transition:opacity 0.4s cubic-bezier(.2,.7,.2,1), transform 0.5s cubic-bezier(.2,.7,.2,1);
+  opacity:0;transform:none;animation:none;
+  transition:opacity 0.2s ease;
   pointer-events:none;
 }
 .speech-bubble.show{
-  opacity:1;transform:translateY(0) scale(1) translateZ(60px);
-  animation:speechFloat 4s ease-in-out infinite;
-}
-@keyframes speechFloat{
-  0%,100%{transform:translateY(0) scale(1) translateZ(60px)}
-  50%{transform:translateY(-0.4rem) scale(1) translateZ(60px)}
+  opacity:1;
 }
 /* tail base — visible only via per-position rules */
 .speech-bubble::before{
@@ -2328,19 +2317,10 @@ body{
   background:rgba(22, 20, 16, 0.7);
   -webkit-backdrop-filter:blur(14px) saturate(140%);
   backdrop-filter:blur(14px) saturate(140%);
-  border:0.08rem solid rgba(245, 240, 225, 0.14);
+  border:0.08rem solid rgba(245,245,245, 0.14);
   border-radius:0.18rem;
 }
-/* ─── Position variants — far OUTSIDE avatar bounds, never touch the head ─── */
-/* UPPER SIDES — beside the temples, way out */
-.speech-bubble[data-pos="side-left-upper"]{top:6%;left:-28%;right:auto}
-.speech-bubble[data-pos="side-right-upper"]{top:6%;right:-28%;left:auto}
-/* LOWER SIDES — beside the cheek, way out */
-.speech-bubble[data-pos="side-left-lower"]{top:55%;left:-28%;right:auto}
-.speech-bubble[data-pos="side-right-lower"]{top:55%;right:-28%;left:auto}
-/* BOTTOM SIDES — at chin level, way out */
-.speech-bubble[data-pos="side-left-bottom"]{top:auto;bottom:6%;left:-24%;right:auto}
-.speech-bubble[data-pos="side-right-bottom"]{top:auto;bottom:6%;right:-24%;left:auto}
+/* Placement is measured against the visible head by avatar-speech.js. */
 
 .speech-bubble::before{display:none}
 .hero-counter{grid-row:3}
@@ -2349,7 +2329,7 @@ body{
   max-width:62rem;
 }
 .hero-line{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:500;font-size:3.4rem;line-height:1.08;
   letter-spacing:-0.025em;color:var(--accent);
   white-space:normal;text-transform:none;
@@ -2358,9 +2338,9 @@ body{
 }
 .hero-line br{display:block;line-height:1.08}
 .hero-line em, .hero-line .accent{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;color:var(--cta);
-}
+;font-weight:800;font-style:normal}
 .hero-line-sub{display:none}
 .hero-counter{display:none !important}
 
@@ -2381,7 +2361,7 @@ body{
   border:0.06rem solid rgba(255, 255, 255, 0.18);
   border-radius:999px;
   padding:0.7rem 1.2rem;
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:500;font-size:0.95rem;letter-spacing:-0.005em;
   transition:background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   white-space:nowrap;
@@ -2396,7 +2376,7 @@ body{
   color:var(--accent);
   -webkit-backdrop-filter:blur(28px) saturate(160%);
   backdrop-filter:blur(28px) saturate(160%);
-  border:0.08rem solid rgba(245, 240, 225, 0.16);
+  border:0.08rem solid rgba(245,245,245, 0.16);
 }
 .bottomnav-mark svg{width:100%;height:auto;color:var(--accent)}
 .bottomnav-links{
@@ -2409,7 +2389,7 @@ body{
   border:0 !important;
   border-radius:999px;
   padding:0.5rem 1rem;
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:500;font-size:0.9rem;letter-spacing:-0.005em;
   display:inline-flex;align-items:center;gap:0.4rem;
   min-height:auto;max-height:none;flex:0 0 auto;
@@ -2428,11 +2408,11 @@ body{
   background:var(--accent) !important;color:var(--bg) !important;
 }
 .bottomnav-links .nav-card:hover:not(.active){
-  background:rgba(245,240,225,0.08) !important;
+  background:rgba(245,245,245,0.08) !important;
 }
 /* Hover preview: subtle title shimmer + arrow appears, hinting at click */
 .bottomnav-links .nav-card{
-  transition:background 0.25s ease, color 0.25s ease, padding 0.25s ease;
+  transition:background-color 0.16s ease, color 0.16s ease;
 }
 .bottomnav-links .nav-card::after{
   /* Tiny hover-only ↗ arrow (separate from the main bottomnav after rule
@@ -2444,7 +2424,7 @@ body{
   transition:transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .bottomnav-links .nav-card:hover:not(.active) .c-title{
-  transform:translateY(-1px);
+  transform:none;
 }
 /* When hovering a non-active section, the ENTER pill on the right
    updates its label to show what you'd jump to. (Not committing the
@@ -2452,7 +2432,7 @@ body{
 @media (hover: hover){
   /* Subtle pulse on the active card to call attention to current state */
   .bottomnav-links .nav-card.active{
-    box-shadow:0 0 0 0.18rem rgba(208, 250, 81, 0.18);
+    box-shadow:none;
   }
 }
 /* hide all decorative pseudo-elements from the old card style */
@@ -2461,13 +2441,12 @@ body{
 .bottomnav-links .nav-card .c-enter{display:none !important}
 
 .bottomnav-cta{
-  background:var(--cta);color:#1A1815;
+  background:var(--cta);color:#fff;
   border:0.08rem solid rgba(0,0,0,0.06);
   -webkit-backdrop-filter:none;backdrop-filter:none;
   font-weight:600;text-decoration:none;
 }
 .bottomnav-cta:hover{background:#fff;transform:translateY(-1px)}
-.bottomnav-pill:not(.bottomnav-cta):not(.bottomnav-mark):hover,
 .bottomnav-mark:hover{
   background:linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 100%);
   border-color:rgba(255,255,255,0.28);
@@ -2479,7 +2458,7 @@ body{
 /* ─── SCROLL PROGRESS BAR — top edge of detail + project pages ─── */
 .scroll-progress{
   position:absolute;top:0;left:0;right:0;height:0.18rem;
-  background:rgba(245, 240, 225, 0.06);
+  background:rgba(245,245,245, 0.06);
   z-index:50;pointer-events:none;
 }
 .scroll-progress-fill{
@@ -2536,11 +2515,11 @@ body{
 .lightbox-next{
   position:fixed;
   display:inline-flex;align-items:center;justify-content:center;
-  background:rgba(245, 240, 225, 0.06);
+  background:rgba(245,245,245, 0.06);
   -webkit-backdrop-filter:blur(20px);
   backdrop-filter:blur(20px);
   color:var(--accent);
-  border:0.06rem solid rgba(245, 240, 225, 0.12);
+  border:0.06rem solid rgba(245,245,245, 0.12);
   border-radius:50%;
   width:3rem;height:3rem;
   cursor:pointer;
@@ -2552,7 +2531,7 @@ body{
 .lightbox-close:hover,
 .lightbox-prev:hover,
 .lightbox-next:hover{
-  background:var(--cta);color:#1A1815;border-color:transparent;
+  background:var(--cta);color:#fff;border-color:transparent;
 }
 .lightbox-prev:hover{transform:translateY(-50%) translateX(-2px)}
 .lightbox-next:hover{transform:translateY(-50%) translateX(2px)}
@@ -2564,12 +2543,12 @@ body{
 .lightbox-next svg{width:1.2rem;height:1.2rem}
 .lightbox-counter{
   position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.65;
-  background:rgba(245, 240, 225, 0.06);
+  background:rgba(245,245,245, 0.06);
   -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
-  border:0.06rem solid rgba(245, 240, 225, 0.12);
+  border:0.06rem solid rgba(245,245,245, 0.12);
   padding:0.5rem 1rem;border-radius:999px;
   pointer-events:none;
 }
@@ -2613,7 +2592,7 @@ body{
 /* terminal-style stamp line */
 .nf-stamp{
   display:flex;align-items:center;gap:1rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);
   padding-bottom:1.2rem;border-bottom:0.08rem solid var(--line);
@@ -2630,7 +2609,7 @@ body{
 
 /* the giant 404 — display-scale brutalist */
 .nf-num{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:700;font-size:clamp(10rem, 24vw, 22rem);line-height:0.85;
   letter-spacing:-0.06em;color:var(--cta);
   margin:0 0 0.4rem;
@@ -2639,26 +2618,26 @@ body{
 
 /* headline — Roboto/Newsreader split */
 .nf-title{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:500;font-size:clamp(2.6rem, 5.5vw, 5rem);line-height:1.05;
   letter-spacing:-0.025em;color:var(--accent);
   margin:0 0 1.8rem;
   max-width:48rem;text-wrap:balance;
 }
 .nf-title em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;color:var(--cta);
-}
+;font-weight:800;font-style:normal}
 
 /* lead with inline path chip */
 .nf-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;color:var(--accent);
   opacity:0.85;margin:0 0 4rem;max-width:48rem;
 }
 .nf-path-inline{
   display:inline-block;
-  font-family:'Roboto', system-ui, sans-serif;font-style:normal;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-style:normal;font-weight:500;
   font-size:0.95em;letter-spacing:0;
   background:#1A1815;color:var(--accent);
   padding:0.15rem 0.6rem;border-radius:0.4rem;
@@ -2688,30 +2667,30 @@ body{
 }
 .nf-card:hover{
   background:#23201B;
-  border-color:rgba(245,240,225,0.3);
+  border-color:rgba(245,245,245,0.3);
   transform:translateY(-2px);
 }
 .nf-card:focus-visible{outline:2px solid var(--cta);outline-offset:3px}
 .nf-card-num{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent-soft);
   margin-bottom:1.2rem;
 }
 .nf-card-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1.6rem;letter-spacing:-0.015em;
   color:var(--accent);
   margin:0 0 0.3rem;line-height:1.1;
 }
 .nf-card-sub{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:400;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1rem;line-height:1.4;color:var(--accent);opacity:0.7;
   margin:0;
-}
+;font-weight:800;font-style:normal}
 .nf-card-arrow{
   align-self:flex-end;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1.2rem;color:var(--cta);
   margin-top:1rem;
   transition:transform 0.2s ease;
@@ -2725,8 +2704,8 @@ body{
   gap:2rem;flex-wrap:wrap;
 }
 .nf-home{
-  background:var(--cta);color:#1A1815;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  background:var(--cta);color:#fff;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1rem;letter-spacing:0;
   padding:1rem 2rem;border-radius:999px;border:0;cursor:pointer;
   transition:background 0.2s ease, transform 0.2s ease;
@@ -2734,7 +2713,7 @@ body{
 .nf-home:hover{background:#fff;transform:translateY(-1px)}
 .nf-home:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .nf-email{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1rem;color:var(--accent);text-decoration:none;
   opacity:0.75;transition:opacity 0.2s ease, color 0.2s ease;
 }
@@ -2771,7 +2750,7 @@ body{
   backdrop-filter:blur(36px) saturate(200%) brightness(115%);
   border:0.06rem solid rgba(255, 255, 255, 0.18);
   color:var(--accent);
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-weight:500;font-size:0.95rem;letter-spacing:-0.005em;
   cursor:pointer;
   white-space:nowrap;
@@ -2785,7 +2764,7 @@ body{
 }
 .enter-pill .enter-pill-label{
   text-transform:uppercase;letter-spacing:0.18em;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;font-size:0.78rem;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;font-size:0.78rem;
 }
 .enter-pill .enter-pill-arrow{
   display:inline-block;font-size:1.05rem;line-height:1;
@@ -2874,33 +2853,33 @@ body{
 
 .mani-hero{margin:0 0 4.5rem;max-width:90rem}
 .mani-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.5;margin-bottom:1.6rem;
 }
 .mani-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:clamp(3.5rem, 8vw, 8rem);
   line-height:0.96;letter-spacing:-0.025em;
   color:var(--accent);
   margin:0 0 3rem;
 }
 .mani-title em{
-  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',Georgia,serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;
-}
+;font-weight:800;font-style:normal}
 .mani-body{
   max-width:62rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:1.3rem;line-height:1.55;
   color:var(--accent);opacity:0.85;
 }
 .mani-body .mani-p + .mani-p{margin-top:1.2rem}
-.mani-body strong{font-family:'Newsreader',serif;font-style:italic;font-weight:700;opacity:1}
+.mani-body strong{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;opacity:1;font-weight:800;font-style:normal}
 .mani-body em{font-style:italic;opacity:0.95}
 .mani-resume-btn{
   display:inline-flex;align-items:center;gap:0.6rem;margin-top:2.4rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:0.95rem;letter-spacing:0.14em;text-transform:uppercase;text-decoration:none;
   color:var(--bg);background:var(--accent);
   padding:1rem 1.8rem;border-radius:3rem;
@@ -2910,7 +2889,7 @@ body{
 .mani-resume-btn span{font-size:1.1rem}
 /* Résumé page (/cv) — same shell as the manifesto, a few extras */
 .mani-banner-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   font-size:1.05rem;letter-spacing:0.3em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;margin-left:auto;
 }
@@ -2919,11 +2898,11 @@ body{
    so the button and the contact line sit on the same baseline */
 .cv-contact .mani-resume-btn{margin-top:0}
 .cv-contact-meta{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;letter-spacing:0.14em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
 }
-.cv-page .mani-award-title em{font-family:'Newsreader',serif;font-style:italic;opacity:0.9}
+.cv-page .mani-award-title em{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;opacity:0.9;font-weight:800;font-style:normal}
 /* the manifesto keeps a narrow reading measure; the résumé reads as a
    document, so let the intro run closer to the section lists' width */
 .cv-page .mani-hero{max-width:100%}
@@ -2935,21 +2914,21 @@ body{
   grid-template-columns:repeat(auto-fit, minmax(14rem, 1fr));
   gap:0;
   margin:0 0 5rem;
-  border-top:0.08rem solid rgba(245,240,225,0.18);
-  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+  border-top:0.08rem solid rgba(245,245,245,0.18);
+  border-bottom:0.08rem solid rgba(245,245,245,0.18);
 }
 .mani-stat{
   padding:2rem 1.6rem;
-  border-right:0.08rem solid rgba(245,240,225,0.1);
+  border-right:0.08rem solid rgba(245,245,245,0.1);
 }
 .mani-stat:last-child{border-right:none}
 .mani-stat-num{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:3.6rem;line-height:1;letter-spacing:-0.02em;
   color:var(--accent);margin-bottom:0.6rem;
 }
 .mani-stat-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
 }
@@ -2960,22 +2939,22 @@ body{
   display:flex;align-items:baseline;justify-content:space-between;
   gap:1.4rem;
   padding-bottom:1.4rem;
-  border-bottom:0.08rem solid rgba(245,240,225,0.18);
+  border-bottom:0.08rem solid rgba(245,245,245,0.18);
   margin-bottom:1.6rem;
 }
 .mani-section-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   flex-shrink:0;
 }
 .mani-section-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:clamp(2rem, 4vw, 3.4rem);letter-spacing:-0.02em;
   color:var(--accent);margin:0;flex:1;
 }
 .mani-section-count{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.16em;
   color:var(--accent);opacity:0.5;font-variant-numeric:tabular-nums;
 }
@@ -2989,29 +2968,29 @@ body{
   grid-template-columns:6rem 1fr minmax(0, 22rem);
   gap:1.6rem;align-items:baseline;
   padding:1.2rem 0;
-  border-bottom:0.06rem solid rgba(245,240,225,0.08);
+  border-bottom:0.06rem solid rgba(245,245,245,0.08);
   transition:background 0.2s ease;
 }
 .mani-award:last-child{border-bottom:none}
-.mani-award:hover{background:rgba(245,240,225,0.025)}
+.mani-award:hover{background:rgba(245,245,245,0.025)}
 .mani-award-year{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.12em;
   color:var(--accent);opacity:0.55;
   font-variant-numeric:tabular-nums;
 }
 .mani-award-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1.4rem;line-height:1.25;letter-spacing:-0.01em;
   color:var(--accent);
 }
 .mani-award-title-link{
-  color:inherit;text-decoration:none;border-bottom:0.06rem dotted rgba(245,240,225,0.3);
+  color:inherit;text-decoration:none;border-bottom:0.06rem dotted rgba(245,245,245,0.3);
   transition:border-color 0.2s ease, color 0.2s ease;
 }
 .mani-award-title-link:hover{border-color:var(--accent);color:var(--cta)}
 .mani-award-meta{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:0.95rem;line-height:1.35;
   color:var(--accent);opacity:0.6;
   text-align:right;
@@ -3022,24 +3001,24 @@ body{
   grid-template-columns:1fr 1fr 6rem;
   gap:1.6rem;align-items:baseline;
   padding:1rem 0;
-  border-bottom:0.06rem solid rgba(245,240,225,0.08);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  border-bottom:0.06rem solid rgba(245,245,245,0.08);
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1.15rem;
   color:var(--accent);
 }
 .mani-press-item:last-child{border-bottom:none}
 .mani-press-link{
   color:var(--accent);text-decoration:none;
-  border-bottom:0.06rem dotted rgba(245,240,225,0.3);
+  border-bottom:0.06rem dotted rgba(245,245,245,0.3);
   transition:border-color 0.2s ease, color 0.2s ease;
 }
 .mani-press-link:hover{border-color:var(--accent);color:var(--cta)}
 .mani-press-meta{
-  font-family:'Newsreader',Georgia,serif;font-style:italic;font-weight:400;
+  font-family:'Bricolage Grotesque',Georgia,serif;font-style:normal;font-weight:800;
   opacity:0.7;font-size:1rem;
-}
+;font-weight:800;font-style:normal}
 .mani-press-year{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.12em;
   opacity:0.55;text-align:right;
   font-variant-numeric:tabular-nums;
@@ -3047,20 +3026,20 @@ body{
 
 .mani-empty{
   margin:0 0 5rem;padding:2.5rem;
-  background:rgba(245,240,225,0.04);
-  border:0.08rem dashed rgba(245,240,225,0.2);
+  background:rgba(245,245,245,0.04);
+  border:0.08rem dashed rgba(245,245,245,0.2);
   border-radius:0.6rem;
   text-align:center;
 }
 .mani-empty-kicker{
   display:block;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:0.8rem;
 }
 .mani-empty p{
-  font-family:'Roboto', system-ui, sans-serif;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;
   font-size:1rem;color:var(--accent);opacity:0.7;
   margin:0;
 }
@@ -3079,8 +3058,8 @@ body{
   .mani-title{font-size:3.4rem}
   .mani-body{font-size:1.1rem}
   .mani-stats{grid-template-columns:repeat(2, 1fr);margin-bottom:3.5rem}
-  .mani-stat{padding:1.4rem 1rem;border-right-width:0;border-bottom:0.08rem solid rgba(245,240,225,0.1)}
-  .mani-stat:nth-child(odd){border-right:0.08rem solid rgba(245,240,225,0.1)}
+  .mani-stat{padding:1.4rem 1rem;border-right-width:0;border-bottom:0.08rem solid rgba(245,245,245,0.1)}
+  .mani-stat:nth-child(odd){border-right:0.08rem solid rgba(245,245,245,0.1)}
   .mani-stat:nth-last-child(-n+2){border-bottom:none}
   .mani-stat-num{font-size:2.6rem}
   .mani-section{margin-bottom:3.5rem}
@@ -3102,7 +3081,7 @@ body{
 .detail-back{
   background:#1A1815;color:var(--accent);
   border:0.08rem solid var(--line);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;letter-spacing:0;text-transform:none;
   padding:0.7rem 1.2rem;border-radius:999px;
 }
@@ -3111,45 +3090,45 @@ body{
 .detail-logo{display:flex;align-items:baseline;gap:0.5rem;color:var(--accent)}
 .logo-svg-d{height:1.8rem;color:var(--accent)}
 .detail-logo .sub{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1.2rem;color:var(--accent);
-}
+;font-weight:800;font-style:normal}
 .detail-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .manifesto{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:5rem;line-height:1.05;letter-spacing:-0.03em;
   text-transform:none;color:var(--accent);
 }
 .manifesto em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;color:var(--cta);
-}
+;font-weight:800;font-style:normal}
 /* Lead paragraph stays in Roboto (sans). Only the first-letter drop
    cap gets Newsreader italic — that's the editorial accent, the
    rest is body text and must stay sans. */
 .detail-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.5rem;line-height:1.6;
   color:var(--accent);opacity:0.92;
 }
-.detail-lead strong{font-family:'Newsreader',serif;font-style:italic;font-weight:700;color:var(--accent)}
-.detail-lead em{font-family:'Newsreader',serif;font-style:italic;font-weight:700;color:var(--accent)}
+.detail-lead strong{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;color:var(--accent);font-weight:800;font-style:normal}
+.detail-lead em{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;color:var(--accent);font-weight:800;font-style:normal}
 /* Drop-cap removed in this palette too — same reason as above. */
 .section-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:3.6rem;line-height:1.05;letter-spacing:-0.02em;
   text-transform:none;color:var(--accent);
 }
 .detail-section-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
-.agencies-track span{font-family:'Roboto', system-ui, sans-serif;font-weight:500;font-size:1.3rem;color:var(--accent)}
+.agencies-track span{font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;font-size:1.3rem;color:var(--accent)}
 .agencies-track span::after{color:var(--cta);opacity:0.6}
 .agencies{border-color:var(--line)}
 
@@ -3212,7 +3191,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   border-radius:0.8rem;
   overflow:hidden;
   box-shadow:
-    inset 0 0 0 0.06rem rgba(245,240,225,0.08),
+    inset 0 0 0 0.06rem rgba(245,245,245,0.08),
     0 0.4rem 1.6rem rgba(0,0,0,0.4);
 }
 @keyframes coverSkeleton{
@@ -3257,13 +3236,13 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 .work-row .work-open-pill{
   display:inline-flex;align-items:center;
   padding:0.5rem 1.05rem;
-  background:rgba(245, 240, 225, 0.14);
+  background:rgba(245,245,245, 0.14);
   -webkit-backdrop-filter:blur(20px) saturate(160%);
   backdrop-filter:blur(20px) saturate(160%);
-  border:0.06rem solid rgba(245, 240, 225, 0.22);
+  border:0.06rem solid rgba(245,245,245, 0.22);
   border-radius:999px;
   color:var(--accent);
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;
 }
 
@@ -3370,7 +3349,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 }
 .work-row .work-info-top{
   display:flex;justify-content:space-between;align-items:center;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.22em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   margin-bottom:1.2rem;
@@ -3380,23 +3359,23 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 .work-row .work-num{color:var(--cta)}
 .work-row .work-year{opacity:0.7}
 .work-row .work-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:3.2rem;line-height:1;letter-spacing:-0.03em;
   text-transform:none;color:var(--accent);
   margin:0 0 1.2rem;
   text-wrap:balance;
 }
 .work-row .work-caption{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.2rem;line-height:1.5;letter-spacing:-0.005em;
   color:var(--accent);opacity:0.82;
   margin:0 0 1.8rem;
   max-width:34rem;
 }
 .work-row .work-caption em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1em;text-transform:capitalize;
-}
+;font-weight:800;font-style:normal}
 .work-row .work-info-bottom{
   display:flex;justify-content:space-between;align-items:center;
   gap:1rem;flex-wrap:wrap;
@@ -3409,13 +3388,13 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 .work-row .work-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.32rem 0.85rem;border-radius:999px;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0;text-transform:none;
   transition:background 0.2s ease;
 }
 .work-row:hover .work-tags span{background:#23201B}
 .work-row .work-cta{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent);opacity:0.55;
   white-space:nowrap;flex-shrink:0;
@@ -3444,7 +3423,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   transform:scale(1.025);
   transition:transform 0.28s cubic-bezier(0.32, 0.72, 0.16, 1);
   box-shadow:
-    inset 0 0 0 0.06rem rgba(245,240,225,0.12),
+    inset 0 0 0 0.06rem rgba(245,245,245,0.12),
     0 1.2rem 3rem rgba(0,0,0,0.55);
 }
 .work-row.is-entering .work-cover img{
@@ -3502,25 +3481,25 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 }
 .works-empty-icon svg{width:100%;height:100%}
 .works-empty-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);margin-bottom:1.4rem;
 }
 .works-empty-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:4rem;line-height:1.05;letter-spacing:-0.025em;
   color:var(--accent);margin:0 0 1.5rem;
 }
 .works-empty-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;
   color:var(--accent);opacity:0.85;
   margin:0 0 2.2rem;
 }
 .works-empty-cta{
   display:inline-flex;align-items:center;
-  background:var(--cta);color:#1A1815;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  background:var(--cta);color:#fff;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1rem;text-decoration:none;
   padding:1rem 2rem;border-radius:999px;
   transition:background 0.2s ease, transform 0.2s ease;
@@ -3539,26 +3518,26 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   text-align:center;
 }
 .collab-cta .collab-kicker{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .collab-cta .collab-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:6rem;line-height:1.05;letter-spacing:-0.025em;
   text-transform:none;color:var(--accent);
 }
 .collab-cta .collab-title em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   letter-spacing:-0.01em;color:var(--cta);text-transform:none;
-}
+;font-weight:800;font-style:normal}
 .collab-cta .collab-lead{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   color:var(--accent);opacity:0.85;
 }
 .collab-btn{
-  background:var(--cta);color:#1A1815;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  background:var(--cta);color:#fff;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:1rem;letter-spacing:0;text-transform:none;
   padding:1rem 2rem;border-radius:999px;
 }
@@ -3571,32 +3550,32 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
    under the kbd-hint. */
 .project-view{padding:2.5rem 2.4rem 1.5rem}
 .project-hero .p-top{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);border-color:var(--line);
 }
 .project-hero .p-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:9rem;line-height:1.0;letter-spacing:-0.035em;
   text-transform:none;color:var(--accent);
 }
 .project-hero[data-num]::before{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:700;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:700;
   color:var(--accent);opacity:0.05;
 }
 .project-hero .p-meta-row{border-top:0.15rem solid var(--accent)}
 .project-hero .p-caption{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.6rem;color:var(--accent);opacity:0.9;
 }
 .project-hero .p-caption em{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   font-size:1em;text-transform:capitalize;
-}
+;font-weight:800;font-style:normal}
 .project-hero .p-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.4rem 0.95rem;border-radius:999px;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.82rem;letter-spacing:0;text-transform:none;
 }
 
@@ -3605,14 +3584,14 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
    — but it's a one-line sentence, not an accent phrase, so it belongs
    in sans per the type rules). */
 .p-credits{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:1.3rem;line-height:1.4;color:var(--accent);
   opacity:0.75;margin:0 0 1.5rem;
 }
 .p-credits strong{
-  font-family:'Newsreader',serif;font-style:italic;font-weight:700;
+  font-family:'Bricolage Grotesque',system-ui,sans-serif;font-style:normal;font-weight:800;
   color:var(--cta);opacity:1;
-}
+;font-weight:800;font-style:normal}
 /* Outcome stat row — biggest credibility unlock per case-study research */
 .p-outcome{
   display:grid;
@@ -3628,13 +3607,13 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   padding:2rem 1.6rem;
 }
 .p-stat-num{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:3.6rem;line-height:0.9;letter-spacing:-0.04em;
   color:var(--cta);
   margin-bottom:0.6rem;
 }
 .p-stat-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:400;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:400;
   font-size:1.05rem;line-height:1.35;color:var(--accent);opacity:0.85;
 }
 /* Generic case-study text block (problem, constraints, etc.) */
@@ -3647,12 +3626,12 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 /* Fallback for browsers that support :has() in case other blocks land last */
 .p-block:not(:has(~ .p-block)){margin-bottom:0}
 .p-block-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);margin-bottom:1rem;
 }
 .p-block-body{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:300;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:300;
   font-size:1.4rem;line-height:1.55;color:var(--accent);
   opacity:0.9;max-width:48rem;margin:0;
 }
@@ -3660,12 +3639,12 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 .p-constraint-tags span{
   background:#1A1815;border:0;color:var(--accent);
   padding:0.5rem 1rem;border-radius:999px;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.9rem;
 }
 .p-award-list{display:flex;flex-wrap:wrap;gap:0.6rem 1.4rem}
 .p-award-list span{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1.05rem;color:var(--cta);
 }
 /* External case-study link (bottom of project page, before next-nav) */
@@ -3675,7 +3654,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   padding:1rem 2rem;
   background:transparent;color:var(--accent);
   border:0.08rem solid var(--line);border-radius:999px;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:1rem;text-decoration:none;
   transition:background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
@@ -3704,17 +3683,17 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 }
 .project-nav-next{border-top:0.15rem solid var(--accent)}
 .project-nav-next .pn-label{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.85rem;letter-spacing:0.18em;text-transform:uppercase;
   color:var(--accent-soft);opacity:1;
 }
 .project-nav-next .pn-title{
-  font-family:'Roboto', system-ui, sans-serif;font-weight:600;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:600;
   font-size:4.5rem;letter-spacing:-0.03em;text-transform:none;
   color:var(--accent);
 }
-.project-nav-next .pn-arrow{background:var(--cta);color:#1A1815}
-.project-nav-next .pn-arrow:hover{background:#fff}
+.project-nav-next .pn-arrow{background:var(--cta);color:#fff}
+.project-nav-next .pn-arrow:hover{background:#fff;color:#1A1815}
 /* Cross-section transition cue: tint the label cream→accent + add → emoji-free arrow */
 .project-nav-next.is-cross-section .pn-label{
   color:var(--cta);opacity:1;
@@ -3723,7 +3702,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 .pn-kbd-hint{
   display:flex;align-items:center;gap:0.5rem;
   margin-top:1.4rem;
-  font-family:'Roboto', system-ui, sans-serif;font-weight:500;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-weight:500;
   font-size:0.78rem;letter-spacing:0.12em;text-transform:uppercase;
   color:var(--accent-soft);opacity:0.65;
 }
@@ -3733,7 +3712,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   padding:0 0.45rem;
   background:#1A1815;color:var(--accent);
   border:0.06rem solid var(--line);border-radius:0.3rem;
-  font-family:'Roboto', system-ui, sans-serif;font-size:0.85rem;
+  font-family:'Bricolage Grotesque', system-ui, sans-serif;font-size:0.85rem;
   letter-spacing:0;text-transform:none;
   box-shadow:inset 0 -1px 0 rgba(0,0,0,0.4);
 }
@@ -3834,6 +3813,158 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   .collab-cta .collab-title{font-size:3.5rem}
   .project-nav-next .pn-title{font-size:2.6rem}
 }
+
+/* Approved identity: white, electric blue, restrained single-hue glow. */
+:root{--accent:#F5F5F5;--accent-soft:#B8B8B8;--cta:#1200FF;--line:rgba(245,245,245,.16)}
+button,input,textarea,select{font-family:inherit}
+#main{background:linear-gradient(180deg,rgba(18,0,255,0) 0%,rgba(18,0,255,0) 65%,rgba(18,0,255,.08) 78%,rgba(18,0,255,.24) 91%,rgba(18,0,255,.55) 100%),#000}
+.hero-line em,.hero-line .accent{color:#1200FF;font-weight:800;font-style:normal;text-shadow:0 0 18px rgba(18,0,255,.2)}
+.bottomnav-pill:not(.bottomnav-cta),#enter-pill,.speech-bubble{background:rgba(5,5,12,.85)}
+.bottomnav-cta,.collab-btn,.works-empty-cta,.nf-home,.skip-link{background:var(--cta);color:#fff}
+.bottomnav-cta{box-shadow:0 0 18px rgba(18,0,255,.2)}
+.bottomnav-cta:hover,.collab-btn:hover,.works-empty-cta:hover{color:#000}
+#detail-page[data-section-id="bubble"] .work-cover-frame img{object-fit:contain}
+.pn-title,.pn-arrow{border:0;font-family:inherit;cursor:pointer}
+.pn-title{background:transparent;text-align:left}
+:focus-visible{outline:2px solid #fff;outline-offset:5px}
+.g-item img[role="button"]{cursor:zoom-in}
+.mp-progress{height:auto;display:grid;grid-template-columns:2.5rem 1fr 2.5rem;gap:.5rem;align-items:center;background:none;overflow:visible;font-size:.75rem;color:var(--accent-soft)}
+.mp-progress input{width:100%;min-width:0;accent-color:var(--cta);cursor:pointer}
+.mp-release-list{max-width:44rem;margin:1.5rem auto;padding:0 1rem;list-style:none}
+.mp-release-list[hidden]{display:none}
+.mp-release-list button{display:flex;justify-content:space-between;gap:1rem;width:100%;min-height:44px;padding:.8rem 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--accent);text-align:left;cursor:pointer}
+.mp-release-list button[aria-current="true"]{font-weight:800}
+body.is-background *,body[data-route]:not([data-route="landing"]) #main *{animation-play-state:paused!important}
+@media(max-width:1100px){
+ #enter-pill{bottom:6.5rem}
+}
+@media(max-width:768px){
+ html{font-size:16px}
+ .hero{min-height:100svh;height:100svh;padding:1.5rem 1rem 10rem;gap:.5rem;justify-content:center}
+ .hero-copy{margin-top:0;flex-shrink:0}
+ .hero-line{font-size:clamp(1.6rem,6.3vw,2.4rem);line-height:1.12}
+ .hero .illustration{min-height:0;flex:0 1 48svh}
+ .avatar-stage{max-width:100%;max-height:100%}
+ .avatar-float{max-height:100%}
+ .avatar-img{max-height:40svh!important;max-width:82vw;object-fit:contain}
+ .bottomnav{bottom:max(.75rem,env(safe-area-inset-bottom));width:calc(100% - 1.5rem);max-width:28rem;flex-wrap:wrap;justify-content:center;overflow:visible;gap:.4rem}
+ .bottomnav-mark{width:2.75rem;height:2.75rem}
+ .bottomnav-links{order:3;flex-basis:100%;justify-content:space-evenly;gap:0;overflow:visible;mask-image:none;padding:.2rem}
+ .bottomnav-links .nav-card{font-size:.875rem;min-height:44px;padding:.5rem .7rem}
+ .bottomnav-cta{font-size:.875rem;min-height:44px;display:flex;align-items:center}
+ #enter-pill{right:auto;width:max-content;max-width:calc(100% - 2rem);bottom:7.8rem;min-height:44px;font-size:.875rem}
+ .enter-pill .enter-pill-label{font-size:.875rem;letter-spacing:.1em}
+ .speech-bubble{max-width:var(--speech-max-width,6.5rem);font-size:.75rem;padding:.4rem .65rem}
+ .detail-manifesto,.p-title,.collab-title{font-size:clamp(2rem,9vw,3.5rem);overflow-wrap:anywhere}
+ .detail-lead,.work-caption,.p-caption,.collab-lead{font-size:1rem}
+ .detail-back,.project-back,.lightbox-close,.lightbox-prev,.lightbox-next,.mp-btn{min-width:44px;min-height:44px}
+ .mp-controls-right .mp-queue{display:flex}
+ .mp-progress{font-size:.7rem;gap:.25rem;grid-template-columns:2rem 1fr 2rem}
+}
+
+
+@media(max-width:768px){
+ .madplus-player-bar{grid-template-columns:1fr 1fr;gap:.4rem;padding:1rem;border-radius:1.75rem}
+ .mp-center{grid-column:1 / -1;grid-row:1;padding:0;gap:.6rem}
+ .mp-progress{position:static;grid-column:1 / -1;width:100%;margin:.25rem 0}
+ .mp-controls{grid-row:2;justify-content:flex-start;gap:.25rem}
+ .mp-controls-right{justify-content:flex-end}
+ .mp-controls-right .mp-listen:not([hidden]),.mp-controls-right .mp-queue{display:flex}
+ .mp-now-title{font-size:.95rem}
+ .mp-now-sub{font-size:.8rem}
+}
+
+
+/* Review fixes: stable navigation and legible project actions. */
+.bottomnav-links,.bottomnav-links:hover{
+ background:rgba(5,5,12,.94);border-color:rgba(255,255,255,.2);
+ -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+.bottomnav-links .nav-card,.bottomnav-links .nav-card:hover,.bottomnav-links .nav-card:active{
+ transform:none;box-shadow:none;will-change:auto;
+}
+.bottomnav-links .nav-card .c-title,.bottomnav-links .nav-card:hover .c-title{transform:none;transition:none}
+.bottomnav-links .nav-card:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.agencies{display:block;white-space:normal;overflow:visible;margin-bottom:4rem;border-width:1px}
+.agencies-track{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;padding:0;animation:none;transform:none}
+.agencies-track span{display:flex;justify-content:center;align-items:center;text-align:center;min-width:0;min-height:5.5rem;padding:1rem .75rem;font-size:clamp(.85rem,1.25vw,1.15rem);line-height:1.35;letter-spacing:.01em;font-weight:600;color:var(--accent);border-bottom:1px solid rgba(255,255,255,.08)}
+.agencies-track span::after{content:none}
+.work-row .work-info-top,.work-row:hover .work-info-top{opacity:1}
+.work-row .work-num{display:inline-flex;align-items:center;justify-content:center;min-width:2.65rem;min-height:2.25rem;padding:.35rem .6rem;background:rgba(18,0,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:.6rem;color:#f5f5f5;letter-spacing:.08em;font-weight:600;font-variant-numeric:tabular-nums}
+.work-row .work-year{color:#b8b8b8;opacity:1}
+.work-row .work-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:.75rem 1.1rem;background:var(--cta);border:1px solid rgba(255,255,255,.25);border-radius:999px;color:#fff;opacity:1;font-size:.875rem;font-weight:600;letter-spacing:.015em;text-transform:none;transform:none;transition:background-color .16s ease,color .16s ease}
+.work-row:hover .work-cta,.work-row:focus-visible .work-cta{background:#f5f5f5;color:#090909;opacity:1;transform:none}
+@media(max-width:768px){
+ .agencies-track{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .agencies-track span{font-size:.875rem;min-height:4.25rem;padding:.85rem .5rem}
+ .work-row .work-info-bottom{align-items:flex-start;gap:1rem}
+ .work-row .work-cta{font-size:.875rem}
+}
+
+
+/* Compact doors into the work and contact, within the existing landing layout. */
+.home-contact{position:absolute;top:1rem;right:1.5rem;z-index:5;display:inline-flex;align-items:center;min-height:44px;color:#f5f5f5;font-size:.875rem;text-decoration:none;padding:0 .8rem;border:1px solid var(--line);border-radius:999px;background:rgba(5,5,12,.85)}
+.home-contact:hover{background:#f5f5f5;color:#090909}
+.home-featured{position:absolute;left:1.5rem;bottom:6.5rem;z-index:5;display:flex;align-items:center;gap:.8rem;width:15rem;padding:.65rem;background:rgba(5,5,12,.94);border:1px solid rgba(255,255,255,.24);border-radius:1rem;color:#f5f5f5;text-decoration:none;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.home-featured[hidden],.home-status[hidden]{display:none}
+.home-featured img{width:4rem;height:4rem;object-fit:cover;border-radius:.5rem;flex-shrink:0}
+.home-featured>span{min-width:0;display:grid;gap:.3rem}
+.home-featured small{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#b8b8b8}
+.home-featured strong{font-size:.95rem;font-weight:600;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.home-featured-action{font-size:.75rem;color:#f5f5f5}
+.home-featured:hover{border-color:#fff;background:#11111d}
+.home-status{max-width:30rem;margin:.85rem auto 0;color:#b8b8b8;font-size:.95rem;line-height:1.4}
+.vision-film-link{display:block;width:fit-content;margin:0 auto 1.25rem;color:#fff;text-underline-offset:.3rem;line-height:1.5}
+.p-story-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2.5rem 4rem;margin:0 0 3rem}
+.p-story-grid:empty{display:none}
+.p-story-grid .p-block{margin:0;padding-top:1.5rem;border-top:1px solid var(--line)}
+.p-story-grid .p-block-body{font-size:1.1rem;line-height:1.6;max-width:40rem}
+.p-block-label{font-weight:500}
+.p-deliverables{margin:0;padding-left:1.2rem;color:#f5f5f5;font-size:1.1rem;line-height:1.8}
+.p-stat{background:#0b0b14}.p-stat-num{color:#f5f5f5}
+@media(max-width:768px){
+ .hero{padding-top:3.5rem;padding-bottom:11rem;gap:.7rem}
+ .hero .illustration{flex:0 1 30svh}
+ .hero .illustration .avatar3d{max-height:30svh;max-width:78vw;width:auto}
+ .home-contact{top:.5rem;right:.75rem;font-size:.8rem;min-height:44px}
+ .home-featured{position:relative;left:auto;bottom:auto;width:min(100%,20rem);padding:.5rem;gap:.7rem;flex-shrink:0;text-align:left}
+ .home-featured img{width:3.1rem;height:3.1rem}
+ .home-featured>span{gap:.15rem}
+ .home-featured small{font-size:.625rem}
+ .home-featured strong{font-size:.875rem;-webkit-line-clamp:1}
+ .home-featured-action{font-size:.75rem}
+ .home-status{font-size:.8rem;margin-top:.55rem}
+ .p-story-grid{grid-template-columns:1fr;gap:1.5rem;margin-bottom:2rem}
+ .p-story-grid .p-block-body,.p-deliverables{font-size:1rem}
+}
+@media(max-width:768px) and (max-height:700px){
+ .hero{gap:.4rem;padding-top:3rem;padding-bottom:10.5rem}
+ .hero .illustration{flex-basis:24svh}
+ .hero .illustration .avatar3d{max-height:24svh}
+ .hero-line{font-size:1.4rem}
+ .home-featured img{width:2.7rem;height:2.7rem}
+}
+
+/* Keep the current 3D visible while its replacement renders offscreen. */
+.avatar-stage-3d{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:100%}
+.avatar-stage-3d>.avatar-float{
+  grid-area:1/1;justify-self:center;align-self:stretch;position:relative;
+  transition:opacity .18s ease;
+}
+.avatar-stage-3d>.avatar-stage-pending,
+.avatar-stage-3d>.avatar-stage-outgoing{opacity:0;pointer-events:none}
+.avatar-3d-primary{animation:none!important}
+.hero .avatar-3d-primary>.avatar3d{opacity:0;transform:scale(1.08)!important;filter:none}
+.avatar-float:has(.avatar-3d-canvas){position:relative}
+.avatar-3d-canvas{position:absolute;inset:0;z-index:3;display:block;pointer-events:none}
+.hero .avatar-3d-canvas{transform:scale(1.08);transform-origin:center}
+.avatar-stage-3d .avatar-3d-canvas{opacity:0;transition:opacity .18s ease}
+.avatar-stage-3d .avatar-3d-ready>.avatar-3d-canvas{opacity:1}
+.avatar-3d-ready{animation:none!important}
+.avatar-3d-ready>.avatar3d{opacity:0;transform:none!important}
+@media(prefers-reduced-motion:reduce){
+  .avatar-stage-3d>.avatar-float,.avatar-stage-3d .avatar-3d-canvas,.speech-bubble{transition:none}
+}
 </style>
 </head>
 <body class="loading">
@@ -3846,8 +3977,8 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   <style>
     .splash{display:none !important}
     body{
-      background:#0A0A0A;color:#F5F0E1;
-      font-family:'Roboto', system-ui, sans-serif;
+      background:#0A0A0A;color:#F5F5F5;
+      font-family:'Bricolage Grotesque', system-ui, sans-serif;
       display:flex !important;flex-direction:column;
       align-items:center;justify-content:center;
       min-height:100vh;padding:2rem;text-align:center;
@@ -3860,7 +3991,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   <div class="nojs">
     <h1>MAD Studio</h1>
     <p>This site needs JavaScript to render. Please enable JS, or get in touch directly:</p>
-    <p><a href="mailto:hi@beingmad.co">hi@beingmad.co</a> · <a href="https://beingmad.co">beingmad.co</a></p>
+    <p><a href="mailto:mad@beingmad.co">mad@beingmad.co</a> · <a href="https://www.beingmad.co">beingmad.co</a></p>
   </div>
 </noscript>
 
@@ -3881,7 +4012,10 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
   <div class="hero-copy">
     <h1 class="hero-line" id="headline"></h1>
     <p class="hero-line-sub" id="subtitle"></p>
+    <p id="home-status" class="home-status" hidden></p>
   </div>
+  <a class="home-contact" id="home-contact" href="mailto:mad@beingmad.co">Let’s talk ↗</a>
+  <a class="home-featured" id="home-featured" href="/originals/google-arabia" hidden></a>
   <span class="hero-counter" id="counter" aria-live="polite" aria-atomic="true"></span>
 </main>
 
@@ -3906,7 +4040,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
 </button>
 
 <!-- LIGHTBOX — full-screen image zoom for project gallery -->
-<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-label="Image viewer">
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Image viewer">
   <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close (Esc)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
   </button>
@@ -3959,7 +4093,7 @@ a.work-row:focus-visible{outline:2px solid var(--accent, #ffffff);outline-offset
     <!-- footer line: home pill + email -->
     <div class="nf-footer">
       <button class="nf-home" id="nf-home-btn" type="button">← Back to home</button>
-      <a class="nf-email" href="mailto:hi@beingmad.co">Or just say hi → hi@beingmad.co</a>
+      <a class="nf-email" href="mailto:mad@beingmad.co">Or just say hi → mad@beingmad.co</a>
     </div>
   </div>
 </section>

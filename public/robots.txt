@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://beingmad.co/sitemap.xml
+Sitemap: https://www.beingmad.co/sitemap.xml
