@@ -1,3 +1,9 @@
+// Approved additions supplement the CMS roster; Diriyah is distinct from Derayah Financial.
+export const ORIGINALS_COLLABORATIONS = [
+  'Google Arabia', 'New Murabba', 'Diriyah', 'Film Commission', 'Saudi Games',
+  'Jeddah Airports', 'BIOLAB Saudi Arabia', 'JB × Vimto', 'Halwani Bros', 'ATP Next Gen',
+]
+
 // Editorial revision of the site's existing project descriptions.
 // Roles follow the owner's direction and the disciplines already listed in the CMS.
 // No new campaign performance figures or agency credits are introduced here.

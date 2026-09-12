@@ -1,4 +1,4 @@
-import {SECTION_COPY, MANIFESTO_COPY, PROJECT_STORIES, BUBBLE_COPY, projectRole} from './editorial-copy.js'
+import {ORIGINALS_COLLABORATIONS, SECTION_COPY, MANIFESTO_COPY, PROJECT_STORIES, BUBBLE_COPY, projectRole} from './editorial-copy.js'
 // Shared by the browser and static-page generation, so visible work and URLs agree.
 export function escapeHtml(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
@@ -24,7 +24,14 @@ export function normalizeContent(content) {
   return {
     ...content,
     siteSettings: {...content.siteSettings, manifestoBody: MANIFESTO_COPY},
-    sections: content.sections.map(section => ({...section, ...SECTION_COPY[section.slug]})),
+    sections: content.sections.map(section => ({
+      ...section,
+      ...SECTION_COPY[section.slug],
+      ...(section.slug === 'originals' ? {
+        agencies: [...new Map([...ORIGINALS_COLLABORATIONS, ...(section.agencies || [])]
+          .map(name => [name.trim().toLowerCase(), name.trim()])).values()],
+      } : {}),
+    })),
     projects: content.projects
       .filter(project => hasProjectMedia(project) || externalProjectUrl(project))
       .map(project => {

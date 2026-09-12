@@ -400,20 +400,15 @@ function syncEnterPill(s) {
   const pill = document.getElementById('enter-pill')
   if (!pill) return
   const label = document.getElementById('enter-pill-label')
-  const pending = s.id === 'vision' && !PAGES.vision?.works.length
-  if (label) label.textContent = pending ? 'About Vision' : `Enter ${s.cTitle}`
+  if (label) label.textContent = `Enter ${s.cTitle}`
   pill.dataset.id = s.id
-  pill.setAttribute('aria-label', pending ? 'About Vision — collection in production' : `Enter ${s.cTitle} section`)
+  pill.setAttribute('aria-label', `Enter ${s.cTitle} section`)
 }
 
 /* A small direct route into the work, while retaining the avatar-led homepage. */
 function syncHomePreview(sectionId) {
   const preview = document.getElementById('home-featured')
-  const status = document.getElementById('home-status')
   const page = PAGES[sectionId]
-  const visionPending = sectionId === 'vision' && !page?.works.length
-  status.hidden = !visionPending
-  status.textContent = visionPending ? 'Vision is in production. The first collection is coming soon.' : ''
   const contact = document.getElementById('home-contact')
   contact.href = `mailto:${SITE.contactEmail || 'mad@beingmad.co'}`
   let work = page?.works.find(work => !work.externalUrl)
@@ -1682,9 +1677,14 @@ function buildDetail(id) {
   const agenciesHTML = p.agencies.length
     ? `
     <div class="detail-section-label">In Collaboration With</div>
-    <div class="agencies">
-      <div class="agencies-track" role="list" aria-label="Selected collaborations">
-        ${[...new Set(p.agencies)].map((a) => `<span role="listitem">${escapeHtml(a)}</span>`).join('')}
+    <div class="agencies" tabindex="0" role="region" aria-label="Selected collaborations — pause on focus">
+      <div class="agencies-track">
+        <div class="agencies-group" role="list" aria-label="Collaborations">
+          ${[...new Set(p.agencies)].map((a) => `<span role="listitem">${escapeHtml(a)}</span>`).join('')}
+        </div>
+        <div class="agencies-group" aria-hidden="true">
+          ${[...new Set(p.agencies)].map((a) => `<span>${escapeHtml(a)}</span>`).join('')}
+        </div>
       </div>
     </div>
   `
