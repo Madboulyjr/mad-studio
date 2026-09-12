@@ -1,3 +1,4 @@
+import {bindViewportGaze} from './avatar-pointer.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { createAvatarEyes, EYE_APERTURE_GLSL } from './avatar-eyes.js';
@@ -310,6 +311,7 @@ export async function mountAvatar3D({
   eyes = [],
   pencil = false,
   secondaryMotion = {},
+  gazeScope = 'container',
 } = {}) {
   if (!container || !poster || !modelUrl) {
     throw new Error('The 3D avatar requires a container, poster and GLB URL.');
@@ -321,6 +323,7 @@ export async function mountAvatar3D({
   canvas.setAttribute('aria-hidden', 'true');
   Object.assign(canvas.style, { position: 'absolute', display: 'block', pointerEvents: 'none' });
 
+  let disposeViewportGaze;
   let renderer;
   let environmentTarget;
   let referenceTexture;
@@ -679,9 +682,18 @@ export async function mountAvatar3D({
     const normalizedY = THREE.MathUtils.clamp(((event.clientY - rect.top) / rect.height) * 2 - 1, -1, 1);
     pointerYaw = motionMode === 'live' ? normalizedX * YAW_LIMIT : 0;
     pointerPitch = motionMode === 'live' ? normalizedY * PITCH_LIMIT : 0;
-    pointerGazeX = gazeEnabled ? normalizedX : 0;
-    pointerGazeY = gazeEnabled ? -normalizedY : 0;
+    if (gazeScope !== 'viewport') {
+      pointerGazeX = gazeEnabled ? normalizedX : 0;
+      pointerGazeY = gazeEnabled ? -normalizedY : 0;
+    }
     invalidate();
+  }
+
+  function leaveContainer() {
+    pointerYaw = 0;
+    pointerPitch = 0;
+    if (gazeScope !== 'viewport') resetPointer();
+    else invalidate();
   }
 
   function resetPointer() {
@@ -754,7 +766,8 @@ export async function mountAvatar3D({
     signal?.removeEventListener('abort', abort);
     container.removeEventListener('pointermove', pointerMove);
     container.removeEventListener('pointerdown', pointerDown);
-    container.removeEventListener('pointerleave', resetPointer);
+    container.removeEventListener('pointerleave', leaveContainer);
+    disposeViewportGaze?.();
     container.removeEventListener('pointercancel', resetPointer);
     document.removeEventListener('visibilitychange', updateActivity);
     window.removeEventListener('resize', resize);
@@ -815,7 +828,13 @@ export async function mountAvatar3D({
     canvas.addEventListener('webglcontextlost', contextLost);
     container.addEventListener('pointermove', pointerMove, { passive: true });
     container.addEventListener('pointerdown', pointerDown, { passive: true });
-    container.addEventListener('pointerleave', resetPointer, { passive: true });
+    container.addEventListener('pointerleave', leaveContainer, { passive: true });
+    if (gazeScope === 'viewport') disposeViewportGaze = bindViewportGaze({
+      getRect: () => container.getBoundingClientRect(),
+      enabled: () => canRender() && gazeEnabled && !motion.matches && !manualOverride,
+      onGaze: (x, y) => { pointerGazeX = x; pointerGazeY = y; invalidate(); },
+      onReset: resetPointer,
+    });
     container.addEventListener('pointercancel', resetPointer, { passive: true });
     document.addEventListener('visibilitychange', updateActivity);
     window.addEventListener('resize', resize, { passive: true });

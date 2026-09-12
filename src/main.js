@@ -1,3 +1,5 @@
+import {renderMadsetCase} from './madset-case.js'
+import './madset-case.css'
 import {normalizeContent, externalProjectUrl, escapeHtml, musicPlatform} from './content-utils.js'
 import {fetchContent, urlFor} from './sanity-client.js'
 import {inject as injectAnalytics} from '@vercel/analytics'
@@ -32,7 +34,7 @@ const avatarHandoff = createAvatarHandoff({
     const [{mountAvatar3D}, {AVATAR_MODELS}] = await Promise.all([import('./avatar-3d.js'), import('./avatar-config.js')])
     if (lifecycle.signal.aborted) throw new DOMException('Avatar load aborted.', 'AbortError')
     if (!AVATAR_MODELS[entry.slug]) throw new Error('This character has no 3D model.')
-    return mountAvatar3D({...AVATAR_MODELS[entry.slug], container: entry.container, poster: entry.poster, ...lifecycle})
+    return mountAvatar3D({...AVATAR_MODELS[entry.slug], container: entry.container, poster: entry.poster, gazeScope: 'viewport', ...lifecycle})
   },
   revealEntry(entry, previous) {
     previous?.container.classList.add('avatar-stage-outgoing')
@@ -2184,7 +2186,7 @@ function buildProject(works, idx, sectionId) {
     ? `<a class="p-external" href="${cs.externalUrl}" target="_blank" rel="noopener">${externalLabel(cs.externalUrl)}</a>`
     : ''
 
-  projectViewInner.innerHTML = `
+  const defaultPresentation = `
     <div class="project-hero" data-num="${String(idx + 1).padStart(2, '0')}">
       <div class="p-top">
         <span class="p-index">— Case ${String(idx + 1).padStart(2, '0')} / ${String(works.length).padStart(2, '0')}</span>
@@ -2209,6 +2211,10 @@ function buildProject(works, idx, sectionId) {
     </div>
     ${awardsHTML}
     ${externalHTML}
+  `
+  const isMadset = sectionId === 'vision' && w.slug === 'madset'
+  projectViewInner.classList.toggle('is-madset-case', isMadset)
+  projectViewInner.innerHTML = `${isMadset ? renderMadsetCase(w) : defaultPresentation}
     <div class="project-nav-next${isCrossSection ? ' is-cross-section' : ''}">
       <div class="pn-block">
         <div class="pn-label">${nextLabel}</div>
