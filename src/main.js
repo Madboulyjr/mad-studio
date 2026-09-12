@@ -100,6 +100,7 @@ function mediaImageUrl(item, w = 2000) {
 }
 
 function coverImageUrl(project, w = 1600) {
+  if (project.sectionSlug === 'vision' && project.slug === 'madset') return '/madset-case/cover.webp'
   if (!project.coverImage) return ''
   return urlFor(project.coverImage).width(w).auto('format').url()
 }
