@@ -2123,8 +2123,16 @@ function buildProject(works, idx, sectionId) {
          </div>
        </div>`
     : ''
+  // Label the outbound link for what it actually points at — an App Store
+  // listing should read as a download, not as "full case study".
+  const externalLabel = (url) => {
+    if (/apps\.apple\.com/.test(url)) return 'Download on the App Store ↗'
+    if (/play\.google\.com/.test(url)) return 'Get it on Google Play ↗'
+    if (/behance\.net/.test(url)) return 'View on Behance ↗'
+    return 'View full case study ↗'
+  }
   const externalHTML = cs.externalUrl
-    ? `<a class="p-external" href="${cs.externalUrl}" target="_blank" rel="noopener">View full case study ↗</a>`
+    ? `<a class="p-external" href="${cs.externalUrl}" target="_blank" rel="noopener">${externalLabel(cs.externalUrl)}</a>`
     : ''
 
   projectViewInner.innerHTML = `
