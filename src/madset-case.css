@@ -155,3 +155,7 @@
  .ms-close-word{margin-top:45px;font-size:22vw}
  .is-madset-case .project-nav-next{padding:35px 0}
 }
+/* Show the user's approved artwork in full, at its original aspect ratio. */
+.work-row[href="/vision/madset"] .work-cover{aspect-ratio:16/9}
+.work-row[href="/vision/madset"] .work-cover-frame img{object-fit:contain}
+.work-row[href="/vision/madset"] .work-open-pill{background:rgba(12,12,12,.88);color:#fff;border-color:rgba(255,255,255,.25)}
